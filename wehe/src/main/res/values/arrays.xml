@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="timing">
+        <item>@string/timing_Yes</item>
+        <item>@string/timing_No</item>
+    </string-array>
+
+    <string-array name="server">
+        <item>@string/server_replay</item>
+    </string-array>
+
+    <string-array name="metrics">
+        <item>@string/metric_either</item>
+        <item>@string/metric_a</item>
+        <item>@string/metric_ks2p</item>
+        <item>@string/metric_both</item>
+    </string-array>
+
+</resources>

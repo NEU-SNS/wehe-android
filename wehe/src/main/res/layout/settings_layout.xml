@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/consent_scroll_view"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:scrollbars="vertical">
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/mainPageTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/margin_medium"
+            android:text="@string/timing_label"
+            android:textColor="@color/brown"
+            android:textSize="@dimen/text_medium"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <Spinner
+            android:id="@+id/settings_timing"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_medium"
+            android:background="@color/lightorange"
+            android:entries="@array/timing"
+            android:padding="@dimen/margin_medium"
+            android:prompt="@string/timing_label"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/selectServerTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/margin_medium"
+            android:text="@string/server_label"
+            android:textColor="@color/brown"
+            android:textSize="@dimen/text_medium"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/settings_server"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_medium"
+            android:hint="@string/server_hint"
+            android:padding="@dimen/margin_medium"
+            android:text="@string/server_replay" />
+
+        <CheckBox
+            android:id="@+id/forceAddHeaderCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:padding="@dimen/margin_medium"
+            android:text="@string/force_add_header"
+            android:visibility="gone" />
+
+        <CheckBox
+            android:id="@+id/selectTestCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:padding="@dimen/margin_medium"
+            android:text="@string/select_test"
+            android:visibility="gone" />
+
+        <CheckBox
+            android:id="@+id/confirmationReplayCheckBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:padding="@dimen/margin_medium"
+            android:text="@string/select_confirmation_replay" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/margin_medium"
+            android:text="@string/select_a_threshhold"
+            android:textColor="@color/brown"
+            android:textSize="@dimen/text_medium"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/a_threshold"
+            android:layout_width="@dimen/app_icon"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_medium"
+            android:hint="@string/area_threshold_hint"
+            android:inputType="number"
+            android:maxLength="3"
+            android:padding="@dimen/margin_medium"
+            android:text="@string/a_threshold" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/margin_medium"
+            android:text="@string/select_ks2pvalue_threshhold"
+            android:textColor="@color/brown"
+            android:textSize="@dimen/text_medium"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/ks2p_threshold"
+            android:layout_width="@dimen/app_icon"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_medium"
+            android:hint="@string/ks2pvalue_threshold_hint"
+            android:inputType="number"
+            android:maxLength="3"
+            android:padding="@dimen/margin_medium"
+            android:text="@string/ks2pvalue_threshold" />
+
+        <CheckBox
+            android:id="@+id/defaultSettingsCheckbox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:padding="@dimen/margin_medium"
+            android:text="@string/default_settings" />
+
+    </LinearLayout>
+
+</ScrollView>

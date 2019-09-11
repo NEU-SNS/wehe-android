@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Use DrawerLayout as root container for activity --><!-- Layout to contain contents of main body of screen (drawer will slide over this) -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/selection_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/appsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/nextButton" />
+
+    <Button
+        android:id="@+id/nextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/weheBlue"
+        android:gravity="center"
+        android:text="@string/run_tests"
+        android:textAlignment="gravity"
+        android:textColor="@color/white" />
+
+</RelativeLayout>

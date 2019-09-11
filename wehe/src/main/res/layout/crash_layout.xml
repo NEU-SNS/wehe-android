@@ -1,0 +1,38 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <include
+        android:id="@+id/crash_bar"
+        layout="@layout/app_bar" />
+
+    <TextView
+        android:id="@+id/errorMsg"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/crash_bar"
+        android:gravity="center"
+        android:padding="@dimen/margin_medium"
+        android:text="@string/crash_activity_title"
+        android:textColor="@color/blue14"
+        android:textSize="@dimen/text_medium"
+        android:textStyle="bold" />
+
+    <ScrollView
+        android:id="@+id/reportScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/errorMsg"
+        android:padding="@dimen/margin_medium">
+
+        <TextView
+            android:id="@+id/report"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/errMsg"
+            android:textColor="@color/blue14"
+            android:textSize="@dimen/text_medium" />
+    </ScrollView>
+
+</RelativeLayout>

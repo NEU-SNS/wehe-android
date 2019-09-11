@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Use DrawerLayout as root container for activity -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    tools:context="mobi.meddle.wehe.fragment.FunctionalityFragment">
+
+    <TextView
+        android:id="@+id/functionalityView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/margin_medium"
+        android:layout_marginEnd="@dimen/margin_medium"
+        android:scrollbars="vertical"
+        android:text="@string/functionality_text"
+        android:textSize="@dimen/text_large" />
+
+</RelativeLayout>

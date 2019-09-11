@@ -1,0 +1,130 @@
+[
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable_background_transparent.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable/background_transparent.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/anim_dialog_main_hide_amination.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/anim/dialog_main_hide_amination.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/anim_dialog_root_show_amin.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/anim/dialog_root_show_amin.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/layout_dialog.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/layout/dialog.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/layout_color_selector.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/layout/color_selector.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable_background_button_float.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable/background_button_float.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable_background_button_rectangle.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable/background_button_rectangle.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable_background_button.9.png.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable/background_button.9.png"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable-ldpi-v4_sprite_check.png.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable-ldpi-v4/sprite_check.png"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/layout_snackbar.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/layout/snackbar.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable_background_switch_ball_uncheck.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable/background_switch_ball_uncheck.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable_background_checkbox_check.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable/background_checkbox_check.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable_background_checkbox.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable/background_checkbox.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/layout_number_indicator_spinner.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/layout/number_indicator_spinner.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable-xxhdpi-v4_sprite_check.png.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable-xxhdpi-v4/sprite_check.png"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable_background_progress.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable/background_progress.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/anim_snackbar_hide_animation.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/anim/snackbar_hide_animation.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable-xhdpi-v4_sprite_check.png.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable-xhdpi-v4/sprite_check.png"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable_shadow_down.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable/shadow_down.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable-xhdpi-v4_float_button1_shadowp.png.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable-xhdpi-v4/float_button1_shadowp.png"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/anim_dialog_main_show_amination.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/anim/dialog_main_show_amination.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/anim_dialog_root_hide_amin.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/anim/dialog_root_hide_amin.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable_shadow_right.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable/shadow_right.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable-xhdpi-v4_float_button_shadow1.png.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable-xhdpi-v4/float_button_shadow1.png"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/anim_progress_indeterminate_animation.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/anim/progress_indeterminate_animation.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable-hdpi-v4_sprite_check.png.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable-hdpi-v4/sprite_check.png"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable-xhdpi-v4_dialog_background.9.png.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable-xhdpi-v4/dialog_background.9.png"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/layout_progress_dialog.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/layout/progress_dialog.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable_background_checkbox_uncheck.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable/background_checkbox_uncheck.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable-xhdpi-v4_ic_reloj_max.png.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable-xhdpi-v4/ic_reloj_max.png"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/anim_snackbar_show_animation.xml.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/anim/snackbar_show_animation.xml"
+    },
+    {
+        "merged": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/res/merged/androidTest/debug/drawable-mdpi-v4_sprite_check.png.flat",
+        "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/drawable-mdpi-v4/sprite_check.png"
+    }
+]

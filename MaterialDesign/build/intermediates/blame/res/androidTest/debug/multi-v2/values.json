@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/incremental/mergeDebugAndroidTestResources/merged.dir/values/values.xml",
+            "map": [
+                {
+                    "source": "/Users/neufan/Project/differentiation-android/MaterialDesign/build/intermediates/packaged_res/debug/values/values.xml",
+                    "from": {
+                        "startLines": "2,3,4,36",
+                        "startColumns": "4,4,4,4",
+                        "startOffsets": "55,95,142,1841",
+                        "endLines": "2,3,35,36",
+                        "endColumns": "39,46,24,51",
+                        "endOffsets": "90,137,1836,1888"
+                    }
+                }
+            ]
+        }
+    ]
+}

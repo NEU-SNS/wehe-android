@@ -1,0 +1,38 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="pref_multiple_tests"
+        android:summary="@string/pref_summary_multiple_tests"
+        android:title="@string/pref_title_multiple_tests" />
+    <SwitchPreference
+        android:defaultValue="true"
+        android:disableDependentsState="true"
+        android:key="pref_switch"
+        android:summary="@string/pref_summary_default"
+        android:title="@string/pref_title_default" />
+    <EditTextPreference
+        android:defaultValue="wehe2.meddle.mobi"
+        android:dependency="pref_switch"
+        android:dialogMessage="@string/pref_summary_server"
+        android:inputType="textNoSuggestions"
+        android:key="pref_server"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_server" />
+    <EditTextPreference
+        android:defaultValue="10"
+        android:dependency="pref_switch"
+        android:dialogMessage="@string/pref_summary_threshold_area"
+        android:inputType="number"
+        android:key="pref_threshold_area"
+        android:singleLine="false"
+        android:title="@string/pref_title_threshold_area" />
+    <EditTextPreference
+        android:defaultValue="5"
+        android:dependency="pref_switch"
+        android:dialogMessage="@string/pref_summary_threshold_ks2p"
+        android:inputType="number"
+        android:key="pref_threshold_ks2p"
+        android:title="@string/pref_title_threshold_ks2p" />
+</PreferenceScreen>

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="author">Developed by Researchers from:</string>
+    <string name="app_name">Wehe</string>
+    <string name="dashboard_page_title">Dashboard</string>
+    <string name="settings_page_title">Settings</string>
+    <string name="results_page_title">Results</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_history">Result History</string>
+    <string name="action_help">Help</string>
+    <string name="main_page_title">Select Applications</string>
+    <string name="next_button">Next</string>
+    <string name="selected">Selected</string>
+    <string name="back_button">Back</string>
+    <string name="replay_page_title">Running Tests</string>
+    <string name="replay">CLICK HERE TO PROCEED</string>
+    <string name="title_activity_replay">Loading…</string>
+    <string name="title_activity_crash">Crash Activity</string>
+    <string name="image_name">App image</string>
+    <string name="Viber">Viber</string>
+    <string name="Youtube">Youtube</string>
+    <string name="Youtube_random">Youtube (random)</string>
+    <string name="YoutubeHTTPS">Youtube HTTPS</string>
+    <string name="YoutubeHTTPS_random">Youtube HTTPS (random)</string>
+    <string name="Amazon">Amazon</string>
+    <string name="Amazon_random">Amazon (random)</string>
+    <string name="NBCSports">NBC Sports</string>
+    <string name="NBCSports_random">NBC Sports (random)</string>
+    <string name="Netflix">Netflix</string>
+    <string name="Neflix_random">Netflix (random)</string>
+    <string name="NetflixSep22">Netflix22</string>
+    <string name="NetflixSep22_random">Netflix22 (random)</string>
+    <string name="Netflix36M">Netflix 36M</string>
+    <string name="Netflix36M_random">Netflix 36M (random)</string>
+    <string name="NetflixImg">Netflix Image</string>
+    <string name="NetflixImg_random">Netflix Image (random)</string>
+    <string name="Skype">Skype</string>
+    <string name="Skype_random">Skype (random)</string>
+    <string name="Spotify">Spotify</string>
+    <string name="Spotify_random">Spotify (random)</string>
+    <string name="Vimeo">Vimeo</string>
+    <string name="Vimeo_random">Vimeo (random)</string>
+    <string name="status_error">Error completing the replay</string>
+    <string name="pending">Waiting to start</string>
+    <string name="dashboard_url">https://dd.meddle.mobi/globalStats.html</string>
+    <string name="start_replay">Starting the replay</string>
+    <string name="processing">Processing trace</string>
+    <string name="vpn">Trying to connect to VPN</string>
+    <string name="disconnect_vpn">Disconnecting VPN</string>
+    <string name="random">Starting random replay</string>
+    <string name="load_q">Loading the data to send</string>
+    <string name="color_green">#228B22</string>
+    <string name="color_red">#B22222</string>
+    <string name="color_yellow">#FFAE00</string>
+    <string name="color_blue">#4682B4</string>
+    <string name="create_side_channel">Creating side channel</string>
+    <string name="ask4permission">Asking for permission</string>
+    <string name="receive_server_port_mapping">Receiving server port mapping</string>
+    <string name="receive_sender_count">Receiving UDP information</string>
+    <string name="create_tcp_client">Creating all TCP client sockets</string>
+    <string name="create_udp_client">Creating all UDP client sockets</string>
+    <string name="run_notf">Starting side channel notifier</string>
+    <string name="run_receiver">Starting the Receiver process</string>
+    <string name="run_sender">Running the Sender process</string>
+    <string name="send_done">Notifying server that replay is complete</string>
+    <string name="send_jitter">Sending the jitter statistics</string>
+    <string name="receive_result">Receiving results</string>
+    <string name="finish_open">Finished replay in the clear</string>
+    <string name="finish_random">Finished random replay</string>
+    <string name="crash_toast_text">Sending report for improvement</string>
+    <string name="crash_activity_title">Press back button to exit!</string>
+    <string name="downloading">Downloading File</string>
+    <string name="error">Replay aborted</string>
+    <string name="simple_error">Error</string>
+    <string name="vpn_connect">Trying to connect VPN</string>
+    <string name="vpn_failed">Failed to connect VPN</string>
+    <string name="appResultButton">Results</string>
+    <string name="setting">Settings</string>
+    <string name="log">Log</string>
+    <string name="zero_mbps">0 Mb/s</string>
+    <string name="xputOriginal">%1$s Throughput</string>
+    <string name="xputTest">Non-%1$s Throughput</string>
+    <string name="xputTooltip">Achievable throughput is the throughput this app gets when its
+        traffic is not manipulated</string>
+    <string name="error_page_title">An error occurred</string>
+    <string name="errMsg">Sorry, the app crashed. A crash log will be sent to our server. Sorry for the inconvenience!</string>
+    <string name="timing_label">Enable Inter-packet Timing?</string>
+    <string name="timing_Yes">true</string>
+    <string name="timing_No">false</string>
+    <string name="server_label">Select Server</string>
+    <string name="server_replay">wehe2.meddle.mobi</string>
+    <string name="a_threshold">10</string>
+    <string name="ks2pvalue_threshold">5</string>
+    <string name="server_hint">wehe2.meddle.mobi</string>
+    <string name="area_threshold_hint">10</string>
+    <string name="ks2pvalue_threshold_hint">5</string>
+    <string name="select_iteration">Select Iteration Times</string>
+    <string name="select_metric">Select Which Metric to Use</string>
+    <string name="select_a_threshhold">Select Area Test Threshold Percentage</string>
+    <string name="select_ks2pvalue_threshhold">Select KS2 P Value Test Threshold Percentage</string>
+    <string name="metric_a">Area test</string>
+    <string name="metric_ks2p">KS2 P Value</string>
+    <string name="metric_both">Both</string>
+    <string name="metric_either">Either</string>
+    <string name="select_random">Check me if you also want to run random replay for each application</string>
+    <string name="select_test">Check me for testing purpose</string>
+    <string name="select_confirmation_replay">Run multiple replays to confirm differentiation</string>
+    <string name="default_settings">Use default values for thresholds</string>
+    <string name="force_add_header">Check me to enable special identification header in all networks</string>
+    <string name="replay_finished">Replay of all applications you have chosen is done!</string>
+    <string name="replay_finished_title">Replays Finished!</string>
+    <string name="appSizeLabel">Size:</string>
+    <string name="appTimeLabel">Time:</string>
+    <string name="install_cert_label">Click the button below if you want to reinstall the credential. Please leave the password field empty and click "OK"!</string>
+    <string name="install_cert_button">Reinstall credential</string>
+    <string name="consent_form_title">Consent Form</string>
+    <string name="consent_form"><Data>
+<![CDATA[ We would like to invite you to take part in a research project. The purpose of this research study is to understand how cellular Internet providers give different performance to different network traffic from your smartphone. <br><br>For example, we would like to know if a provider is speeding up YouTube traffic and/or slowing down Netflix. We will use this information to understand how often this occurs, where this occurs and what are the implications. <br><br>We are asking you to participate in this study because you are a smartphone user who has installed our app for detecting traffic differentiation. The decision to participate in this research project is voluntary. You do not have to participate and you can uninstall the app at any time. Even if you begin using the app, you can stop at any time. You must be at least 18 years of age to participate. <br><br>You can run tests from the app as many or as few times as you like. We would like you to run tests on different networks that your mobile device connects to, and at different times of the day. <br><br>The possible risks or discomforts of the study are minimal. When you use the app, we will record the traffic it generates (including timestamps) and use this data to determine whether your Internet service provider (ISP) is interfering with your network traffic in any way. If available, we will collect information about your network, signal strength, operating system, and coarse-grained location (no more precise than a 1km radius of your location). Data concerning the network performance you receive while running tests (including timestamps), as well as information about your network, signal strength, operating system and jurisdiction (e.g., country, state, province) will be anonymized and made publicly available so that others can reproduce our findings. All other data will be shared only with co-investigators, and it will not be annotated with any personally identifiable information. <br><br>There are no direct benefits to you from participating in this study. However, by running the app you may help us learn more about how ISPs interfere with Internet traffic from mobile devices. You will not be paid for your participation in this study. <br><br>Your part of this study is anonymous to the researcher(s). However, because of the nature of Internet traffic, it is possible that participants could be identified by the IP address or other electronic records associated with the response. We will anonymize any IP addresses that could be used to identify you once we have processed the data to detect differentiation. Any reports or publications based on this research will use only group data and will not identify you or any individual as being affiliated with this project. <br><br>If you have any questions about this study, please feel free to e-mail the project team at wehe@ccs.neu.edu, and the person mainly responsible for the research will respond. <br><br>If you have any questions about your rights in this research, you may contact: <br><br><strong>Nan C. Regina</strong>, <br>Director, <br>Human Subject Research Protection, <br>960 Renaissance Park, <br>Northeastern University, <br>Boston, MA 02115. <br><a href="mailto:n.regina@neu.edu">n.regina@neu.edu</a><br><br> If you have any questions regarding electronic privacy, please feel free to contact: <br><br><strong>Mark Nardone</strong>, <br>NU’s Director of Information Security. <br><a href="mailto:privacy@neu.edu">privacy@neu.edu</a> <br><br>You may contact anonymously if you wish. <br><br>This study has been reviewed and approved by the Northeastern University Institutional Review Board (#14-08-16). <br><br><strong>By clicking the \"Agree\" button below you are indicating that you consent to participate in this study. Please print out a copy of this consent form for your records.</strong> ]]>
+</Data></string>
+    <string name="user_agree">Accept</string>
+    <string name="user_disagree">Decline</string>
+    <string name="no_diff">No differentiation</string>
+    <string name="has_diff">Differentiation detected</string>
+    <string name="inconclusive">Results inconclusive, try running the test again</string>
+    <string name="waiting">Waiting for server result</string>
+    <string name="confirmation_replay">Possible differentiation, re-running test to confirm</string>
+    <string name="dashboard_button">View Online Dashboard</string>
+    <string name="consent_button">View Consent Form</string>
+    <string name="history_button">Previous Results</string>
+    <string name="start_button">Run Tests</string>
+    <string name="default_result">No previous result available</string>
+
+    <string name="toast_nonetwork">Network not available, please re-open this app after connecting to network.</string>
+    <string name="toast_replayongoing">Replay is ongoing! Please do not start again.</string>
+    <string name="toast_waiting">Please wait for the server to return results</string>
+    <string name="error_unknown_replay">Replay does not match the replay on the server</string>
+    <string name="error_IP_connected">A client with this IP is already connected</string>
+    <string name="error_low_resources">Server is low on resources, try again later</string>
+    <string name="error_unknown">Unknown server error</string>
+    <string name="error_proxy">A proxy on the network reset the connection. (common with AT&amp;T)</string>
+
+
+    <string name="help_info"><Data><![CDATA[ About traffic manipulation:<br><br>
+        <strong>App throughput:</strong> The throughput the app gets on the network without any modifications.<br>
+        <strong>Achievable throughput:</strong> The throughput obtained when the network cannot tell which app is running]]></Data></string>
+
+    <!-- This is for mobilyzer -->
+    <string name="scheduler_version_name">1.0</string>
+    <string name="scheduler_priority">2</string>
+    <string name="title_activity_entrance">Wehe</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+
+    <string name="about_text">Have you ever wondered if your Internet service provider is slowing down certain apps relative to others? Unfortunately, your mobile device and carriers currently give you little or no way to tell if this is the case. With Wehe, we give you a way to test if this is happening to the Internet traffic generated by popular apps.\n\nWehe is brought to you by researchers at Northeastern University and UMass Amherst. By running Wehe tests, you contribute to a global database of tests that help us understand where and how net neutrality is violated. We use this data to promote a free and open Internet. You can see a summary of this data by clicking on the View Online Dashboard option in the menu.</string>
+    <string name="functionality_text">Wehe uses your device to exchange Internet traffic recorded from real, popular apps like YouTube and Spotify---effectively making it look as if you are using those apps. As a result, if an Internet service provider (ISP) tries to slow down an YouTube, Wehe would see the same behavior. We then send the same app\'s Internet traffic, but replacing the content with randomized bytes, which prevents the ISPs from classifying the traffic as belonging to the app. Our hypothesis is that the randomized traffic will not cause an ISP to conduct application-specific differentiation (e.g., throttling or blocking), but the original traffic will. We repeat these tests several times to rule out noise from bad network conditions, and tell you at the end whether your ISP is giving different performance to an app\'s network traffic.</string>
+
+    <string name="pref_title_default">Use defaults</string>
+    <string name="pref_summary_default">Use Default Values for Settings</string>
+    <string name="pref_description_default">Use defaul values for server and thresholds</string>
+    <string name="pref_title_server">Change Server</string>
+    <string name="pref_summary_server">Example: com.example.com</string>
+    <string name="pref_title_multiple_tests">Run multiple tests to confirm differentiation</string>
+    <string name="pref_summary_multiple_tests">To precisely confirm differentiation</string>
+    <string name="pref_title_threshold_area">Threshold percentage for area test</string>
+    <string name="pref_summary_threshold_area">Threshold percentage for area test</string>
+    <string name="pref_title_threshold_ks2p">Threshold percentage for KS2 P value test</string>
+    <string name="pref_summary_threshold_ks2p">Threshold percentage for KS2 P value test</string>
+
+    <string name="run_tests">Run Tests</string>
+
+    <string name="app_throughput">App Throughput</string>
+    <string name="nonapp_throughput">Non-App Throughput</string>
+    <string name="selected_apps">Selected Apps</string>
+
+    <string name="nav_about">Why Wehe</string>
+    <string name="nav_run">Run Tests</string>
+    <string name="nav_results">Previous Results</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_functionality">How it works</string>
+    <string name="nav_stats">View Online Dashboard</string>
+    <string name="nav_header">Wehe</string>
+    <string name="accept">Accept</string>
+    <string name="decline">Decline</string>
+    <string name="wifiWarning">If you are trying to run tests for %s turn off WiFi and restart the app</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+    <string name="dialog_permission_title">Permission Information</string>
+    <string name="permission_explaination">Location is used for mapping differentiation results to countries but is not required for the tests.</string>
+    <string name="network_error">Network Error</string>
+    <string name="text_network_error">No Internet connection available. Try After connecting to Internet.</string>
+    <string name="interrupt_ongoing_replay_title">Replay is ongoing!</string>
+    <string name="interrupt_ongoing_replay_text">Do you want to stop the process?</string>
+    <string name="unavailable_replay_server">Analysis server unavailable</string>
+    <string name="error_result">Error getting results</string>
+    <string name="error_analyzer_server">Analyzer server error</string>
+    <string name="select_at_least_one">Please select at least one application</string>
+    <string name="today">Today, %s</string>
+    <string name="throughput">%4.1f Mbps</string>
+    <string name="info_dpi_rules">Click here to analyse which rules trigger the differentiation</string>
+    <string name="dpi_page_title">DPI Analysis</string>
+    <string name="start_test">Start Test</string>
+    <string name="wait_replay_ongoing">Please wait until all the ongoing replays are over</string>
+    <string name="server_unavailable">Sorry, our server is currently not running. Please try another time.</string>
+    <string name="dpi_analysis_finished_title">DPI Analysis Finished!</string>
+    <string name="bitrate_info_title">Bitrate Information</string>
+    <string name="bitrate_info_text">360p: 0.4–1.0 Mbps\n480p: 0.5–2.0 Mbps\n720p: 1.5–4.0 Mbps\n1080p: 3.0–6.0 Mbps</string>
+    <string name="test_results">Test Results</string>
+</resources>

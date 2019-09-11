@@ -1,0 +1,124 @@
+{
+  "apps": [
+    {
+      "name": "YouTube",
+      "datafile": "Youtube_12122018.pcap_client_all.json",
+      "size": 16,
+      "time": 8,
+      "randomdatafile": "YoutubeRandom_12122018.pcap_client_all.json",
+      "randomsize": 16,
+      "randomtime": 18,
+      "image": "youtube"
+    },
+    {
+      "name": "Prime Video",
+      "datafile": "Amazon_01042019.pcap_client_all.json",
+      "size": 13,
+      "time": 28,
+      "randomdatafile": "AmazonRandom_01042019.pcap_client_all.json",
+      "randomsize": 13,
+      "randomtime": 28,
+      "image": "amazon"
+    },
+    {
+      "name": "NBC Sports",
+      "datafile": "NBCSports_01042019.pcap_client_all.json",
+      "size": 19,
+      "time": 24,
+      "randomdatafile": "NBCSportsRandom_01042019.pcap_client_all.json",
+      "randomsize": 19,
+      "randomtime": 24,
+      "image": "nbcsports"
+    },
+    {
+      "name": "Netflix",
+      "datafile": "Netflix_12122018.pcap_client_all.json",
+      "size": 15,
+      "time": 30,
+      "randomdatafile": "NetflixRandom_12122018.pcap_client_all.json",
+      "randomsize": 15,
+      "randomtime": 30,
+      "image": "netflix"
+    },
+    {
+      "name": "Skype",
+      "datafile": "Skype_12122018.pcap_client_all.json",
+      "size": 14,
+      "time": 40,
+      "randomdatafile": "SkypeRandom_12122018.pcap_client_all.json",
+      "randomsize": 14,
+      "randomtime": 40,
+      "image": "skype"
+    },
+    {
+      "name": "Spotify",
+      "datafile": "Spotify_01042019.pcap_client_all.json",
+      "size": 8,
+      "time": 15,
+      "randomdatafile": "SpotifyRandom_01042019.pcap_client_all.json",
+      "randomsize": 8,
+      "randomtime": 15,
+      "image": "spotify"
+    },
+    {
+      "name": "Vimeo",
+      "datafile": "Vimeo_12122018.pcap_client_all.json",
+      "size": 18,
+      "time": 15,
+      "randomdatafile": "VimeoRandom_12122018.pcap_client_all.json",
+      "randomsize": 18,
+      "randomtime": 15,
+      "image": "vimeo"
+    },
+	{
+      "name": "Apple Music",
+      "datafile": "AppleMusic_04112019.pcap_client_all.json",
+      "size": 6,
+      "time": 2,
+      "randomdatafile": "AppleMusicRandom_04112019.pcap_client_all.json",
+      "randomsize": 6,
+      "randomtime": 2,
+      "image": "applemusic"
+    },
+	{
+      "name": "Facebook Video",
+      "datafile": "FacebookVideo_04112019.pcap_client_all.json",
+      "size": 14,
+      "time": 23,
+      "randomdatafile": "FacebookVideoRandom_04112019.pcap_client_all.json",
+      "randomsize": 14,
+      "randomtime": 23,
+      "image": "facebookvideo"
+    },
+	{
+      "name": "Hulu",
+      "datafile": "Hulu_04112019.pcap_client_all.json",
+      "size": 14,
+      "time": 16,
+      "randomdatafile": "HuluRandom_04112019.pcap_client_all.json",
+      "randomsize": 14,
+      "randomtime": 16,
+      "image": "hulu"
+    },
+	{
+      "name": "Twitch",
+      "datafile": "Twitch_04112019.pcap_client_all.json",
+      "size": 13,
+      "time": 14,
+      "randomdatafile": "TwitchRandom_04112019.pcap_client_all.json",
+      "randomsize": 13,
+      "randomtime": 14,
+      "image": "twitch"
+    },
+	{
+      "name": "WhatsApp",
+      "datafile": "WhatsApp_04112019.pcap_client_all.json",
+      "size": 7,
+      "time": 29,
+      "randomdatafile": "WhatsAppRandom_04112019.pcap_client_all.json",
+      "randomsize": 7,
+      "randomtime": 29,
+      "image": "whatsapp"
+    }
+  ]
+}

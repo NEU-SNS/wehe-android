@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res"/><source path="/Users/neufan/Project/differentiation-android/MaterialDesign/build/generated/res/rs/release"/><source path="/Users/neufan/Project/differentiation-android/MaterialDesign/build/generated/res/resValues/release"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main" generated-set="main$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res"><file name="dialog_root_hide_amin" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/anim/dialog_root_hide_amin.xml" qualifiers="" type="anim"/><file name="progress_indeterminate_animation" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/anim/progress_indeterminate_animation.xml" qualifiers="" type="anim"/><file name="snackbar_show_animation" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/anim/snackbar_show_animation.xml" qualifiers="" type="anim"/><file name="dialog_root_show_amin" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/anim/dialog_root_show_amin.xml" qualifiers="" type="anim"/><file name="snackbar_hide_animation" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/anim/snackbar_hide_animation.xml" qualifiers="" type="anim"/><file name="dialog_main_hide_amination" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/anim/dialog_main_hide_amination.xml" qualifiers="" type="anim"/><file name="dialog_main_show_amination" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/anim/dialog_main_show_amination.xml" qualifiers="" type="anim"/><file name="background_checkbox" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable/background_checkbox.xml" qualifiers="" type="drawable"/><file name="shadow_down" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable/shadow_down.xml" qualifiers="" type="drawable"/><file name="background_checkbox_uncheck" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable/background_checkbox_uncheck.xml" qualifiers="" type="drawable"/><file name="background_transparent" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable/background_transparent.xml" qualifiers="" type="drawable"/><file name="background_button_rectangle" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable/background_button_rectangle.xml" qualifiers="" type="drawable"/><file name="background_button_float" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable/background_button_float.xml" qualifiers="" type="drawable"/><file name="background_button" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable/background_button.9.png" qualifiers="" type="drawable"/><file name="shadow_right" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable/shadow_right.xml" qualifiers="" type="drawable"/><file name="background_progress" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable/background_progress.xml" qualifiers="" type="drawable"/><file name="background_switch_ball_uncheck" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable/background_switch_ball_uncheck.xml" qualifiers="" type="drawable"/><file name="background_checkbox_check" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable/background_checkbox_check.xml" qualifiers="" type="drawable"/><file name="progress_dialog" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/layout/progress_dialog.xml" qualifiers="" type="layout"/><file name="color_selector" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/layout/color_selector.xml" qualifiers="" type="layout"/><file name="dialog" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/layout/dialog.xml" qualifiers="" type="layout"/><file name="snackbar" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/layout/snackbar.xml" qualifiers="" type="layout"/><file name="number_indicator_spinner" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/layout/number_indicator_spinner.xml" qualifiers="" type="layout"/><file path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/values/colors.xml" qualifiers=""><color name="green">#00FF00</color><color name="thumbColor">#66aaaaaa</color></file><file path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/values/attributes.xml" qualifiers=""><declare-styleable name="CustomAttributes">
+
+        
+        <attr format="color|reference" name="rippleColor"/>
+        
+        <attr format="float" name="rippleSpeed"/>
+        
+        <attr format="boolean" name="showNumberIndicator"/>
+        
+        <attr format="integer" name="max"/>
+        
+        <attr format="integer" name="min"/>
+        
+        <attr format="integer" name="value"/>
+        
+        <attr format="integer" name="progress"/>
+        <attr format="dimension" name="ringWidth"/>
+        
+        <attr format="boolean" name="check"/>
+        <attr format="dimension" name="checkBoxSize"/>
+        <attr format="dimension" name="thumbSize"/>
+        
+        <attr format="integer" name="iconDrawable"/>
+        
+        <attr format="dimension" name="iconSize"/>
+        
+        <attr format="boolean" name="animate"/>
+        
+        <attr format="float" name="rippleBorderRadius"/>
+        
+        <attr format="boolean" name="clickAfterRipple"/>
+    </declare-styleable></file><file path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/values/strings.xml" qualifiers=""><string name="app_name">MaterialDesign</string></file><file name="float_button1_shadowp" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable-xhdpi/float_button1_shadowp.png" qualifiers="xhdpi-v4" type="drawable"/><file name="dialog_background" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable-xhdpi/dialog_background.9.png" qualifiers="xhdpi-v4" type="drawable"/><file name="ic_reloj_max" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable-xhdpi/ic_reloj_max.png" qualifiers="xhdpi-v4" type="drawable"/><file name="sprite_check" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable-xhdpi/sprite_check.png" qualifiers="xhdpi-v4" type="drawable"/><file name="float_button_shadow1" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable-xhdpi/float_button_shadow1.png" qualifiers="xhdpi-v4" type="drawable"/><file name="sprite_check" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable-xxhdpi/sprite_check.png" qualifiers="xxhdpi-v4" type="drawable"/><file name="sprite_check" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable-hdpi/sprite_check.png" qualifiers="hdpi-v4" type="drawable"/><file name="sprite_check" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable-ldpi/sprite_check.png" qualifiers="ldpi-v4" type="drawable"/><file name="sprite_check" path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/main/res/drawable-mdpi/sprite_check.png" qualifiers="mdpi-v4" type="drawable"/></source><source path="/Users/neufan/Project/differentiation-android/MaterialDesign/build/generated/res/rs/release"/><source path="/Users/neufan/Project/differentiation-android/MaterialDesign/build/generated/res/resValues/release"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="release$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/release/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="release" generated-set="release$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/neufan/Project/differentiation-android/MaterialDesign/src/release/res"/></dataSet><mergedItems><configuration qualifiers=""><declare-styleable name="CustomAttributes">
+
+        
+        <attr format="color|reference" name="rippleColor"/>
+        
+        <attr format="float" name="rippleSpeed"/>
+        
+        <attr format="boolean" name="showNumberIndicator"/>
+        
+        <attr format="integer" name="max"/>
+        
+        <attr format="integer" name="min"/>
+        
+        <attr format="integer" name="value"/>
+        
+        <attr format="integer" name="progress"/>
+        <attr format="dimension" name="ringWidth"/>
+        
+        <attr format="boolean" name="check"/>
+        <attr format="dimension" name="checkBoxSize"/>
+        <attr format="dimension" name="thumbSize"/>
+        
+        <attr format="integer" name="iconDrawable"/>
+        
+        <attr format="dimension" name="iconSize"/>
+        
+        <attr format="boolean" name="animate"/>
+        
+        <attr format="float" name="rippleBorderRadius"/>
+        
+        <attr format="boolean" name="clickAfterRipple"/>
+    </declare-styleable></configuration></mergedItems></merger>
