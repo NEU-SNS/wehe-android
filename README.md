@@ -1,5 +1,7 @@
 # About the Application
 
+This software is licensed under the Apache License (see LICENSE.txt).
+
 This app helps user run a simple test on their Android devices to find out if their ISP is throttling internet for some app or not. Please refer https://dd.meddle.mobi/td_details.html fpr detailed understanding of the test.
 
 # Documentation of the API
