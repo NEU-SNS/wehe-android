@@ -1,34 +1,43 @@
 package mobi.meddle.wehe.fragment;
 
 import android.os.Bundle;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.material.navigation.NavigationView;
+
+import mobi.meddle.wehe.BuildConfig;
 import mobi.meddle.wehe.R;
 
+/**
+ * Why Wehe item in navigation bar (menu.drawer_view.xml)
+ * XML layout: fragment_about.xml
+ */
 public class AboutFragment extends Fragment {
-
     public static final String TAG = "AboutFragment";
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        NavigationView navigationView = getActivity().findViewById(R.id.nav_view);
-        Menu menu = navigationView.getMenu();
-        MenuItem menuItem = menu.findItem(R.id.nav_about);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup parent,
+                             Bundle savedInstanceState) {
+        NavigationView navigationView = requireActivity().findViewById(R.id.nav_view);
+        MenuItem menuItem = navigationView.getMenu().findItem(R.id.nav_about);
         if (!menuItem.isChecked()) {
             menuItem.setChecked(true);
         }
-        getActivity().setTitle(menuItem.getTitle());
+        requireActivity().setTitle(menuItem.getTitle());
         return inflater.inflate(R.layout.fragment_about, parent, false);
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        //set version number
+        TextView about = requireActivity().findViewById(R.id.aboutView);
+        about.setText(String.format(getString(R.string.about_text), BuildConfig.VERSION_NAME));
     }
 }

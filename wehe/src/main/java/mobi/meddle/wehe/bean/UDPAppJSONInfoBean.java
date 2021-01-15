@@ -5,14 +5,14 @@ import java.util.HashMap;
 
 public class UDPAppJSONInfoBean {
 
-    private ArrayList<RequestSet> Q = null;
-    private HashMap<String, ArrayList<Integer>> csPairs = null;
-    private String replayName = null;
-    private ApplicationBean appBean = null;
+    private ArrayList<RequestSet> Q;
+    private HashMap<String, ArrayList<Integer>> csPairs;
+    private String replayName;
+    private ApplicationBean appBean;
 
     public UDPAppJSONInfoBean() {
-        Q = new ArrayList<RequestSet>();
-        csPairs = new HashMap<String, ArrayList<Integer>>();
+        Q = new ArrayList<>();
+        csPairs = new HashMap<>();
         replayName = null;
         appBean = new ApplicationBean();
     }
@@ -48,6 +48,5 @@ public class UDPAppJSONInfoBean {
     public void setAppBean(ApplicationBean appBean) {
         this.appBean = appBean;
     }
-
 
 }

@@ -1,9 +1,11 @@
 package mobi.meddle.wehe.util;
 
-import java.io.IOException;
+//import java.io.IOException;
+
+import androidx.annotation.NonNull;
 
 public class UtilsManager {
-    /**
+    /*
      * Serialize/Deserialize objects
      *
      * @param obj
@@ -23,11 +25,13 @@ public class UtilsManager {
 		ObjectInputStream o = new ObjectInputStream(b);
 		return o.readObject();
 	}*/
+
     public static long getUnsignedInt(int x) {
         return x & 0x00000000ffffffffL;
     }
 
-    public static byte[] hexStringToByteArray(String s) {
+    @NonNull
+    public static byte[] hexStringToByteArray(@NonNull String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {

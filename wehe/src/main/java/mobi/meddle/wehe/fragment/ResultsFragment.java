@@ -2,14 +2,9 @@ package mobi.meddle.wehe.fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,51 +13,45 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.material.navigation.NavigationView;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.Objects;
 
 import mobi.meddle.wehe.R;
 import mobi.meddle.wehe.activity.ReplayActivity;
 
+/**
+ * Fragment to show the results page.
+ * Previous Results item in navigation bar (menu.drawer_view.xml)
+ * XML layout: fragment_results.xml
+ * results_item.xml goes in resultsListView in fragment_results.xml
+ */
 public class ResultsFragment extends Fragment {
 
     public static final String TAG = "ResultsFragment";
-    SharedPreferences history;
-    String finalResult;
-    JSONObject resultsWithDate, response;
-    Iterator<String> iter;
-    String currentDate, replayName, status, replayDate, appName;
-    JSONArray responses;
-    Double xputOriginal, xputTest;
-
-    ArrayList<Result> results;
-    Result current;
-
-    ListView resultsList;
-
-    String has_diff, no_diff, red, green, yellow;
-
-    SimpleDateFormat stringToDateFormat, dateToStringFormat, dateToTimeStringFormat;
+    private ArrayList<Result> results;
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        NavigationView navigationView = Objects.requireNonNull(getActivity()).findViewById(R.id.nav_view);
-        Menu menu = navigationView.getMenu();
-        MenuItem menuItem = menu.findItem(R.id.nav_results);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup parent,
+                             Bundle savedInstanceState) {
+        NavigationView navigationView = requireActivity().findViewById(R.id.nav_view);
+        MenuItem menuItem = navigationView.getMenu().findItem(R.id.nav_results);
         if (!menuItem.isChecked()) {
             menuItem.setChecked(true);
         }
-        getActivity().setTitle(menuItem.getTitle());
+        requireActivity().setTitle(menuItem.getTitle());
         return inflater.inflate(R.layout.fragment_results, parent, false);
     }
 
@@ -70,135 +59,170 @@ public class ResultsFragment extends Fragment {
     // Any view setup should occur here.  E.g., view lookups and attaching view listeners.
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        history = Objects.requireNonNull(this.getActivity()).getSharedPreferences(ReplayActivity.STATUS,
-                Context.MODE_PRIVATE);
-        stringToDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss", Locale.getDefault());
-        dateToStringFormat = new SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault());
-        dateToTimeStringFormat = new SimpleDateFormat("hh:mm a", Locale.getDefault());
-        has_diff = getString(R.string.has_diff);
-        no_diff = getString(R.string.no_diff);
-        red = getString(R.string.color_red);
-        green = getString(R.string.color_green);
-        yellow = getString(R.string.color_yellow);
+        SharedPreferences history = this.requireActivity().getSharedPreferences(
+                ReplayActivity.STATUS, Context.MODE_PRIVATE);
         try {
-            resultsWithDate = new JSONObject(history.getString(
-                    "lastResult", "{}"));
-            finalResult = "";
+            //load results from disk into results ArrayList
+            JSONObject resultsWithDate = new JSONObject(history.getString("lastResult", "{}"));
             results = new ArrayList<>();
             if (resultsWithDate.length() > 0) {
-                iter = resultsWithDate.keys();
+                Iterator<String> iter = resultsWithDate.keys();
                 while (iter.hasNext()) {
-                    currentDate = iter.next();
-                    responses = resultsWithDate.getJSONArray(currentDate);
+                    String currentDate = iter.next();
+                    JSONArray responses = resultsWithDate.getJSONArray(currentDate);
                     for (int i = 0; i < responses.length(); i++) {
-                        response = responses.getJSONObject(i);
-                        current = new Result();
-                        replayName = response.getString("replayName").split("-")[0];
-                        replayDate = response.getString("date");
-                        xputOriginal = response.getDouble("xput_avg_original");
-                        xputTest = response.getDouble("xput_avg_test");
-                        status = response.getString("status");
-                        appName = response.getString("appName");
+                        JSONObject response = responses.getJSONObject(i);
+                        boolean isPortTests = response.getBoolean("isPort");
+                        Result current = new Result();
 
-                        current.appName = appName;
-                        current.resultNameText = appName;
-                        current.differentiationText = status;
-                        try {
-                            Date formattedDate = stringToDateFormat.parse(replayDate);
-                            if (DateUtils.isToday(formattedDate.getTime())) {
-                                current.dateText = String.format(Locale.getDefault(), getString(R.string.today), dateToTimeStringFormat.format(formattedDate));
-                            } else {
-                                current.dateText = dateToStringFormat.format(formattedDate);
-                            }
-                        } catch (ParseException e) {
-                            e.printStackTrace();
+                        current.isPortTest = isPortTests;
+                        current.resultNameText = response.getString("appName");
+                        current.appImage = response.getString("appImage");
+                        current.differentiationText = response.getString("status");
+                        Date date = new Date(Long.parseLong(response.getString("date")));
+                        if (DateUtils.isToday(date.getTime())) {
+                            DateFormat df = DateFormat.getTimeInstance(DateFormat.SHORT,
+                                    Locale.getDefault());
+                            current.dateText = String.format(getString(R.string.today),
+                                    df.format(date));
+                        } else {
+                            DateFormat df = DateFormat.getDateTimeInstance(
+                                    DateFormat.LONG, DateFormat.SHORT, Locale.getDefault());
+                            current.dateText = df.format(date);
                         }
-                        current.appThroughput = xputTest;
-                        current.nonappThroughput = xputOriginal;
+
+                        current.appThroughput = response.getDouble("xput_avg_original");
+                        current.nonAppThroughput = response.getDouble("xput_avg_test");
+                        current.ipType = response.getBoolean("isIPv6") ? "IPv6" : "IPv4";
+                        current.server = response.getString("server");
+                        current.carrier = response.getString("carrier");
+
                         results.add(current);
                     }
                 }
 
             }
             Collections.reverse(results);
-        } catch (JSONException e1) {
-            e1.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
 
-        ArrayAdapter<Result> resultsAdapter = new ArrayAdapter<Result>(this.getActivity(), 0, results) {
+        //load results onto screen
+        ArrayAdapter<Result> resultsAdapter = new ArrayAdapter<Result>(this.requireActivity(),
+                0, results) {
             @NonNull
             @Override
             public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-
                 Result current = results.get(position);
 
                 // Inflate only once
                 if (convertView == null) {
-                    convertView = Objects.requireNonNull(getActivity()).getLayoutInflater()
-                            .inflate(R.layout.results_item, parent, false);
                     ViewHolder viewHolder = new ViewHolder();
-                    viewHolder.resultNameText =
-                            convertView.findViewById(R.id.resultNameText);
-                    viewHolder.differentiationText =
-                            convertView.findViewById(R.id.differentiationText);
-                    viewHolder.dateText =
-                            convertView.findViewById(R.id.dateText);
-                    viewHolder.appThroughput =
-                            convertView.findViewById(R.id.appThroughput);
-                    viewHolder.nonappThroughput =
-                            convertView.findViewById(R.id.nonappThroughput);
-                    viewHolder.appImageView = convertView.findViewById(R.id.appImageView);
+                    viewHolder.isPortTest = current.isPortTest;
+                    convertView = requireActivity().getLayoutInflater()
+                            .inflate(R.layout.results_item, parent, false);
 
+                    viewHolder.resultNameText = convertView.findViewById(R.id.resultNameText);
+                    viewHolder.dateText = convertView.findViewById(R.id.dateText);
+                    viewHolder.differentiationText = convertView.findViewById(R.id.differentiationText);
+                    viewHolder.appThroughput = convertView.findViewById(R.id.appThroughput);
+                    viewHolder.nonAppThroughput = convertView.findViewById(R.id.nonappThroughput);
+                    viewHolder.appImageView = convertView.findViewById(R.id.appImageView);
+                    viewHolder.ipType = convertView.findViewById(R.id.ipTypeValue);
+                    viewHolder.server = convertView.findViewById(R.id.serverValue);
+                    viewHolder.carrier = convertView.findViewById(R.id.carrierValue);
                     convertView.setTag(viewHolder);
                 }
 
+                TextView appLabel = convertView.findViewById(R.id.appThroughputNameText);
+                TextView nonAppLabel = convertView.findViewById(R.id.nonappThroughputNameText);
+                if (current.isPortTest) {
+                    appLabel.setText(String.format(getString(R.string.port_throughput),
+                            current.resultNameText.split(" ")[1]));
+                    nonAppLabel.setText(String.format(getString(R.string.port_throughput), "443"));
+                } else {
+                    appLabel.setText(getString(R.string.app_throughput));
+                    nonAppLabel.setText(getString(R.string.nonapp_throughput));
+                }
                 TextView resultNameText = ((ViewHolder) convertView.getTag()).resultNameText;
-                TextView differentiationText = ((ViewHolder) convertView.getTag()).differentiationText;
                 TextView dateText = ((ViewHolder) convertView.getTag()).dateText;
+                TextView ipTypeText = ((ViewHolder) convertView.getTag()).ipType;
+                TextView carrierText = ((ViewHolder) convertView.getTag()).carrier;
+                TextView serverText = ((ViewHolder) convertView.getTag()).server;
+
+                dateText.setText(current.dateText);
+                ipTypeText.setText(current.ipType);
+                serverText.setText(current.server);
+                carrierText.setText(current.carrier);
+
+                TextView differentiationText = ((ViewHolder) convertView.getTag()).differentiationText;
                 TextView appThroughput = ((ViewHolder) convertView.getTag()).appThroughput;
-                TextView nonappThroughput = ((ViewHolder) convertView.getTag()).nonappThroughput;
+                TextView nonAppThroughput = ((ViewHolder) convertView.getTag()).nonAppThroughput;
                 ImageView appImageView = ((ViewHolder) convertView.getTag()).appImageView;
 
-                int appImageDrawableId = getResources().getIdentifier(current.appName.toLowerCase(), "drawable",
-                        Objects.requireNonNull(getActivity()).getPackageName());
+                int appImageDrawableId = getResources().getIdentifier(current.appImage, "drawable",
+                        requireActivity().getPackageName());
                 appImageView.setImageDrawable(getResources().getDrawable(appImageDrawableId));
                 resultNameText.setText(current.resultNameText);
-                differentiationText.setText(current.differentiationText);
-                if (current.differentiationText.equals(has_diff)) {
-                    differentiationText.setTextColor(Color.parseColor(red));
-                } else if (current.differentiationText.equals(no_diff)) {
-                    differentiationText.setTextColor(Color.parseColor(green));
-                } else {
-                    differentiationText.setTextColor(Color.parseColor(yellow));
+                switch (current.differentiationText) {
+                    case "has diff":
+                        differentiationText.setText(getString(R.string.has_diff));
+                        differentiationText.setTextColor(getResources().getColor(R.color.red));
+                        break;
+                    case "no diff":
+                        differentiationText.setText(getString(R.string.no_diff));
+                        differentiationText.setTextColor(getResources().getColor(R.color.forestGreen));
+                        break;
+                    case "inconclusive":
+                        differentiationText.setText(getString(R.string.inconclusive).split(",")[0]);
+                        differentiationText.setTextColor(getResources().getColor(R.color.orange2));
+                        break;
+                    default:
+                        differentiationText.setText(current.differentiationText);
+                        differentiationText.setTextColor(getResources().getColor(R.color.orange2));
+                        break;
                 }
-                dateText.setText(current.dateText);
-                appThroughput.setText(String.format(Locale.getDefault(), getString(R.string.throughput), current.appThroughput));
-                nonappThroughput.setText(String.format(Locale.getDefault(), getString(R.string.throughput), current.nonappThroughput));
-
+                appThroughput.setText(String.format(Locale.getDefault(),
+                        getString(R.string.throughput), current.appThroughput));
+                nonAppThroughput.setText(String.format(Locale.getDefault(),
+                        getString(R.string.throughput), current.nonAppThroughput));
                 return convertView;
             }
         };
 
-        resultsList = view.findViewById(R.id.resultsListView);
+        ListView resultsList = view.findViewById(R.id.resultsListView);
         resultsList.setAdapter(resultsAdapter);
     }
 
-    static class ViewHolder {
-
-        ImageView appImageView;
+    /**
+     * The view that the user sees for each app/port result.
+     */
+    private static class ViewHolder {
+        boolean isPortTest;
         TextView resultNameText;
-        TextView differentiationText;
+        ImageView appImageView;
         TextView dateText;
+        TextView differentiationText;
         TextView appThroughput;
-        TextView nonappThroughput;
+        TextView nonAppThroughput;
+        TextView ipType;
+        TextView server;
+        TextView carrier;
     }
 
-    static class Result {
-        String appName;
+    /**
+     * The information for each app/port result.
+     */
+    private static class Result {
+        boolean isPortTest;
         String resultNameText;
-        String differentiationText;
+        String appImage;
         String dateText;
+        String differentiationText;
         Double appThroughput;
-        Double nonappThroughput;
+        Double nonAppThroughput;
+        String ipType;
+        String server;
+        String carrier;
     }
 }

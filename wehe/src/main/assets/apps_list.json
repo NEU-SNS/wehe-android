@@ -1,124 +1,423 @@
 {
   "apps": [
     {
-      "name": "YouTube",
-      "datafile": "Youtube_12122018.pcap_client_all.json",
-      "size": 16,
-      "time": 8,
-      "randomdatafile": "YoutubeRandom_12122018.pcap_client_all.json",
-      "randomsize": 16,
-      "randomtime": 18,
-      "image": "youtube"
+      "name": "Apple Music",
+      "size": 6,
+      "time": 2,
+      "image": "applemusic",
+      "datafile": "AppleMusic_04112019.pcap_client_all.json",
+      "randomdatafile": "AppleMusicRandom_04112019.pcap_client_all.json",
+      "category": "MUSIC"
     },
     {
-      "name": "Prime Video",
-      "datafile": "Amazon_01042019.pcap_client_all.json",
-      "size": 13,
-      "time": 28,
-      "randomdatafile": "AmazonRandom_01042019.pcap_client_all.json",
-      "randomsize": 13,
-      "randomtime": 28,
-      "image": "amazon"
+      "name": "Dailymotion",
+      "size": 14,
+      "time": 3,
+      "image": "dailymotion",
+      "datafile": "Dailymotion_09012019.pcap_client_all.json",
+      "randomdatafile": "DailymotionRandom_09012019.pcap_client_all.json",
+      "frenchOnly": true,
+      "category": "VIDEO"
+    },
+    {
+      "name": "Deezer",
+      "size": 7,
+      "time": 1,
+      "image": "deezer",
+      "datafile": "Deezer_09012019.pcap_client_all.json",
+      "randomdatafile": "DeezerRandom_09012019.pcap_client_all.json",
+      "frenchOnly": true,
+      "category": "MUSIC"
+    },
+    {
+      "name": "Disney+",
+      "size": 16,
+      "time": 4,
+      "image": "disneyplus",
+      "datafile": "DisneyPlus_05082020.pcap_client_all.json",
+      "randomdatafile": "DisneyPlusRandom_05082020.pcap_client_all.json",
+      "category": "VIDEO"
+    },
+    {
+      "name": "Facebook Video",
+      "size": 14,
+      "time": 23,
+      "image": "facebookvideo",
+      "datafile": "FacebookVideo_04112019.pcap_client_all.json",
+      "randomdatafile": "FacebookVideoRandom_04112019.pcap_client_all.json",
+      "category": "VIDEO"
+    },
+    {
+      "name": "Google Meet",
+      "size": 7,
+      "time": 57,
+      "image": "meet",
+      "datafile": "GoogleMeet_04282020.pcap_client_all.json",
+      "randomdatafile": "GoogleMeetRandom_04282020.pcap_client_all.json",
+      "category": "CONFERENCING"
+    },
+    {
+      "name": "Hulu",
+      "size": 14,
+      "time": 16,
+      "image": "hulu",
+      "datafile": "Hulu_04112019.pcap_client_all.json",
+      "randomdatafile": "HuluRandom_04112019.pcap_client_all.json",
+      "englishOnly": true,
+      "category": "VIDEO"
+    },
+    {
+      "name": "Microsoft Teams",
+      "size": 10,
+      "time": 51,
+      "image": "teams",
+      "datafile": "MicrosoftTeam_04282020.pcap_client_all.json",
+      "randomdatafile": "MicrosoftTeamRandom_04282020.pcap_client_all.json",
+      "category": "CONFERENCING"
     },
     {
       "name": "NBC Sports",
-      "datafile": "NBCSports_01042019.pcap_client_all.json",
       "size": 19,
       "time": 24,
+      "image": "nbcsports",
+      "datafile": "NBCSports_01042019.pcap_client_all.json",
       "randomdatafile": "NBCSportsRandom_01042019.pcap_client_all.json",
-      "randomsize": 19,
-      "randomtime": 24,
-      "image": "nbcsports"
+      "englishOnly": true,
+      "category": "VIDEO"
     },
     {
       "name": "Netflix",
-      "datafile": "Netflix_12122018.pcap_client_all.json",
       "size": 15,
       "time": 30,
+      "image": "netflix",
+      "datafile": "Netflix_12122018.pcap_client_all.json",
       "randomdatafile": "NetflixRandom_12122018.pcap_client_all.json",
-      "randomsize": 15,
-      "randomtime": 30,
-      "image": "netflix"
+      "category": "VIDEO"
+    },
+    {
+      "name": "Molotov TV",
+      "size": 13,
+      "time": 2,
+      "image": "molotovtv",
+      "datafile": "Molotovtv_08012019.pcap_client_all.json",
+      "randomdatafile": "MolotovtvRandom_08012019.pcap_client_all.json",
+      "frenchOnly": true,
+      "category": "VIDEO"
+    },
+    {
+      "name": "myCANAL",
+      "size": 11,
+      "time": 2,
+      "image": "mycanal",
+      "datafile": "Mycanal_10012019.pcap_client_all.json",
+      "randomdatafile": "MycanalRandom_10012019.pcap_client_all.json",
+      "frenchOnly": true,
+      "category": "VIDEO"
+    },
+    {
+      "name": "OCS",
+      "size": 13,
+      "time": 22,
+      "image": "ocs",
+      "datafile": "OCS_08012019.pcap_client_all.json",
+      "randomdatafile": "OCSRandom_08012019.pcap_client_all.json",
+      "frenchOnly": true,
+      "category": "VIDEO"
+    },
+    {
+      "name": "Prime Video",
+      "size": 14,
+      "time": 7,
+      "image": "amazon",
+      "datafile": "Amazon_11252020.pcap_client_all.json",
+      "randomdatafile": "AmazonRandom_11252020.pcap_client_all.json",
+      "category": "VIDEO"
+    },
+    {
+      "name": "Salto",
+      "size": 12,
+      "time": 16,
+      "image": "salto",
+      "datafile": "Salto_11252020.pcap_client_all.json",
+      "randomdatafile": "SaltoRandom_11252020.pcap_client_all.json",
+      "frenchOnly": true,
+      "category": "VIDEO"
+    },
+    {
+      "name": "SFR Play",
+      "size": 14,
+      "time": 30,
+      "image": "sfrplay",
+      "datafile": "Sfrplay_08012019.pcap_client_all.json",
+      "randomdatafile": "SfrplayRandom_08012019.pcap_client_all.json",
+      "frenchOnly": true,
+      "category": "VIDEO"
     },
     {
       "name": "Skype",
-      "datafile": "Skype_12122018.pcap_client_all.json",
       "size": 14,
       "time": 40,
+      "image": "skype",
+      "datafile": "Skype_12122018.pcap_client_all.json",
       "randomdatafile": "SkypeRandom_12122018.pcap_client_all.json",
-      "randomsize": 14,
-      "randomtime": 40,
-      "image": "skype"
+      "category": "CONFERENCING"
     },
     {
       "name": "Spotify",
-      "datafile": "Spotify_01042019.pcap_client_all.json",
       "size": 8,
       "time": 15,
+      "image": "spotify",
+      "datafile": "Spotify_01042019.pcap_client_all.json",
       "randomdatafile": "SpotifyRandom_01042019.pcap_client_all.json",
-      "randomsize": 8,
-      "randomtime": 15,
-      "image": "spotify"
+      "category": "MUSIC"
+    },
+    {
+      "name": "Twitch",
+      "size": 13,
+      "time": 14,
+      "image": "twitch",
+      "datafile": "Twitch_04112019.pcap_client_all.json",
+      "randomdatafile": "TwitchRandom_04112019.pcap_client_all.json",
+      "category": "VIDEO"
     },
     {
       "name": "Vimeo",
-      "datafile": "Vimeo_12122018.pcap_client_all.json",
       "size": 18,
       "time": 15,
+      "image": "vimeo",
+      "datafile": "Vimeo_12122018.pcap_client_all.json",
       "randomdatafile": "VimeoRandom_12122018.pcap_client_all.json",
-      "randomsize": 18,
-      "randomtime": 15,
-      "image": "vimeo"
+      "category": "VIDEO"
     },
-	{
-      "name": "Apple Music",
-      "datafile": "AppleMusic_04112019.pcap_client_all.json",
-      "size": 6,
-      "time": 2,
-      "randomdatafile": "AppleMusicRandom_04112019.pcap_client_all.json",
-      "randomsize": 6,
-      "randomtime": 2,
-      "image": "applemusic"
+    {
+      "name": "Webex",
+      "size": 5,
+      "time": 66,
+      "image": "webex",
+      "datafile": "Webex_04282020.pcap_client_all.json",
+      "randomdatafile": "WebexRandom_04282020.pcap_client_all.json",
+      "category": "CONFERENCING"
     },
-	{
-      "name": "Facebook Video",
-      "datafile": "FacebookVideo_04112019.pcap_client_all.json",
-      "size": 14,
-      "time": 23,
-      "randomdatafile": "FacebookVideoRandom_04112019.pcap_client_all.json",
-      "randomsize": 14,
-      "randomtime": 23,
-      "image": "facebookvideo"
-    },
-	{
-      "name": "Hulu",
-      "datafile": "Hulu_04112019.pcap_client_all.json",
-      "size": 14,
-      "time": 16,
-      "randomdatafile": "HuluRandom_04112019.pcap_client_all.json",
-      "randomsize": 14,
-      "randomtime": 16,
-      "image": "hulu"
-    },
-	{
-      "name": "Twitch",
-      "datafile": "Twitch_04112019.pcap_client_all.json",
-      "size": 13,
-      "time": 14,
-      "randomdatafile": "TwitchRandom_04112019.pcap_client_all.json",
-      "randomsize": 13,
-      "randomtime": 14,
-      "image": "twitch"
-    },
-	{
+    {
       "name": "WhatsApp",
-      "datafile": "WhatsApp_04112019.pcap_client_all.json",
       "size": 7,
       "time": 29,
+      "image": "whatsapp",
+      "datafile": "WhatsApp_04112019.pcap_client_all.json",
       "randomdatafile": "WhatsAppRandom_04112019.pcap_client_all.json",
-      "randomsize": 7,
-      "randomtime": 29,
-      "image": "whatsapp"
+      "category": "CONFERENCING"
+    },
+    {
+      "name": "YouTube",
+      "size": 16,
+      "time": 8,
+      "image": "youtube",
+      "datafile": "Youtube_12122018.pcap_client_all.json",
+      "randomdatafile": "YoutubeRandom_12122018.pcap_client_all.json",
+      "category": "VIDEO"
+    },
+    {
+      "name": "Zoom",
+      "size": 15,
+      "time": 61,
+      "image": "zoom",
+      "datafile": "Zoom_04282020.pcap_client_all.json",
+      "randomdatafile": "ZoomRandom_04282020.pcap_client_all.json",
+      "category": "CONFERENCING"
+    },
+    {
+      "name": "80 HTTP",
+      "size": 10,
+      "time": 2,
+      "image": "port80",
+      "datafile": "port_80.pcap_client_all.json",
+      "category": "SMALL_PORT"
+    },
+    {
+      "name": "81 HTTP",
+      "size": 10,
+      "time": 2,
+      "image": "port81",
+      "datafile": "port_81.pcap_client_all.json",
+      "category": "SMALL_PORT"
+    },
+    {
+      "name": "465 SMTPS",
+      "size": 10,
+      "time": 2,
+      "image": "port465",
+      "datafile": "port_465.pcap_client_all.json",
+      "category": "SMALL_PORT"
+    },
+    {
+      "name": "853 DoT",
+      "size": 10,
+      "time": 2,
+      "image": "port853",
+      "datafile": "port_853.pcap_client_all.json",
+      "category": "SMALL_PORT"
+    },
+    {
+      "name": "993 IMAPS",
+      "size": 10,
+      "time": 2,
+      "image": "port993",
+      "datafile": "port_993.pcap_client_all.json",
+      "category": "SMALL_PORT"
+    },
+    {
+      "name": "995 POP3S",
+      "size": 10,
+      "time": 2,
+      "image": "port995",
+      "datafile": "port_995.pcap_client_all.json",
+      "category": "SMALL_PORT"
+    },
+    {
+      "name": "1194 OpenVPN",
+      "size": 10,
+      "time": 2,
+      "image": "port1194",
+      "datafile": "port_1194.pcap_client_all.json",
+      "category": "SMALL_PORT"
+    },
+    {
+      "name": "1701 L2TP",
+      "size": 10,
+      "time": 2,
+      "image": "port1701",
+      "datafile": "port_1701.pcap_client_all.json",
+      "category": "SMALL_PORT"
+    },
+    {
+      "name": "5061 SIPS",
+      "size": 10,
+      "time": 2,
+      "image": "port5061",
+      "datafile": "port_5061.pcap_client_all.json",
+      "category": "SMALL_PORT"
+    },
+    {
+      "name": "6881 BitTorrent",
+      "size": 10,
+      "time": 2,
+      "image": "port6881",
+      "datafile": "port_6881.pcap_client_all.json",
+      "category": "SMALL_PORT"
+    },
+    {
+      "name": "8080 SpeedTest",
+      "size": 10,
+      "time": 2,
+      "image": "port8080",
+      "datafile": "port_8080.pcap_client_all.json",
+      "category": "SMALL_PORT"
+    },
+    {
+      "name": "8443 SpeedTest",
+      "size": 10,
+      "time": 2,
+      "image": "port8443",
+      "datafile": "port_8443.pcap_client_all.json",
+      "category": "SMALL_PORT"
+    },
+    {
+      "name": "80 HTTP",
+      "size": 50,
+      "time": 10,
+      "image": "port80",
+      "datafile": "port_80_large.pcap_client_all.json",
+      "category": "LARGE_PORT"
+    },
+    {
+      "name": "81 HTTP",
+      "size": 50,
+      "time": 10,
+      "image": "port81",
+      "datafile": "port_81_large.pcap_client_all.json",
+      "category": "LARGE_PORT"
+    },
+    {
+      "name": "465 SMTPS",
+      "size": 50,
+      "time": 10,
+      "image": "port465",
+      "datafile": "port_465_large.pcap_client_all.json",
+      "category": "LARGE_PORT"
+    },
+    {
+      "name": "853 DoT",
+      "size": 50,
+      "time": 10,
+      "image": "port853",
+      "datafile": "port_853_large.pcap_client_all.json",
+      "category": "LARGE_PORT"
+    },
+    {
+      "name": "993 IMAPS",
+      "size": 50,
+      "time": 10,
+      "image": "port993",
+      "datafile": "port_993_large.pcap_client_all.json",
+      "category": "LARGE_PORT"
+    },
+    {
+      "name": "995 POP3S",
+      "size": 50,
+      "time": 10,
+      "image": "port995",
+      "datafile": "port_995_large.pcap_client_all.json",
+      "category": "LARGE_PORT"
+    },
+    {
+      "name": "1194 OpenVPN",
+      "size": 50,
+      "time": 10,
+      "image": "port1194",
+      "datafile": "port_1194_large.pcap_client_all.json",
+      "category": "LARGE_PORT"
+    },
+    {
+      "name": "1701 L2TP",
+      "size": 50,
+      "time": 10,
+      "image": "port1701",
+      "datafile": "port_1701_large.pcap_client_all.json",
+      "category": "LARGE_PORT"
+    },
+    {
+      "name": "5061 SIPS",
+      "size": 50,
+      "time": 10,
+      "image": "port5061",
+      "datafile": "port_5061_large.pcap_client_all.json",
+      "category": "LARGE_PORT"
+    },
+    {
+      "name": "6881 BitTorrent",
+      "size": 50,
+      "time": 10,
+      "image": "port6881",
+      "datafile": "port_6881_large.pcap_client_all.json",
+      "category": "LARGE_PORT"
+    },
+    {
+      "name": "8080 SpeedTest",
+      "size": 50,
+      "time": 10,
+      "image": "port8080",
+      "datafile": "port_8080_large.pcap_client_all.json",
+      "category": "LARGE_PORT"
+    },
+    {
+      "name": "8443 SpeedTest",
+      "size": 50,
+      "time": 10,
+      "image": "port8443",
+      "datafile": "port_8443_large.pcap_client_all.json",
+      "category": "LARGE_PORT"
     }
-  ]
+  ],
+  "port443small": "port_443.pcap_client_all.json",
+  "port443large": "port_443_large.pcap_client_all.json"
 }

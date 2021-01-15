@@ -2,42 +2,42 @@ package mobi.meddle.wehe.fragment;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.material.navigation.NavigationView;
+
 import mobi.meddle.wehe.R;
 
+/**
+ * View Online Dashboard item in navigation bar (menu.drawer_view.xml)
+ * XML layout: fragment_dashboard.xml
+ */
 public class DashboardFragment extends Fragment {
-
     public static final String TAG = "DashboardFragment";
-    WebView dashboardView;
-    View view;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        NavigationView navigationView = getActivity().findViewById(R.id.nav_view);
-        Menu menu = navigationView.getMenu();
-        MenuItem menuItem = menu.findItem(R.id.nav_dashboard);
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup parent,
+                             Bundle savedInstanceState) {
+        NavigationView navigationView = requireActivity().findViewById(R.id.nav_view);
+        MenuItem menuItem = navigationView.getMenu().findItem(R.id.nav_dashboard);
         if (!menuItem.isChecked()) {
             menuItem.setChecked(true);
         }
-        getActivity().setTitle(menuItem.getTitle());
-        if (view == null) {
-            view = inflater.inflate(R.layout.fragment_dashboard, parent, false);
-        }
-        return view;
+        requireActivity().setTitle(menuItem.getTitle());
+        return inflater.inflate(R.layout.fragment_dashboard, parent, false);
     }
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        dashboardView = view.findViewById(R.id.dashboardView);
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        WebView dashboardView = view.findViewById(R.id.dashboardView);
         dashboardView.getSettings().setJavaScriptEnabled(true);
         dashboardView.getSettings().setDomStorageEnabled(true);
         dashboardView.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
@@ -45,4 +45,3 @@ public class DashboardFragment extends Fragment {
         dashboardView.loadUrl(url);
     }
 }
-

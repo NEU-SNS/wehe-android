@@ -2,25 +2,25 @@ package mobi.meddle.wehe.activity;
 
 import android.Manifest;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.preference.PreferenceManager;
+
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener;
 
 import mobi.meddle.wehe.R;
 import mobi.meddle.wehe.fragment.AboutFragment;
@@ -28,9 +28,14 @@ import mobi.meddle.wehe.fragment.DashboardFragment;
 import mobi.meddle.wehe.fragment.FunctionalityFragment;
 import mobi.meddle.wehe.fragment.ResultsFragment;
 import mobi.meddle.wehe.fragment.SelectionFragment;
+import mobi.meddle.wehe.fragment.SettingsFragment;
 
+/**
+ * Starting point for Wehe.
+ * XML layout: activity_main.xml
+ * test epfl fork
+ */
 public class MainActivity extends AppCompatActivity {
-
     private final int locationRequestCode = 1093;
     private DrawerLayout mDrawer;
     private Toolbar mToolbar;
@@ -38,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle mDrawerToggle;
     private FragmentManager mFragmentManager;
 
+    //user opens the app
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,23 +67,34 @@ public class MainActivity extends AppCompatActivity {
         // If userAgree is false, then Consent dialog should be shown
         if (!userAgreed) {
             consentDialog();
-        } else {
-            if (savedInstanceState == null) {
-                Fragment fragment = new SelectionFragment();
-                // We're adding fragments to the backstack as we navigate otherwise back button will
-                // Land you out of the application
-                // TODO find a better way to navigate using back button currently it keeps
-                //  adding the fragments even though another instance of the same frament might
-                //  exist in the backstack
-                mFragmentManager.beginTransaction().add(fragment, SelectionFragment.TAG).commit();
-                mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment)
-                        .addToBackStack(null)
-                        .commit();
-                setTitle(R.string.nav_run);
-            }
+        } else if (savedInstanceState == null) {
+            goToAppSelection();
         }
     }
 
+    /**
+     * Go to the screen to select apps/ports to test
+     */
+    private void goToAppSelection() {
+        Fragment fragment = new SelectionFragment();
+        // We're adding fragments to the backstack as we navigate otherwise back button will
+        // Land you out of the application
+        // TODO find a better way to navigate using back button currently it keeps
+        //  adding the fragments even though another instance of the same fragment might
+        //  exist in the backstack
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("runPortTest", false);
+        fragment.setArguments(bundle);
+        mFragmentManager.beginTransaction().add(fragment, SelectionFragment.TAG).commit();
+        mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment)
+                .addToBackStack(null)
+                .commit();
+        setTitle(R.string.nav_run);
+    }
+
+    /**
+     * Get user to agree to data collection. If they do not agree, the app exits.
+     */
     private void consentDialog() {
         new AlertDialog.Builder(this)
                 .setTitle(R.string.consent_form_title)
@@ -95,24 +112,20 @@ public class MainActivity extends AppCompatActivity {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             new android.app.AlertDialog.Builder(MainActivity.this)
                                     .setTitle(R.string.dialog_permission_title)
-                                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            MainActivity.this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                                    locationRequestCode
-                                            );
-                                        }
-                                    })
-                                    .setMessage(
-                                            R.string.permission_explaination)
+                                    .setPositiveButton(android.R.string.ok,
+                                            new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    MainActivity.this.requestPermissions(
+                                                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                                            locationRequestCode
+                                                    );
+                                                }
+                                            })
+                                    .setMessage(R.string.permission_explaination)
                                     .show();
                         }
 
-                        Fragment fragment = new SelectionFragment();
-                        mFragmentManager.beginTransaction().add(fragment, SelectionFragment.TAG).commit();
-                        mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment)
-                                .addToBackStack(null)
-                                .commit();
-                        setTitle(R.string.nav_run);
+                        goToAppSelection();
                     }
                 })
                 // OnClick listener for 'Disagree' choice
@@ -132,81 +145,94 @@ public class MainActivity extends AppCompatActivity {
                 Set the dialog content using the HTML resource available in
                 'values/strings.xml'
                  */
-                .setMessage(Html.fromHtml(getString(
-                        R.string.consent_form)))
+                .setMessage(Html.fromHtml(getString(R.string.consent_form)))
                 // Display the dialog
                 .show();
     }
 
-    protected void onCreateDrawer() {
-        mNavigationView.setNavigationItemSelectedListener(
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-                        int id = menuItem.getItemId();
-                        Fragment fragment = null;
+    /**
+     * Main menu.
+     */
+    private void onCreateDrawer() {
+        mNavigationView.setNavigationItemSelectedListener(new OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                int id = menuItem.getItemId();
+                Fragment fragment = null;
 
-                        switch (id) {
-                            case R.id.nav_run:
-                                fragment = mFragmentManager.findFragmentByTag(SelectionFragment.TAG);
-                                if (fragment == null) {
-                                    fragment = new SelectionFragment();
-                                    mFragmentManager.beginTransaction().add(fragment, SelectionFragment.TAG).commit();
-                                }
-                                break;
-                            case R.id.nav_results:
-                                fragment = mFragmentManager.findFragmentByTag(ResultsFragment.TAG);
-                                if (fragment == null) {
-                                    fragment = new ResultsFragment();
-                                    mFragmentManager.beginTransaction().add(fragment, ResultsFragment.TAG).commit();
-                                }
-                                break;
-                            case R.id.nav_about:
-                                fragment = mFragmentManager.findFragmentByTag(AboutFragment.TAG);
-                                if (fragment == null) {
-                                    fragment = new AboutFragment();
-                                    mFragmentManager.beginTransaction().add(fragment, AboutFragment.TAG).commit();
-                                }
-                                break;
-                            case R.id.nav_functionality:
-                                fragment = mFragmentManager.findFragmentByTag(FunctionalityFragment.TAG);
-                                if (fragment == null) {
-                                    fragment = new FunctionalityFragment();
-                                    mFragmentManager.beginTransaction().add(fragment, FunctionalityFragment.TAG).commit();
-                                }
-                                break;
-                            case R.id.nav_dashboard:
-                                fragment = mFragmentManager.findFragmentByTag(DashboardFragment.TAG);
-                                if (fragment == null) {
-                                    fragment = new DashboardFragment();
-                                    mFragmentManager.beginTransaction().add(fragment, DashboardFragment.TAG).commit();
-                                }
-                                break;
+                switch (id) {
+                    case R.id.nav_run:
+                    case R.id.nav_run_port:
+                        fragment = new SelectionFragment();
+                        Bundle bundle = new Bundle();
+                        boolean isPortTest = id == R.id.nav_run_port;
+                        bundle.putBoolean("runPortTest", isPortTest);
+                        fragment.setArguments(bundle);
+                        mFragmentManager.beginTransaction()
+                                .add(fragment, SelectionFragment.TAG).commit();
+                        break;
+                    case R.id.nav_results:
+                        fragment = mFragmentManager.findFragmentByTag(ResultsFragment.TAG);
+                        if (fragment == null) {
+                            fragment = new ResultsFragment();
+                            mFragmentManager.beginTransaction()
+                                    .add(fragment, ResultsFragment.TAG).commit();
                         }
+                        break;
+                    case R.id.nav_about:
+                        fragment = mFragmentManager.findFragmentByTag(AboutFragment.TAG);
+                        if (fragment == null) {
+                            fragment = new AboutFragment();
+                            mFragmentManager.beginTransaction()
+                                    .add(fragment, AboutFragment.TAG).commit();
+                        }
+                        break;
+                    case R.id.nav_functionality:
+                        fragment = mFragmentManager.findFragmentByTag(FunctionalityFragment.TAG);
+                        if (fragment == null) {
+                            fragment = new FunctionalityFragment();
+                            mFragmentManager.beginTransaction()
+                                    .add(fragment, FunctionalityFragment.TAG).commit();
+                        }
+                        break;
+                    case R.id.nav_dashboard:
+                        fragment = mFragmentManager.findFragmentByTag(DashboardFragment.TAG);
+                        if (fragment == null) {
+                            fragment = new DashboardFragment();
+                            mFragmentManager.beginTransaction()
+                                    .add(fragment, DashboardFragment.TAG).commit();
+                        }
+                        break;
+                    case R.id.nav_settings:
+                        fragment = mFragmentManager.findFragmentByTag(SettingsFragment.TAG);
+                        if (fragment == null) {
+                            fragment = new SettingsFragment();
+                            mFragmentManager.beginTransaction()
+                                    .add(fragment, SettingsFragment.TAG).commit();
+                        }
+                }
 
-                        // Insert the fragment by replacing any existing fragment
-                        // TODO tested this as mentioned above needs improvement
-                        mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment)
-                                .addToBackStack(null)
-                                .commit();
+                // Insert the fragment by replacing any existing fragment
+                // TODO tested this as mentioned above needs improvement
+                assert fragment != null;
+                mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment)
+                        .addToBackStack(null)
+                        .commit();
 
-                        // Highlight the selected item has been done by NavigationView
-                        menuItem.setChecked(true);
-                        // Set action bar title
-                        setTitle(menuItem.getTitle());
-                        // Close the navigation drawer
-                        // close drawer when item is tapped
-                        mDrawer.closeDrawers();
-                        return false;
-                    }
-                });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, menu);
-        return true;
+                //unhighlight all items so that previous item isn't highlighted
+                for (int i = 0; i < mNavigationView.getMenu().size(); i++) {
+                    mNavigationView.getMenu().getItem(i).setChecked(false);
+                }
+                // Highlight the selected item has been done by NavigationView
+                menuItem.setChecked(true);
+                // Set action bar title
+                setTitle(menuItem.getTitle());
+                // Close the navigation drawer
+                // close drawer when item is tapped
+                mDrawer.closeDrawers();
+                return false;
+            }
+        });
     }
 
     @Override
@@ -217,24 +243,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         // Pass any configuration change to the drawer toggles
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.settings:
-                MainActivity.this.startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
     private ActionBarDrawerToggle setupDrawerToggle() {
-        return new ActionBarDrawerToggle(this, mDrawer, mToolbar, R.string.drawer_open, R.string.drawer_close);
+        return new ActionBarDrawerToggle(this, mDrawer, mToolbar,
+                R.string.drawer_open, R.string.drawer_close);
     }
 }

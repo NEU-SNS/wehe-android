@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
         applicationId "mobi.meddle.wehe"
         minSdkVersion 19
-        targetSdkVersion 28
+        targetSdkVersion 29
         multiDexEnabled false
-        versionCode 16
-        versionName "1.91"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        versionCode 43
+        versionName "3.60"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
@@ -31,15 +31,16 @@ android {
 
 
 dependencies {
-    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     testImplementation 'junit:junit:4.12'
-
-    implementation('com.android.support:appcompat-v7:28.0.0')
-    implementation('com.android.support:cardview-v7:28.0.0')
-    implementation('com.android.support:recyclerview-v7:28.0.0')
-    implementation('com.android.support:design:28.0.0')
-    implementation('com.android.support.constraint:constraint-layout:1.1.2')
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.preference:preference:1.1.1'
+    implementation files('libs/tyrus-standalone-client-1.9.jar') //for WebSocket
 }

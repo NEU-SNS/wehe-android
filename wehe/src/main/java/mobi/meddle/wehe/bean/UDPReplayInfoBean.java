@@ -5,11 +5,14 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+/**
+ * Contains information about a UDP replay.
+ */
 public class UDPReplayInfoBean {
 
-    private ArrayList<DatagramChannel> udpSocketList = new ArrayList<DatagramChannel>();
+    private ArrayList<DatagramChannel> udpSocketList = new ArrayList<>();
     private int senderCount = 0;
-    private Queue<String> closeQ = new LinkedList<String>();
+    private Queue<String> closeQ = new LinkedList<>();
 
     public synchronized Queue<String> getCloseQ() {
         return closeQ;

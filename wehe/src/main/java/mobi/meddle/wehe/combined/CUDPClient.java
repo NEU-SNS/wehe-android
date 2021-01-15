@@ -2,6 +2,8 @@ package mobi.meddle.wehe.combined;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
@@ -12,16 +14,20 @@ import java.nio.channels.Selector;
 
 import mobi.meddle.wehe.bean.ServerInstance;
 
-
-public class CUDPClient /* implements Runnable */ {
-    public DatagramChannel channel = null;
-    public int port = 0;
-    private String publicIP = null;
+/**
+ * A UDP connection for a replay to send UDP packets.
+ */
+public class CUDPClient {
+    DatagramChannel channel = null;
+    private final String publicIP;
     private Selector selector;
-    //private int TIME_OUT = 1000;
 
+    /**
+     * Constructs a UDP connection.
+     *
+     * @param publicIP the user's public IP address
+     */
     public CUDPClient(String publicIP) {
-        super();
         this.publicIP = publicIP;
         try {
             this.selector = Selector.open();
@@ -38,15 +44,12 @@ public class CUDPClient /* implements Runnable */ {
         try {
             byte[] buffer = "".getBytes();
             InetSocketAddress endPoint = new InetSocketAddress(publicIP, 100);
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
-                    endPoint);
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, endPoint);
             channel = DatagramChannel.open();
             channel.socket().send(packet);
             channel.configureBlocking(false);
-            this.port = channel.socket().getLocalPort();
-            Log.d("UDPClient", "port is " + port);
-            // channel.socket().bind(new InetSocketAddress(this.publicIP,
-            // this.port));
+            int port = channel.socket().getLocalPort();
+            Log.d("UDPClient", "public IP is " + publicIP + "; port is " + port);
 
             // register channel to selector
             channel.register(selector, SelectionKey.OP_WRITE);
@@ -55,13 +58,14 @@ public class CUDPClient /* implements Runnable */ {
         }
     }
 
-    void sendUDPPacket(byte[] payload, ServerInstance instance) {
-        // Log.d("sendUDP", "server IP: " + instance.server + " port: " +
-        // instance.port);
-		/*channel.disconnect();
-		channel.connect(new InetSocketAddress(instance.server, Integer
-				.parseInt(instance.port)));*/
-
+    /**
+     * Send a UDP packet to the server.
+     *
+     * @param payload  the payload to send to the server
+     * @param instance the server to send the payload to
+     */
+    void sendUDPPacket(byte[] payload, @NonNull ServerInstance instance) {
+        // Log.d("sendUDP", "server IP: " + instance.server + " port: " + instance.port);
         // only try to send when buffer is available
         // TODO: is it possible for this to block forever?
         //Log.w("UDPClient", "nav_about to wait!");
@@ -75,6 +79,9 @@ public class CUDPClient /* implements Runnable */ {
         }
     }
 
+    /**
+     * Close the connection to the server.
+     */
     public void close() {
         try {
             channel.close();
@@ -82,5 +89,4 @@ public class CUDPClient /* implements Runnable */ {
             e.printStackTrace();
         }
     }
-
 }

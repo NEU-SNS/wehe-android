@@ -24,6 +24,5 @@ public interface ReplayCompleteListener {
      *
      * @param success
      */
-
     void randomFinishCompleteCallback(Boolean success);
 }

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="192dp"
     android:background="?attr/colorPrimary"
@@ -12,7 +13,8 @@
         android:id="@+id/appImageView"
         android:layout_width="@dimen/app_icon"
         android:layout_height="@dimen/app_icon"
-        android:src="@drawable/app_icon" />
+        android:src="@drawable/app_icon"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:layout_width="match_parent"

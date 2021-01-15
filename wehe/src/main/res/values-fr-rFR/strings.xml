@@ -1,9 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="author"> Développé par des chercheurs de:</string>
     <string name="app_name">Wehe</string>
-    <string name="action_settings">Réglages</string>
     <string name="action_history">Historique</string>
     <string name="action_help">Aide</string>
     <string name="main_page_title">Choix des applications</string>
@@ -11,33 +9,12 @@
     <string name="selected">Ciblé</string>
     <string name="back_button">Retour</string>
     <string name="selected_apps">Applications ciblés</string>
+    <string name="ip_type">Protocole IP</string>
     <string name="replay">Cliquez ici pour continuer</string>
-    <string name="title_activity_replay">Chargement...</string>
+    <string name="title_activity_replay">Chargement…</string>
     <string name="title_activity_crash">Rapport des crashs</string>
     <string name="image_name">App image</string>
     <string name="Viber">Viber</string>
-    <string name="Youtube">Youtube</string>
-    <string name="Youtube_random">Youtube (random)</string>
-    <string name="YoutubeHTTPS">Youtube HTTPS</string>
-    <string name="YoutubeHTTPS_random">Youtube HTTPS (random)</string>
-    <string name="Amazon">Amazon Video</string>
-    <string name="Amazon_random">Amazon Video (random)</string>
-    <string name="NBCSports">NBC Sports</string>
-    <string name="NBCSports_random">NBC Sports (random)</string>
-    <string name="Netflix">Netflix</string>
-    <string name="Neflix_random">Netflix (random)</string>
-    <string name="NetflixSep22">Netflix22</string>
-    <string name="NetflixSep22_random">Netflix22 (random)</string>
-    <string name="Netflix36M">Netflix 36M</string>
-    <string name="Netflix36M_random">Netflix 36M (random)</string>
-    <string name="NetflixImg">Netflix Image</string>
-    <string name="NetflixImg_random">Netflix Image (random)</string>
-    <string name="Skype">Skype</string>
-    <string name="Skype_random">Skype (random)</string>
-    <string name="Spotify">Spotify</string>
-    <string name="Spotify_random">Spotify (random)</string>
-    <string name="Vimeo">Vimeo</string>
-    <string name="Vimeo_random">Vimeo (random)</string>
     <string name="status_error">Erreur lors du replay</string>
     <string name="pending">En attente</string>
     <string name="start_replay">Lancement du replay</string>
@@ -46,10 +23,6 @@
     <string name="disconnect_vpn">Déconnexion du VPN</string>
     <string name="random">Début du replay aléatoire</string>
     <string name="load_q">Chargement des données à envoyer</string>
-    <string name="color_green">#228B22</string>
-    <string name="color_red">#B22222</string>
-    <string name="color_yellow">#FFAE00</string>
-    <string name="color_blue">#4682B4</string>
     <string name="create_side_channel">Création d\'un canal auxiliaire</string>
     <string name="ask4permission">Demande de permission</string>
     <string name="receive_server_port_mapping">Réception des ports du sevreur</string>
@@ -62,32 +35,24 @@
     <string name="send_done">Notification au serveur que le replay est terminé</string>
     <string name="send_jitter">Envoi des statistiques de gigue</string>
     <string name="receive_result">Réception des résultats</string>
-    <string name="finish_open">Fin du replay original</string>
-    <string name="finish_random">Fin du replay aléatoire</string>
     <string name="crash_toast_text">SEnvoi du rapport pour améliorations</string>
     <string name="crash_activity_title">Appuyer sur retour pour quitter cette page</string>
     <string name="downloading">Téléchargement du fichier</string>
-    <string name="error">Replay annulé</string>
+    <string name="replay_aborted">Replay annulé</string>
     <string name="vpn_connect">Tentative de connexion au VPN</string>
     <string name="vpn_failed">Echec de la connexion au VPN</string>
     <string name="appResultButton">Résultats</string>
     <string name="setting">Réglages</string>
     <string name="log">Log</string>
-    <string name="zero_mbps">0 Mb/s</string>
     <string name="xputOriginal">Débit %1$s</string>
     <string name="xputTest">Débit Non-%1$s</string>
     <string name="xputTooltip">Le débit Non-app est celui qui est obtenu lorsque le réseau ne connait pas l\'app utilisée.</string>
-    <string name="errMsg">Désolé, l\'app a rencontré un problème inconnu jusqu\'ici. Nous envoyons un log de crash à notre serveur et nous tenterons de régler ce problème au plus viteSorry, the app ran into an error we haven’t see before. A crash log will be sent to our server and we will work to fix it in a future version. Désolé du désagrément !</string>
+    <string name="errMsg">Désolé, l\'app a rencontré un problème inconnu jusqu\'ici. Nous envoyons un log de crash à notre serveur et nous tenterons de régler ce problème au plus vite. Désolé du désagrément !</string>
     <string name="timing_label">Activer la synchronisation inter-paquets?</string>
     <string name="timing_Yes">Vrai</string>
     <string name="timing_No">Faux</string>
     <string name="server_label">Choix du serveur</string>
-    <string name="server_replay">wehe2.meddle.mobi</string>
-    <string name="a_threshold">10</string>
-    <string name="ks2pvalue_threshold">5</string>
-    <string name="server_hint">wehe2.meddle.mobi</string>
-    <string name="area_threshold_hint">10</string>
-    <string name="ks2pvalue_threshold_hint">5</string>
+    <string name="cust_server">Choix du serveur</string>
     <string name="select_iteration">Sélectionnez un nombre de tests</string>
     <string name="select_metric">Sélectionnez la métrique à utiliser</string>
     <string name="select_a_threshhold">Sélectionnez un seuil en pourcentage pour le test en différence d\'aire</string>
@@ -101,25 +66,45 @@
     <string name="select_confirmation_replay">Faire des tests avec plusieurs replays pour confirmer la différence</string>
     <string name="default_settings">Utiliser les valeurs par défault pour les seuils</string>
     <string name="force_add_header">Activer l\'en-tête d\'identification spécial dans tous les réseaux</string>
-    <string name="replay_finished">Tous les test sont terminés.</string>
-    <string name="appSizeLabel">Taille:</string>
-    <string name="appTimeLabel">Durée:</string>
+    <string name="replay_size">Taille : 2 x %d Mo</string>
+    <string name="replay_time">Durée : %d secondes</string>
     <string name="install_cert_label">Cliquez si vous voulez réinstaller les crédits. Ne remplissez pas le champ mot de passe et appuyez sur "OK"!</string>
     <string name="install_cert_button">réinstaller les crédits</string>
     <string name="consent_form_title">Formulaire de consentement</string>
-    <string name="consent_form"><Data>
-<![CDATA[ En utilisant cette application, vous contribuez à un projet de recherche. Cette participation est volontaire et peut être arrêtée à tout moment. Elle n\’octroie pas de de bénéfice financier. Il est nécessaire d\’avoir au moins 18 ans pour pouvoir prendre part au projet.
-Les informations qui sont recueillies pendant les tests sont anonymisées, puis agrégées afin d\’adopter une approche statistique du traitement du trafic. Les données sont conservées pendant la durée nécessaire à l\’édification des résultats du projet de recherche. Lorsque vous utilisez l\'application, Wehe analyse le trafic que vous générez pour déterminer si votre fournisseur d\'accès à Internet interfère en bridant ou priorisant certains flux. Si elles sont disponibles, des informations relatives au  réseau, à la puissance du signal, au système d\'exploitation, à l\’horodatage des tests ainsi qu\’à votre géolocalisation si vous avez accepté de la partager  (la précision des données de localisation stockées sont supérieure à un rayon de 1 km autour de votre localisation exacte) seront collectées. Ces données sont à disposition des chercheurs de la Northeastern University et des agents de l\’Unité Internet Ouvert de l\’Arcep (Autorité de Régulation des Communications électroniques et des Postes) afin de mieux comprendre les pratiques des fournisseurs d\'accès à Internet sur les différents contenus de votre smartphone et d\’alerter sur d\’éventuels manquements au Règlement (UE) 2015/2120 relatif à l\’Internet Ouvert. Ces données retraitées ont également vocation à être publiées en open data afin que tout tiers puisse reproduire les conclusions présentées. Cette étude de recherche a été examinée et approuvée par le Conseil d\'examen institutionnel de la Northeasterm University le 14 août 2016.
-Pour toute question concernant la nature et le traitement des données collectées, n\'hésitez pas à contacter Mark Nardone, Directeur de la sécurité de l\'information de la Northeastern University par e-mail à : privacy@neu.edu.
-En acceptant ce formulaire, j\’accepte que la NU recueille et traite les données nécessaires à l\’analyse du trafic testé.]]>
-</Data></string>
+    <string name="consent_form">
+        <![CDATA[En utilisant cette application, vous contribuez à un projet de recherche. Cette
+        participation est volontaire et peut être arrêtée à tout moment. Elle n\'octroie pas de de
+        bénéfice financier. Il est nécessaire d\'avoir au moins 18 ans pour pouvoir prendre part au
+        projet.\n\nLes informations qui sont recueillies pendant les tests sont anonymisées, puis
+        agrégées afin d\'adopter une approche statistique du traitement du trafic. Les données sont
+        conservées pendant la durée nécessaire à l\'édification des résultats du projet de
+        recherche. Lorsque vous utilisez l\'application, Wehe analyse le trafic que vous générez
+        pour déterminer si votre fournisseur d\'accès à Internet interfère en bridant ou priorisant
+        certains flux. Si elles sont disponibles, des informations relatives au  réseau, à la
+        puissance du signal, au système d\'exploitation, à l\'horodatage des tests ainsi qu\'à votre
+        géolocalisation si vous avez accepté de la partager  (la précision des données de
+        localisation stockées sont supérieure à un rayon de 1 km autour de votre localisation
+        exacte) seront collectées. Ces données sont à disposition des chercheurs de la Northeastern
+        University et des agents de l\'Unité Internet Ouvert de l\'Arcep (l\'Autorité de régulation
+        des communications électroniques, des postes et de la distribution de la presse) afin de
+        mieux comprendre les pratiques des fournisseurs d\'accès à Internet sur les différents
+        contenus de votre smartphone et d\'alerter sur d\’éventuels manquements au Règlement (UE)
+        2015/2120 relatif à l\'Internet Ouvert. Ces données retraitées ont également vocation à être
+        publiées en open data afin que tout tiers puisse reproduire les conclusions présentées.
+        Cette étude de recherche a été examinée et approuvée par le Conseil d\'examen institutionnel
+        de la Northeasterm University le 14 août 2016.\n\nPour toute question concernant la nature
+        et le traitement des données collectées, n\'hésitez pas à contacter Mark Nardone, Directeur
+        de la sécurité de l\'information de la Northeastern University par e-mail à :
+        privacy@neu.edu.\n\nEn acceptant ce formulaire, j\'accepte que la NU recueille et traite les
+        données nécessaires à l\'analyse du trafic testé.]]>
+    </string>
     <string name="user_agree">J\'accepte</string>
     <string name="user_disagree">Je refuse</string>
     <string name="no_diff">Pas de différenciation</string>
-    <string name="has_diff">Différence détectée</string>
-    <string name="inconclusive">résultats non concluants, essayez de relancer un test</string>
+    <string name="has_diff">Différenciation détectée</string>
+    <string name="inconclusive">Résultats non concluants, essayez de relancer un test</string>
     <string name="waiting">En attente des résultats du test</string>
-    <string name="confirmation_replay">Différenciation possible, relancer un test pour avoir confirmation</string>
+    <string name="confirmation_replay">Resultats non concluants, le test a été relancé.</string>
     <string name="history_button">Historique des résultats</string>
     <string name="start_button">Commencer</string>
     <string name="default_result">Aucun historique de tests disponible</string>
@@ -127,59 +112,112 @@ En acceptant ce formulaire, j\’accepte que la NU recueille et traite les donn�
     <string name="toast_nonetwork">Réseau non accessible, redémarrer l\'app lorsque vous serez connecté(e) à internet.</string>
     <string name="toast_replayongoing">Replay en cours, s\'il vous plait attendez avant de recommencer</string>
     <string name="toast_waiting">S\'il vous plait, attendez la réponse du serveur</string>
+    <string name="error_no_user_id">Impossible de trouver l\'ID de l\'utilisateur.</string>
     <string name="error_unknown_replay">Le replay ne correspond pas à celui du serveur</string>
     <string name="error_IP_connected">Un autre appareil avec la même adresse Ip est déjà connecté</string>
     <string name="error_low_resources">Le serveur est occupé à exécuter des tests pour d\'autres utilisateurs, veuillez réessayer plus tard</string>
     <string name="error_unknown">Erreur du serveur inconnuer</string>
-    <string name="error_proxy">Un proxy sur le réseau réinitialise la connexion. (commun avec AT&amp;T)</string>
-
+    <string name="error_no_connection">Serveur inacessible, relancer le test ultérieurement.</string>
+    <string name="error_unknown_host">Serveur introuvable. Réssayer plus tard ou choisir un autre serveur de test.</string>
+    <string name="error_unknown_meta_host">Serveur de metadonnées introuvable. Réessayer plus tard.</string>
+    <string name="error_analysis_fail">Impossible d\'analyser la relecture.</string>
+    <string name="error_result">Erreur lors de l\'obtention des résultats</string>
+    <string name="unavailable_replay_server">Serveur d\'analyse indisponible</string>
 
     <string name="help_info"><Data><![CDATA[ A propos de la manipulation du trafic:<br><br>
         <strong>Débit de l\'app:</strong> Le débit la dite app avec votre réseau.<br>
         <strong>Débit non-app:</strong> Le débit obtenu lorsque le réseau ne reconnait pas utilisée.]]></Data></string>
 
-    <!-- This is for mobilyzer -->
-    <string name="scheduler_version_name">1.0</string>
-    <string name="scheduler_priority">2</string>
-    <string name="title_activity_entrance">Wehe</string>
     <string name="dashboard_page_title">Statistiques France</string>
-    <string name="settings_page_title">Réglages</string>
     <string name="results_page_title">Résultats</string>
     <string name="replay_page_title">Tests en cours</string>
     <string name="error_page_title">Une erreur est survenue</string>
     <string name="dashboard_button">Statistiques France</string>
     <string name="consent_button">Conditions générales d\'utilisation</string>
-    <string name="run_tests">Lancer les tests</string>
+    <string name="total_size">Taille totale : %d Mo</string>
+    <string name="video_button">Vidéo</string>
+    <string name="music_button">Musique</string>
+    <string name="conferencing_button">Visio</string>
+    <string name="ten_mb_button">Fichier de 10 Mo</string>
+    <string name="fifty_mb_button">Fichier de 50 Mo</string>
+
     <string name="app_throughput">Débit en clair</string>
     <string name="nonapp_throughput">Débit chiffré</string>
+    <string name="port_throughput">Débit du port %s</string>
+    <string name="server">Serveur</string>
+    <string name="carrier">Opérateur</string>
+    <string name="your_carrier">Votre opérateur</string>
+
     <string name="replay_finished_title">Test terminé</string>
     <string name="pref_summary_threshold_area">Seuil de la différence d\'aire, en % (plus le seuil est faible, plus Wehe sera sensible aux variations de débits)</string>
     <string name="pref_title_threshold_area">Seuil de la différence d\'aire, en %</string>
     <string name="pref_title_threshold_ks2p">Seuil du test KS2 p-value, en %</string>
     <string name="pref_summary_threshold_ks2p">Seuil du test KS2 p-value, en % (plus le seuil est élevé, plus Wehe sera sensible aux variations de débits)</string>
+    <string name="pref_cur_percent">Pourcentage retenu : %s%%</string>
+    <string name="pref_cur_server">Serveur utilisé : %s</string>
     <string name="pref_title_multiple_tests">Tests additionnels</string>
     <string name="pref_title_default">Utiliser les valeurs par défaut</string>
-    <string name="dashboard_url">https://dd.meddle.mobi/StatsFrance.html</string>
+    <string name="dashboard_url">https://wehe.meddle.mobi/StatsFrance.html</string>
     <string name="pref_description_default">Utiliser les valeurs par défaut pour les seuils</string>
     <string name="pref_title_server">Choix du serveur</string>
-    <string name="pref_summary_server">wehe2.meddle.mobi</string>
     <string name="pref_summary_multiple_tests">Lancer des tests additionnels pour confirmer les résultats</string>
     <string name="nav_about">Merci !</string>
-    <string name="nav_run">Lancer les tests</string>
-    <string name="nav_results">Mes résultats</string>
+    <string name="nav_run">Tests de Différenciation</string>
+    <string name="nav_run_port">Tests de Ports</string>
+    <string name="port_name">Port %s</string>
+    <string name="port_test_title">%d Mo Tests de Ports</string>
+    <string name="nav_results">Mes Résultats</string>
     <string name="nav_settings">Réglages</string>
     <string name="nav_functionality">Fonctionnement</string>
     <string name="nav_stats">Statistiques France</string>
     <string name="nav_header">Wehe</string>
+    <string name="run_tests">Lancer les tests</string>
     <string name="accept">Accepter</string>
     <string name="decline">Refuser</string>
     <string name="wifiWarning">Si vous essayez d\'exécuter des tests pour %s, déconnectez-vous du Wi-Fi et redémarrez l\'application</string>
     <string name="pref_header_general">Général</string>
     <string name="pref_summary_default">Utiliser les valeurs par défaut pour les réglages</string>
-    <string name="about_text">En effectuant des tests avec Wehe, vous contribuez à l’identification de potentielles entraves à la neutralité du net. Vous participez au projet de recherche de la Northeastern University piloté par David Choffnes et épaulez l’Arcep (l’Autorité de Régulation des Télécommunications Électroniques et des Postes) dans l’une de ses missions clé. Un résultat individuel indiquant qu’une différenciation a été détectée ne suffit pas à caractériser un manquement au règlement (UE) 2015/2120 relatif à l’Internet Ouvert.  L’application Wehe n’est pas le mécanisme de surveillance agréé par l’autorité règlementaire nationale évoqué à l’article 4.4 dudit règlement.</string>
-    <string name="functionality_text"><![CDATA[Wehe analyse le trafic généré via l\’application pour déterminer si l\’opérateur bride ou priorise certains services (YouTube, Netflix, Spotify etc.). Le test s\’effectue en deux étapes. Wehe simule une utilisation du service afin que l\’opérateur traite le trafic généré comme il traiterait le trafic réel issu de ce service. Puis Wehe rejoue le même trafic en remplaçant le contenu en clair (nom de l\’application et des serveurs utilisés, etc.) par du contenu chiffré, invisible pour l\’opérateur. L\’application compare ensuite les débits mesurés à ces deux étapes, répète à nouveau le test pour éliminer au maximum l\’impact de l\’état conjoncturel du réseau, et indique si une différence de traitement a été constatée.\n\nSi tel est le cas, Wehe offre la possibilité d\’effectuer des tests supplémentaires pour repérer les règles de Deep Packet Inspection (DPI) qui pourraient avoir été mises en place par l\’opérateur afin de détecter les flux à brider ou prioriser. Attention, ces tests consomment un volume de données significatif et peuvent durer plusieurs minutes.\n\n]]>
+    <string name="about_text">
+        En effectuant des tests avec Wehe, vous contribuez à l\'identification de potentielles
+        entraves à la neutralité du net. Vous participez au projet de recherche de la Northeastern
+        University piloté par David Choffnes et épaulez l’Arcep (l\'Autorité de régulation des
+        communications électroniques, des postes et de la distribution de la presse) dans l\'une de
+        ses missions clé. Un résultat individuel indiquant qu’une différenciation a été détectée ne
+        suffit pas à caractériser un manquement au règlement (UE) 2015/2120 relatif à l\'Internet
+        Ouvert. L\'application Wehe n\'est pas le mécanisme de surveillance agréé par l\'autorité
+        règlementaire nationale évoqué à l\'article 4.4 dudit règlement.\n\nVersion: %s\n\n
+    </string>
+    <string name="functionality_text">
+        <b>Test de différenciation</b>
+        <![CDATA[\n\nWehe analyse le trafic généré via l\'application pour déterminer si
+        l\'opérateur bride ou priorise certains services (YouTube, Netflix, Spotify etc.). Le test
+        s\'effectue en deux étapes. Wehe simule une utilisation du service afin que l\'opérateur
+        traite le trafic généré comme il traiterait le trafic réel issu de ce service. Puis Wehe
+        rejoue le même trafic en remplaçant le contenu en clair (nom de l\'application et des
+        serveurs utilisés, etc.) par du contenu chiffré, invisible pour l\'opérateur. L\'application
+        compare ensuite les débits mesurés à ces deux étapes, répète à nouveau le test pour éliminer
+        au maximum l\'impact de l\'état conjoncturel du réseau, et indique si une différence de
+        traitement a été constatée.\n\n]]>
+        <b>Test de ports</b>
+        <![CDATA[\n\nLe test de détection des blocages de ports logiciels permet aux utilisateurs de
+        contrôler 12 ports logiciels fréquemment utilisés. Il est réalisé en comparant le trafic
+        https pour chacun de ces ports par rapport au trafic pour le port 443, utilisé comme port de
+        référence. Le test est proposé avec un fichier de 10 Mo ou de 50 Mo (attention à la
+        consommation de données pour les tests mobiles). En cas de dysfonctionnement, les
+        éventuelles difficultés peuvent être relayées directement via la plateforme « J\'alerte
+        l\'Arcep ».\n\n]]>
         <b>Mentions légales</b>
-        <![CDATA[\n\nPour le fonctionnement de l\’application Wehe, la Northeastern University collecte votre géolocalisation uniquement si vous avez accepté de la partager ainsi que votre adresse IP qui n\’est conservée que tronquée. L\’ensemble de ces informations sont anonymisées dans le but de les publier en open data afin que tout tiers puissent reproduire nos conclusions. Conformément au règlement n°2016/679, dit Règlement général pour la protection des données et à la loi n°78–17 du 6 janvier 1978 modifiée relative à l\'informatique, aux fichiers et aux libertés, vous disposez d\'un droit d\’opposition, d\'accès, de rectification, de suppression, de limitation ou de portabilité portant sur les données vous concernant. Pour toute demande, vous pouvez contacter David Choffnes <choffnes@ccs.neu.edu>;.\n\nDirecteur de la publication : David Choffnes\n\n]]></string>
+        <![CDATA[\n\nPour le fonctionnement de l\'application Wehe, la Northeastern University
+        collecte votre géolocalisation uniquement si vous avez accepté de la partager ainsi que
+        votre adresse IP qui n\'est conservée que tronquée. L\'ensemble de ces informations sont
+        anonymisées dans le but de les publier en open data afin que tout tiers puissent reproduire
+        nos conclusions. Conformément au règlement n°2016/679, dit Règlement général pour la
+        protection des données et à la loi n°78–17 du 6 janvier 1978 modifiée relative à
+        l\'informatique, aux fichiers et aux libertés, vous disposez d\'un droit d\’opposition,
+        d\'accès, de rectification, de suppression, de limitation ou de portabilité portant sur les
+        données vous concernant. Pour toute demande, vous pouvez contacter David Choffnes
+        <choffnes@ccs.neu.edu>;.\n\nDirecteur de la publication : David Choffnes\n\n]]>
+    </string>
     <string name="simple_error">Erreur</string>
     <string name="drawer_open">" Ouvrir le tiroir de navigation"</string>
     <string name="drawer_close">" Fermer le tiroir de navigation"</string>
@@ -187,21 +225,55 @@ En acceptant ce formulaire, j\’accepte que la NU recueille et traite les donn�
     <string name="permission_explaination">La localisation est utilisée pour cartographier les résultats de différenciation aux pays mais n\'est pas requise pour les tests.</string>
     <string name="network_error">"Erreur réseau "</string>
     <string name="text_network_error">Pas de connexion Internet disponible. Essayez après la connexion à Internet.</string>
-    <string name="interrupt_ongoing_replay_title">La relecture est en cours!</string>
+    <string name="interrupt_ongoing_replay_title">La relecture est en cours !</string>
     <string name="interrupt_ongoing_replay_text">Voulez-vous arrêter le processus?</string>
-    <string name="unavailable_replay_server">Serveur d\'analyse indisponible</string>
-    <string name="error_result">Erreur lors de l\'obtention des résultats</string>
-    <string name="error_analyzer_server">Erreur du serveur d\'analyse</string>
     <string name="select_at_least_one">Veuillez sélectionner au moins une application.</string>
     <string name="today">Aujourd\'hui, %s</string>
-    <string name="throughput">%4.1f Mbps</string>
+    <string name="throughput">%4.1f Mbit/s</string>
     <string name="info_dpi_rules">Cliquez ici pour analyser quelles règles déclenchent la différenciation</string>
     <string name="start_test">Lancer le test</string>
-    <string name="wait_replay_ongoing">Veuillez patienter jusqu\'à ce que tous les replays en cours soient terminés</string>
     <string name="server_unavailable">Désolé, notre serveur n\'est pas en cours d\'exécution. S\'il vous plaît essayez une autre fois.</string>
     <string name="dpi_page_title">Analyse DPI</string>
-    <string name="dpi_analysis_finished_title">DPI Analysis Terminé!</string>
-    <string name="bitrate_info_title">Informations sur le débit</string>
-    <string name="bitrate_info_text">360p: 0.4–1.0 Mbps\n480p: 0.5–2.0 Mbps\n720p: 1.5–4.0 Mbps\n1080p: 3.0–6.0 Mbps</string>
+    <string name="dpi_analysis_finished_title">DPI Analysis Terminé !</string>
+    <string name="test_blocked_app_text">
+        Le test semble avoir été bloqué. Si ce blocage était avéré, il pourrait provenir du réseau
+        de votre opérateur ou de tout autre élément de la chaîne d\'acheminement du trafic.
+    </string>
+    <string name="test_blocked_port_text">
+        Le trafic https sur ce port pourrait être bloqué. Si ce blocage était avéré, il pourrait
+        provenir du réseau de votre opérateur ou de tout autre élément de la chaîne d\'acheminement
+        du trafic.
+    </string>
+    <string name="test_prioritized_app_text">
+        Le trafic pourrait être priorisé. Si cette priorisation était avérée, elle pourrait provenir
+        du réseau de votre opérateur ou de tout autre élément de la chaîne d\'acheminement du trafic.
+    </string>
+    <string name="test_prioritized_port_text">
+        Le trafic https sur ce port pourrait être priorisé. Si cette priorisation était avérée, elle
+        pourrait provenir du réseau de votre opérateur ou de tout autre élément de la chaîne
+        d\'acheminement du trafic.
+    </string>
+    <string name="test_throttled_app_text">
+        Le trafic pourrait être bridé. Si ce bridage était avéré, il pourrait provenir du réseau de
+        votre opérateur ou de tout autre élément de la chaîne d\'acheminement du trafic.\n\n360p:
+        0.4–1.0 Mbit/s\n480p: 0.5–2.0 Mbit/s\n720p: 1.5–4.0 Mbit/s\n1080p: 3.0–6.0 Mbit/s
+    </string>
+    <string name="test_throttled_port_text">
+        Le trafic https sur ce port pourrait être bridé. Si ce bridage était avéré, il pourrait
+        provenir du réseau de votre opérateur ou de tout autre élément de la chaîne
+        d\'acheminement du trafic.\n\n360p: 0.4–1.0 Mbit/s\n480p: 0.5–2.0 Mbit/s\n720p: 1.5–4.0
+        Mbit/s\n1080p: 3.0–6.0 Mbit/s
+    </string>
+    <string name="not_all_tcp_sent_text">
+        Il semblerait que le test Wehe n\'ait pas abouti. Si ce résultat persiste, il pourrait
+        provenir du réseau de votre opérateur ou de tout autre élément de la chaîne d\'acheminement
+        du trafic.
+    </string>
     <string name="test_results">Résultats de test</string>
+    <string name="rerun">Relancer</string>
+    <string name="rerun_test_title">Relancer les tests ?</string>
+    <string name="rerun_test_descr">Voulez-vous relancer les tests?</string>
+    <string name="rerun_diff_opt">Relancer tous les tests ayant détecté une différenciation</string>
+    <string name="rerun_incon_opt">Relancer tous les tests non concluants</string>
+    <string name="alert_arcep">J\'alerte l\'Arcep !</string>
 </resources>

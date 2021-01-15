@@ -1,5 +1,7 @@
 package mobi.meddle.wehe.util;
 
+import androidx.annotation.NonNull;
+
 /**
  * Class that is used to store details of one server instance
  *
@@ -11,7 +13,6 @@ class Instance {
     private String ssh_key;
 
     Instance(String name, String username, String ssh_key) {
-        super();
         this.name = name;
         this.username = username;
         this.ssh_key = ssh_key;
@@ -41,6 +42,7 @@ class Instance {
         this.ssh_key = ssh_key;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "Instance [name=" + name + ", username=" + username

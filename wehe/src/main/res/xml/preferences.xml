@@ -1,4 +1,6 @@
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:key="pref_screen">
     <SwitchPreference
         android:defaultValue="true"
         android:key="pref_multiple_tests"
@@ -10,29 +12,29 @@
         android:key="pref_switch"
         android:summary="@string/pref_summary_default"
         android:title="@string/pref_title_default" />
+    <ListPreference
+        android:defaultValue="wehe4.meddle.mobi"
+        android:entries="@array/server"
+        android:entryValues="@array/server"
+        android:key="@string/pref_server_key"
+        android:summary="@string/pref_cur_server"
+        android:title="@string/pref_title_server"
+        app:dependency="pref_switch" />
     <EditTextPreference
-        android:defaultValue="wehe2.meddle.mobi"
-        android:dependency="pref_switch"
-        android:dialogMessage="@string/pref_summary_server"
-        android:inputType="textNoSuggestions"
-        android:key="pref_server"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/pref_title_server" />
-    <EditTextPreference
-        android:defaultValue="10"
-        android:dependency="pref_switch"
+        android:defaultValue="50"
+        android:dependency="@string/pref_switch_key"
         android:dialogMessage="@string/pref_summary_threshold_area"
         android:inputType="number"
-        android:key="pref_threshold_area"
+        android:key="@string/pref_area_key"
         android:singleLine="false"
+        android:summary="@string/pref_cur_percent"
         android:title="@string/pref_title_threshold_area" />
     <EditTextPreference
-        android:defaultValue="5"
-        android:dependency="pref_switch"
+        android:defaultValue="1"
+        android:dependency="@string/pref_switch_key"
         android:dialogMessage="@string/pref_summary_threshold_ks2p"
         android:inputType="number"
-        android:key="pref_threshold_ks2p"
+        android:key="@string/pref_ks2p_key"
+        android:summary="@string/pref_cur_percent"
         android:title="@string/pref_title_threshold_ks2p" />
 </PreferenceScreen>

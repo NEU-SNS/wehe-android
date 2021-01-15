@@ -4,14 +4,14 @@ import java.util.ArrayList;
 
 public class TCPAppJSONInfoBean {
 
-    private ArrayList<RequestSet> Q = null;
-    private ArrayList<String> csPairs = null;
-    private String replayName = null;
-    private ApplicationBean appBean = null;
+    private ArrayList<RequestSet> Q;
+    private ArrayList<String> csPairs;
+    private String replayName;
+    private ApplicationBean appBean;
 
     public TCPAppJSONInfoBean() {
-        Q = new ArrayList<RequestSet>();
-        csPairs = new ArrayList<String>();
+        Q = new ArrayList<>();
+        csPairs = new ArrayList<>();
         replayName = null;
         appBean = new ApplicationBean();
     }

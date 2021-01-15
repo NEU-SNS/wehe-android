@@ -1,22 +1,22 @@
 package mobi.meddle.wehe.bean;
 
-
 import java.util.ArrayList;
 
-public class combinedAppJSONInfoBean {
+/**
+ * Contains information about a replay (assets directory). Each replay JSON file contains the below
+ * 4 fields.
+ */
+public class CombinedAppJSONInfoBean {
+    private ArrayList<RequestSet> Q; //list of packets to send
+    private ArrayList<String> udpClientPorts; //list of client ports for UDP
+    private ArrayList<String> tcpCSPs; //list of client-server pairs for TCP
+    private String replayName;
 
-    private ArrayList<RequestSet> Q = null;
-    private ArrayList<String> udpClientPorts = null;
-    private ArrayList<String> tcpCSPs = null;
-    private String replayName = null;
-    private ApplicationBean appBean = null;
-
-    public combinedAppJSONInfoBean() {
+    public CombinedAppJSONInfoBean() {
         Q = new ArrayList<>();
         udpClientPorts = new ArrayList<>();
         tcpCSPs = new ArrayList<>();
         replayName = null;
-        appBean = new ApplicationBean();
     }
 
     public ArrayList<RequestSet> getQ() {
@@ -51,16 +51,7 @@ public class combinedAppJSONInfoBean {
         this.replayName = replayName;
     }
 
-    public ApplicationBean getAppBean() {
-        return appBean;
+    public boolean isTCP() {
+        return !tcpCSPs.isEmpty();
     }
-
-    public void setAppBean(ApplicationBean appBean) {
-        this.appBean = appBean;
-    }
-
-    public boolean isUDP() {
-        return tcpCSPs.isEmpty();
-    }
-
 }

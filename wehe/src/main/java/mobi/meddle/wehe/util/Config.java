@@ -4,8 +4,11 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -13,18 +16,14 @@ import java.util.Properties;
  */
 public class Config {
 
-    static private Properties properties = new Properties();
-
-
-    public Config() {
-    }
+    static private final Properties properties = new Properties();
 
     /**
-     * @param configFile
+     * @param configFile Configuration file
      * @param context_c  Read properties file and put all of these key-value pairs in
      *                   properties
      */
-    public static void readConfigFile(String configFile, Context context_c) {
+    public static void readConfigFile(String configFile, @NonNull Context context_c) {
         AssetManager assetManager;
         InputStream inputStream;
         try {
@@ -52,9 +51,6 @@ public class Config {
 
     /**
      * Put key value pair to properties object
-     *
-     * @param key
-     * @param value
      */
     public static void set(String key, String value) {
         properties.put(key, value);
@@ -62,12 +58,9 @@ public class Config {
 
     /**
      * Get value for key from properties object
-     *
-     * @param key
-     * @return
      */
+    @NonNull
     public static String get(String key) {
-        return properties.get(key).toString();
+        return Objects.requireNonNull(properties.get(key)).toString();
     }
-
 }

@@ -11,8 +11,11 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginStart="@dimen/margin_medium"
+        android:layout_marginTop="@dimen/margin_medium"
         android:layout_marginEnd="@dimen/margin_medium"
+        android:scrollbars="vertical"
         android:text="@string/about_text"
-        android:textSize="@dimen/text_large" />
+        android:textColor="@color/black"
+        android:textSize="@dimen/text_xlarge" />
 
 </RelativeLayout>

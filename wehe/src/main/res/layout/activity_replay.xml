@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/replay_layout"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
 
@@ -6,11 +7,11 @@
         android:id="@+id/replay_bar"
         layout="@layout/app_bar" />
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/appsRecyclerView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/summaryLinearLayout"
+        android:layout_above="@id/summaryLinearLayout"
         android:layout_below="@+id/replay_bar"
         android:scrollbarStyle="outsideOverlay" />
 
@@ -23,7 +24,7 @@
 
         <TextView
             android:id="@+id/selectedAppsMsgTextView"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="end"
@@ -33,16 +34,6 @@
             android:textStyle="bold"
             android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/selectedAppsSizeTextView"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="end"
-            android:padding="@dimen/margin_medium"
-            android:textColor="@color/white"
-            android:textSize="@dimen/text_medium"
-            android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout
@@ -62,4 +53,14 @@
             android:progress="0"
             android:visibility="gone" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/rerunButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/weheBlue"
+        android:text="@string/rerun"
+        android:textColor="@color/white"
+        android:visibility="gone" />
 </RelativeLayout>

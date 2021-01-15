@@ -1,21 +1,23 @@
 package mobi.meddle.wehe.bean;
 
+import androidx.annotation.NonNull;
+
 /**
- * @author rajesh RequestSet class for packet details
+ * @author rajesh
+ * Represents a packet in a replay to be sent
+ * Fields in this class correspond with the fields in the replay files in the assets directory
  */
 public class RequestSet {
-    private String c_s_pair;
-    private double timestamp;
-    private byte[] payload;
+    private String c_s_pair; //client-server pair, in the form {client_IP}.{client_port}-{server_IP}.{server_port}
+    private double timestamp; //time when packet should be sent
+    private byte[] payload; //the stuff to send
     // adrian: for tcp
-    private int response_len;
-    private String response_hash;
+    private int response_len; //expected length of response to a TCP packet being sent
+    private String response_hash; //expected hash of response
     // adrian: for udp
     private boolean end;
 
-    // private int response_hash;
     public RequestSet() {
-        super();
         this.c_s_pair = null;
         this.timestamp = 0;
         this.payload = null;
@@ -72,10 +74,14 @@ public class RequestSet {
         this.end = end;
     }
 
+    public boolean isUDP() {
+        return getResponse_len() == -1;
+    }
+
+    @NonNull
     @Override
     public String toString() {
         return "RequestSet [c_s_pair=" + c_s_pair + ", response_len="
                 + response_len + " , timestamp=" + timestamp + "]";
     }
-
 }

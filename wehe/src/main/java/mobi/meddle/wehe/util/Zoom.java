@@ -5,12 +5,10 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.ImageButton;
 
 public class Zoom extends View {
 
-    ImageButton img, img1;
-    private Drawable image;
+    private final Drawable image;
     private int zoomControler = 20;
 
     public Zoom(Context context, int img) {
@@ -27,7 +25,10 @@ public class Zoom extends View {
         super.onDraw(canvas);
 
         //here u can control the width and height of the images........ this line is very important
-        image.setBounds((getWidth() / 2) - zoomControler, (getHeight() / 2) - zoomControler, (getWidth() / 2) + zoomControler, (getHeight() / 2) + zoomControler);
+        image.setBounds((getWidth() / 2) - zoomControler,
+                (getHeight() / 2) - zoomControler,
+                (getWidth() / 2) + zoomControler,
+                (getHeight() / 2) + zoomControler);
         image.draw(canvas);
     }
 

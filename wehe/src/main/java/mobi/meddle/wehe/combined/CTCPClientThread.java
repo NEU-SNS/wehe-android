@@ -4,6 +4,7 @@ import android.util.Log;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
@@ -12,32 +13,53 @@ import java.util.concurrent.Semaphore;
 import mobi.meddle.wehe.bean.RequestSet;
 import mobi.meddle.wehe.util.Config;
 
-
 // @@@ Adrian add this
 
+/**
+ * Sends TCP replay packets to the server and receives the TCP throughputs.
+ */
 class CTCPClientThread implements Runnable {
-
     private final CombinedQueue queue;
-    private CTCPClient client;
-    private CombinedAnalyzerTask analyzerTask;
-    private RequestSet RS = null;
-    private Semaphore sendSema;
-    private Semaphore recvSema;
-    private long timeOrigin = 0;
-    private int tolerance = 0;
+    private final CTCPClient client;
+    private final CombinedAnalyzerTask analyzerTask;
+    private final RequestSet RS;
+    private final Semaphore sendSema;
+    private final Semaphore recvSema;
+    private final int tolerance;
     private boolean addInfo = false;
 
-    CTCPClientThread(CTCPClient client, RequestSet RS,
-                     CombinedQueue queue, Semaphore sendSema, Semaphore recvSema,
-                     long timeOrigin, int tolerance, CombinedAnalyzerTask analyzerTask) {
+    /**
+     * Constructor.
+     *
+     * @param client       the TCP connection to the server
+     * @param RS           the packet to send to the server
+     * @param queue        the caller CombinedQueue - used for abort info
+     * @param sendSema     Semaphore for sending packets
+     * @param recvSema     Semaphore for receiving packets
+     * @param tolerance    if the number of bytes received subtracted from the number of bytes
+     *                     expected to be received is less than the tolerance, then something is
+     *                     wrong, and an exception is thrown
+     * @param analyzerTask the class containing the throughput data
+     */
+    CTCPClientThread(CTCPClient client, RequestSet RS, CombinedQueue queue, Semaphore sendSema,
+                     Semaphore recvSema, int tolerance, CombinedAnalyzerTask analyzerTask) {
         this.client = client;
         this.analyzerTask = analyzerTask;
         this.RS = RS;
         this.queue = queue;
         this.sendSema = sendSema;
         this.recvSema = recvSema;
-        this.timeOrigin = timeOrigin;
         this.tolerance = tolerance;
+    }
+
+    void timeout() {
+        if (client != null && client.socket != null) {
+            try {
+                client.socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -55,31 +77,18 @@ class CTCPClientThread implements Runnable {
                 addInfo = true;
             }
 
-			/*if (!client.socket.isConnected())
-				Log.w("TCPClientThread", "socket not connected!");*/
-
             // Get Input/Output stream for socket
             DataOutputStream dataOutputStream = new DataOutputStream(
                     client.socket.getOutputStream());
 
-			/*Log.d("Sending", "payload " + RS.getPayload().length +
-					" bytes, expecting " + RS.getResponse_len() + " bytes ");*/
-
             // convert payload to string format
             String tmp = new String(RS.getPayload(), StandardCharsets.UTF_8);
 
-			/*Log.d("Sending", "length of string: " + tmp.length()
-					+ " length of payload: " + RS.getPayload().length);*/
-			/*if (tmp.length() >= 20)
-				Log.d("Sending", "First 20 bytes: " + tmp.substring(0, 20));
-			else
-				Log.d("Sending", "Short content: " + tmp);*/
             if (client.addHeader && addInfo) {
                 if (client.replayName.endsWith("-random")) {
                     // cook the custom info
-                    String customInfo = String.format("X-rr;%s;%s;%s;X-rr",
-                            client.publicIP, Config.get(client.replayName),
-                            client.CSPair);
+                    String customInfo = String.format("X-rr;%s;%s;%s;X-rr", client.publicIP,
+                            Config.get(client.replayName), client.CSPair);
 
                     byte[] customInfoByte = customInfo.getBytes();
                     byte[] newPayload;
@@ -87,16 +96,14 @@ class CTCPClientThread implements Runnable {
                     // check the length of the payload
                     if (RS.getPayload().length > customInfoByte.length) {
                         newPayload = new byte[RS.getPayload().length];
-                        Log.d("Sending", "adding header for random replay");
+                        Log.i("Sending", "adding header for random replay");
                         System.arraycopy(customInfoByte, 0, newPayload, 0,
                                 customInfoByte.length);
-                        System.arraycopy(RS.getPayload(),
-                                customInfoByte.length, newPayload,
-                                customInfoByte.length, RS.getPayload().length
-                                        - customInfoByte.length);
+                        System.arraycopy(RS.getPayload(), customInfoByte.length,
+                                newPayload, customInfoByte.length,
+                                RS.getPayload().length - customInfoByte.length);
                     } else {
-                        Log.w("Sending",
-                                "payload length shorter than header, replace payload");
+                        Log.w("Sending", "payload length shorter than header, replace payload");
                         newPayload = customInfoByte;
                     }
 
@@ -106,18 +113,15 @@ class CTCPClientThread implements Runnable {
                         && tmp.substring(0, 3).trim().equalsIgnoreCase("GET")) {
                     // cook the custom info
                     String customInfo = String.format("\r\nX-rr: %s;%s;%s\r\n",
-                            client.publicIP, Config.get(client.replayName),
-                            client.CSPair);
+                            client.publicIP, Config.get(client.replayName), client.CSPair);
 
-                    if (tmp.getBytes().length != RS.getPayload().length)
-                        Log.e("Sending",
-                                "length of new byte array: "
-                                        + tmp.getBytes().length
-                                        + " length of original payload: "
-                                        + RS.getPayload().length);
+                    if (tmp.getBytes().length != RS.getPayload().length) {
+                        Log.e("Sending", "length of new byte array: " + tmp.getBytes().length
+                                + " length of original payload: " + RS.getPayload().length);
+                    }
 
                     String[] parts = tmp.split("\r\n", 2);
-                    Log.d("Sending", "adding header for normal replay");
+                    Log.i("Sending", "adding header for normal replay");
                     tmp = parts[0] + customInfo + parts[1];
 
                     dataOutputStream.write(tmp.getBytes());
@@ -133,36 +137,20 @@ class CTCPClientThread implements Runnable {
                 dataOutputStream.write(RS.getPayload());
             }
 
-			/*Log.d("Sent", "payload " + RS.getPayload().length +
-					" bytes, expecting " + RS.getResponse_len() + " bytes ");*/
-
             sendSema.release();
 
-            // Notify waiting Queue thread to start processing next packet
+            // Notify waiting Queue thread to start processing next packet and receive response
             if (RS.getResponse_len() > 0) {
-                DataInputStream dataInputStream = new DataInputStream(
-                        client.socket.getInputStream());
+                DataInputStream dataInStream = new DataInputStream(client.socket.getInputStream());
 
                 int totalRead = 0;
-
-				/*Log.d("Receiving", String.valueOf(RS.getResponse_len()) + " bytes"
-						+ " start at time " +
-						String.valueOf((System.nanoTime() - timeOrigin) / 1000000000));*/
 
                 byte[] buffer = new byte[RS.getResponse_len()];
                 while (totalRead < buffer.length) {
                     // @@@ offset is wrong?
                     int bufSize = 4096;
-                    int bytesRead = dataInputStream.read(buffer, totalRead,
+                    int bytesRead = dataInStream.read(buffer, totalRead,
                             Math.min(buffer.length - totalRead, bufSize));
-					/*Log.i("Receiving", "Read " + bytesRead + " bytes out of "
-							+ buffer.length);*/
-
-                    // Log.d("Payload " + RS.getResponse_len(),
-                    // String.valueOf(buffer));
-                    // int bytesRead = dataInputStream.read(buffer);
-                    // Log.d("Received " + RS.getResponse_len(),
-                    // String.valueOf(bytesRead));
 
                     if (bytesRead < 0 && buffer.length - totalRead < this.tolerance) {
                         Log.w("Receiving", "A few bytes missing, ignore and proceed");
@@ -175,77 +163,62 @@ class CTCPClientThread implements Runnable {
 
                         String data = new String(buffer, StandardCharsets.UTF_8);
 
-                        if (data.length() >= 12
-                                && data.substring(0, 12).trim()
+                        if (data.length() >= 12 && data.substring(0, 12).trim()
                                 .equalsIgnoreCase("WhoTheFAreU?")) {
                             Log.e("TCPClientThread", "IP flipping detected");
-                            throw new SocketException(
-                                    "IP flipping detected");
-                        } else
-                            throw new SocketException(
-                                    "Traffic Manipulation Detected (Type 2)");
-                        // String data = new String(buffer, "UTF-8");
-                        // Log.w("Receiving", data);
+                            throw new SocketException("IP flipping detected");
+                        } else {
+                            throw new SocketException("Traffic Manipulation Detected (Type 2)");
+                        }
                     }
 
-                    analyzerTask.bytesRead += bytesRead;
+                    analyzerTask.bytesRead += bytesRead; //add to throughput data
                     totalRead += bytesRead;
                 }
 
                 String data = new String(buffer, StandardCharsets.UTF_8);
-                if (data.length() >= 12
-                        && data.substring(0, 12).trim()
+                if (data.length() >= 12 && data.substring(0, 12).trim()
                         .equalsIgnoreCase("WhoTheFAreU?")) {
                     Log.e("TCPClientThread", data);
-                    throw new SocketException(
-                            "Traffic Manipulation Detected (Type 1)");
+                    throw new SocketException("Traffic Manipulation Detected (Type 1)");
                 }
-				/*else
-					Log.d("Receiving", "content for " + buffer.length + "\n" + data);*/
-
-                // adrian: increase current pointer
-				/*synchronized (recvQueueBean) {
-					recvQueueBean.current ++;
-					recvQueueBean.notifyAll();
-				}*/
 
                 // adrian: manually free buffer
-                Log.d("Finished",
-                        "receiving " + RS.getResponse_len()
-                                + " bytes");
+                Log.d("Finished", "receiving " + RS.getResponse_len() + " bytes " + System.nanoTime());
             } else {
-                Log.d("Receiving", "skipped");
+                Log.d("Receiving", "skipped " + System.nanoTime());
             }
         } catch (SocketTimeoutException e) {
-            Log.w("TCPClientThread", "Socket time out!");
+            Log.w("TCPClientThread", "Socket time out! Nothing has been sent or received"
+                    + " for 30 seconds", e);
             synchronized (queue) {
                 queue.ABORT = true;
                 // make sure that this is not caused by other issues
-                if (queue.abort_reason == null)
+                if (queue.abort_reason == null) {
                     queue.abort_reason = "Replay Aborted: replay socket error";
+                }
             }
-
         } catch (SocketException e) {
+            Log.w("TCPClientThread", "The maximum time to run a replay may have been"
+                    + " reached. However, other reasons exist.", e);
             synchronized (queue) {
                 queue.ABORT = true;
-                if (queue.abort_reason == null)
+                if (queue.abort_reason == null) {
                     queue.abort_reason = "error_proxy";
+                }
             }
-            e.printStackTrace();
         } catch (Exception e) {
-            Log.e("TCPClientThread", "something bad happened!");
+            Log.e("TCPClientThread", "something bad happened!", e);
             // abort replay if bad things happened!
             synchronized (queue) {
                 queue.ABORT = true;
                 queue.abort_reason = "Replay Aborted: replay socket error";
             }
-            e.printStackTrace();
         } finally {
             recvSema.release();
             synchronized (queue) {
                 --queue.threads;
             }
-
         }
     }
 }
