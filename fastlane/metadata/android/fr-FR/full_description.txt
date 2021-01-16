@@ -1,0 +1,5 @@
+Wehe est une application qui analyse le trafic que vous générez et qui vous permet de savoir si votre opérateur bride ou priorise le trafic de certaines applications et de certains ports logiciels.
+
+En effectuant gratuitement des tests avec Wehe sur votre terminal mobile, vous participez au projet de recherche de David Choffnes (Northestern University) et vous contribuez à l’identification de potentielles entraves à la Neutralité d’Internet par l’Arcep (l’Autorité de Régulation des Télécommunications Électroniques et des Postes). Il ne peut être tiré aucune conclusion d’un résultat individuel de type « Différenciation détectée » pour caractériser un manquement au règlement (UE) 2015/2120 relatif à l’Internet Ouvert.
+
+Cette application a été développée par des chercheurs de la Northeastern University. Plus de détails sur l’app : <a href="https://wehe.meddle.mobi/">https://wehe.meddle.mobi</a>.

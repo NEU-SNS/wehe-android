@@ -1,0 +1,5 @@
+Wehe is an app that runs tests against your network and analyzes the results to let you know if your network provider is restricting or prioritizing traffic for certain applications and certain ports.
+
+By performing free tests with Wehe on your mobile device, you are participating in an IRB-approved research project at Northeastern University (led by Dr. David Choffnes) and you are helping to identify potential violations of net neutrality. Note that no conclusion can be drawn from an individual result of the type "Differentiation detected" to characterize a breach of Regulation (EU) 2015/2120 on Open Internet.
+
+For more details about the app, the research behind it, and analysis of data collected about net neutrality violations, please visit: <a href="https://wehe.meddle.mobi/">https://wehe.meddle.mobi</a>.
