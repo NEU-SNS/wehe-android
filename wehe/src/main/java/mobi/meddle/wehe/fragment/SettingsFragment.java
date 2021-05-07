@@ -3,6 +3,7 @@ package mobi.meddle.wehe.fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -47,12 +48,14 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         EditTextPreference areaPref
                 = getPreferenceScreen().findPreference(getString(R.string.pref_area_key));
         assert areaPref != null;
-        areaPref.setSummary(String.format(getString(R.string.pref_cur_percent), areaPref.getText()));
+        areaPref.setSummary(String.format(getString(R.string.pref_cur_percent),
+                Integer.parseInt(areaPref.getText())));
 
         EditTextPreference ks2pPref
                 = getPreferenceScreen().findPreference(getString(R.string.pref_ks2p_key));
         assert ks2pPref != null;
-        ks2pPref.setSummary(String.format(getString(R.string.pref_cur_percent), ks2pPref.getText()));
+        ks2pPref.setSummary(String.format(getString(R.string.pref_cur_percent),
+                Integer.parseInt(ks2pPref.getText())));
     }
 
     private void attachListeners() {
@@ -64,12 +67,13 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     int newNumber = Integer.parseInt(newValue.toString(), 10);
                     if (newNumber >= 0 && newNumber <= 100) {
                         preference.setSummary(String.format(getString(R.string.pref_cur_percent),
-                                String.valueOf(newNumber)));
+                                newNumber));
                         return true;
                     }
                 } catch (NumberFormatException ignored) {
 
                 }
+                Toast.makeText(getContext(), getString(R.string.inval_percent), Toast.LENGTH_LONG).show();
                 return false;
             }
         };
@@ -92,6 +96,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 //custom server text box
                 EditText customServer = new EditText(getContext());
                 customServer.setText(R.string.cust_server);
+                customServer.setHint("");
 
                 //get previous server if user cancels typing in new server
                 String oldServer = preference.getSharedPreferences().getString(
@@ -106,10 +111,15 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         //set new server
-                                        String customServerText = customServer.getText().toString();
-                                        servPref.setValue(customServerText);
-                                        preference.setSummary(String.format(getString(R.string.pref_cur_server),
-                                                customServerText));
+                                        String customServerText = customServer.getText().toString().toLowerCase();
+                                        if (customServerText.matches("[a-z0-9.-]+")) {
+                                            servPref.setValue(customServerText);
+                                            preference.setSummary(String.format(getString(R.string.pref_cur_server),
+                                                    customServerText));
+                                        } else {
+                                            Toast.makeText(getContext(), getString(R.string.inval_server),
+                                                    Toast.LENGTH_LONG).show();
+                                        }
                                     }
                                 })
                         .setNegativeButton(getString(android.R.string.cancel),

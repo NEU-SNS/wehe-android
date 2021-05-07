@@ -39,7 +39,7 @@ public final class CombinedNotifierThread implements Runnable {
             try {
                 dataInputStream = new DataInputStream(socket.getInputStream());
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e("Notifier", "Issue getting UDP InputStream", e);
             }
         } else {
             Log.i("Notifier", "socket not connected!");
@@ -128,7 +128,7 @@ public final class CombinedNotifierThread implements Runnable {
                     throw new IOException("Data stream ended prematurely");
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e("Notifier", "Error receiving bytes", e);
             }
             /*
              * if (k - totalRead < bytesRead) bytesRead = k - totalRead;

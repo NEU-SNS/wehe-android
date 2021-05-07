@@ -6,6 +6,8 @@ import android.graphics.drawable.Drawable;
 import android.view.KeyEvent;
 import android.view.View;
 
+import androidx.core.content.ContextCompat;
+
 public class Zoom extends View {
 
     private final Drawable image;
@@ -14,7 +16,8 @@ public class Zoom extends View {
     public Zoom(Context context, int img) {
         super(context);
 
-        image = context.getResources().getDrawable(img);
+        //image = context.getResources().getDrawable(img);
+        image = ContextCompat.getDrawable(context, img);
         //image=context.getResources().getDrawable(R.drawable.icon);
 
         setFocusable(true);

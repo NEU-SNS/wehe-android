@@ -52,6 +52,9 @@ public final class CombinedReceiverThread implements Runnable {
                 // udpReplayInfoBean.getUdpSocketList().size());
 
                 for (DatagramChannel channel : udpReplayInfoBean.getUdpSocketList()) {
+                    if (channel.isBlocking()) {
+                        channel.configureBlocking(false);
+                    } //channel.register() can't be in blocking mode or else crash occurs
                     channel.register(selector, SelectionKey.OP_READ);
                 }
 

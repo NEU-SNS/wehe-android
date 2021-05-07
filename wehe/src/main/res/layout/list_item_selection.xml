@@ -55,7 +55,7 @@
                 android:text="@string/Viber"
                 android:textSize="@dimen/text_medium" />
 
-            <Switch
+            <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/isSelectedSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

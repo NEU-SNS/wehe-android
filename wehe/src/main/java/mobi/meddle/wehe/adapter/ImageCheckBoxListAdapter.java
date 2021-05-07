@@ -7,10 +7,11 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -117,13 +118,13 @@ public class ImageCheckBoxListAdapter
         holder.view.setTag(app);
         holder.sw.setChecked(app.isSelected()); //set if checked
         //set image
-        holder.img.setImageDrawable(context.getResources().getDrawable(context.getResources()
-                .getIdentifier(app.getImage(), "drawable", context.getPackageName())));
+        holder.img.setImageDrawable(ResourcesCompat.getDrawable(context.getResources(), context.getResources()
+                .getIdentifier(app.getImage(), "drawable", context.getPackageName()), null));
         //set name
         holder.appNameTextView.setText(app.getName());
         //set size
         holder.appSizeTextView.setText(String.format(Locale.getDefault(),
-                context.getString(R.string.replay_size), app.getSize()));
+                context.getString(R.string.replay_size), 2, app.getSize()));
         //set time only if app since goal of ports is to run as fast as possible
         if (runPortTest) {
             holder.appTimeTextView.setVisibility(View.GONE);
@@ -169,7 +170,7 @@ public class ImageCheckBoxListAdapter
     @Override
     public void onClick(@NonNull View view) {
         ApplicationBean app = (ApplicationBean) view.getTag();
-        Switch sw = view.findViewById(R.id.isSelectedSwitch);
+        SwitchCompat sw = view.findViewById(R.id.isSelectedSwitch);
         sw.setChecked(!sw.isChecked());
 
         if (sw.isChecked()) {
@@ -192,7 +193,7 @@ public class ImageCheckBoxListAdapter
      * The view that the user sees for each app/port available for selection.
      */
     static class SelectionViewHolder extends RecyclerView.ViewHolder {
-        private final Switch sw;
+        private final SwitchCompat sw;
         private final ImageView img;
         private final TextView appNameTextView;
         private final TextView appTimeTextView;

@@ -33,7 +33,6 @@ import mobi.meddle.wehe.fragment.SettingsFragment;
 /**
  * Starting point for Wehe.
  * XML layout: activity_main.xml
- * test epfl fork
  */
 public class MainActivity extends AppCompatActivity {
     private final int locationRequestCode = 1093;
@@ -160,56 +159,49 @@ public class MainActivity extends AppCompatActivity {
                 int id = menuItem.getItemId();
                 Fragment fragment = null;
 
-                switch (id) {
-                    case R.id.nav_run:
-                    case R.id.nav_run_port:
-                        fragment = new SelectionFragment();
-                        Bundle bundle = new Bundle();
-                        boolean isPortTest = id == R.id.nav_run_port;
-                        bundle.putBoolean("runPortTest", isPortTest);
-                        fragment.setArguments(bundle);
+                if (id == R.id.nav_run || id == R.id.nav_run_port) {
+                    fragment = new SelectionFragment();
+                    Bundle bundle = new Bundle();
+                    boolean isPortTest = id == R.id.nav_run_port;
+                    bundle.putBoolean("runPortTest", isPortTest);
+                    fragment.setArguments(bundle);
+                    mFragmentManager.beginTransaction()
+                            .add(fragment, SelectionFragment.TAG).commit();
+                } else if (id == R.id.nav_results) {
+                    fragment = mFragmentManager.findFragmentByTag(ResultsFragment.TAG);
+                    if (fragment == null) {
+                        fragment = new ResultsFragment();
                         mFragmentManager.beginTransaction()
-                                .add(fragment, SelectionFragment.TAG).commit();
-                        break;
-                    case R.id.nav_results:
-                        fragment = mFragmentManager.findFragmentByTag(ResultsFragment.TAG);
-                        if (fragment == null) {
-                            fragment = new ResultsFragment();
-                            mFragmentManager.beginTransaction()
-                                    .add(fragment, ResultsFragment.TAG).commit();
-                        }
-                        break;
-                    case R.id.nav_about:
-                        fragment = mFragmentManager.findFragmentByTag(AboutFragment.TAG);
-                        if (fragment == null) {
-                            fragment = new AboutFragment();
-                            mFragmentManager.beginTransaction()
-                                    .add(fragment, AboutFragment.TAG).commit();
-                        }
-                        break;
-                    case R.id.nav_functionality:
-                        fragment = mFragmentManager.findFragmentByTag(FunctionalityFragment.TAG);
-                        if (fragment == null) {
-                            fragment = new FunctionalityFragment();
-                            mFragmentManager.beginTransaction()
-                                    .add(fragment, FunctionalityFragment.TAG).commit();
-                        }
-                        break;
-                    case R.id.nav_dashboard:
-                        fragment = mFragmentManager.findFragmentByTag(DashboardFragment.TAG);
-                        if (fragment == null) {
-                            fragment = new DashboardFragment();
-                            mFragmentManager.beginTransaction()
-                                    .add(fragment, DashboardFragment.TAG).commit();
-                        }
-                        break;
-                    case R.id.nav_settings:
-                        fragment = mFragmentManager.findFragmentByTag(SettingsFragment.TAG);
-                        if (fragment == null) {
-                            fragment = new SettingsFragment();
-                            mFragmentManager.beginTransaction()
-                                    .add(fragment, SettingsFragment.TAG).commit();
-                        }
+                                .add(fragment, ResultsFragment.TAG).commit();
+                    }
+                } else if (id == R.id.nav_about) {
+                    fragment = mFragmentManager.findFragmentByTag(AboutFragment.TAG);
+                    if (fragment == null) {
+                        fragment = new AboutFragment();
+                        mFragmentManager.beginTransaction()
+                                .add(fragment, AboutFragment.TAG).commit();
+                    }
+                } else if (id == R.id.nav_functionality) {
+                    fragment = mFragmentManager.findFragmentByTag(FunctionalityFragment.TAG);
+                    if (fragment == null) {
+                        fragment = new FunctionalityFragment();
+                        mFragmentManager.beginTransaction()
+                                .add(fragment, FunctionalityFragment.TAG).commit();
+                    }
+                } else if (id == R.id.nav_dashboard) {
+                    fragment = mFragmentManager.findFragmentByTag(DashboardFragment.TAG);
+                    if (fragment == null) {
+                        fragment = new DashboardFragment();
+                        mFragmentManager.beginTransaction()
+                                .add(fragment, DashboardFragment.TAG).commit();
+                    }
+                } else if (id == R.id.nav_settings) {
+                    fragment = mFragmentManager.findFragmentByTag(SettingsFragment.TAG);
+                    if (fragment == null) {
+                        fragment = new SettingsFragment();
+                        mFragmentManager.beginTransaction()
+                                .add(fragment, SettingsFragment.TAG).commit();
+                    }
                 }
 
                 // Insert the fragment by replacing any existing fragment

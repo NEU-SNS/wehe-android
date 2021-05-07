@@ -76,25 +76,6 @@
       "category": "CONFERENCING"
     },
     {
-      "name": "NBC Sports",
-      "size": 19,
-      "time": 24,
-      "image": "nbcsports",
-      "datafile": "NBCSports_01042019.pcap_client_all.json",
-      "randomdatafile": "NBCSportsRandom_01042019.pcap_client_all.json",
-      "englishOnly": true,
-      "category": "VIDEO"
-    },
-    {
-      "name": "Netflix",
-      "size": 15,
-      "time": 30,
-      "image": "netflix",
-      "datafile": "Netflix_12122018.pcap_client_all.json",
-      "randomdatafile": "NetflixRandom_12122018.pcap_client_all.json",
-      "category": "VIDEO"
-    },
-    {
       "name": "Molotov TV",
       "size": 13,
       "time": 2,
@@ -112,6 +93,25 @@
       "datafile": "Mycanal_10012019.pcap_client_all.json",
       "randomdatafile": "MycanalRandom_10012019.pcap_client_all.json",
       "frenchOnly": true,
+      "category": "VIDEO"
+    },
+    {
+      "name": "NBC Sports",
+      "size": 19,
+      "time": 24,
+      "image": "nbcsports",
+      "datafile": "NBCSports_01042019.pcap_client_all.json",
+      "randomdatafile": "NBCSportsRandom_01042019.pcap_client_all.json",
+      "englishOnly": true,
+      "category": "VIDEO"
+    },
+    {
+      "name": "Netflix",
+      "size": 15,
+      "time": 30,
+      "image": "netflix",
+      "datafile": "Netflix_12122018.pcap_client_all.json",
+      "randomdatafile": "NetflixRandom_12122018.pcap_client_all.json",
       "category": "VIDEO"
     },
     {
@@ -178,6 +178,15 @@
       "image": "twitch",
       "datafile": "Twitch_04112019.pcap_client_all.json",
       "randomdatafile": "TwitchRandom_04112019.pcap_client_all.json",
+      "category": "VIDEO"
+    },
+    {
+      "name": "Twitter Video",
+      "size": 5,
+      "time": 30,
+      "image": "twittervideo",
+      "datafile": "TwitterVideo_04192021.pcap_client_all.json",
+      "randomdatafile": "TwitterVideoRandom_04192021.pcap_client_all.json",
       "category": "VIDEO"
     },
     {

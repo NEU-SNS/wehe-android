@@ -43,8 +43,7 @@ public class Config {
             properties.load(inputStream);
 
         } catch (IOException e) {
-            e.printStackTrace();
-            Log.e("Replay", e.toString());
+            Log.e("readConfigFile", "Error reading config file", e);
         }
 
     }

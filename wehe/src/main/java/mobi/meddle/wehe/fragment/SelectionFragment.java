@@ -89,16 +89,13 @@ public class SelectionFragment extends Fragment {
         public void onClick(@NonNull View v) {
             Category cat = runPortTests ? Category.SMALL_PORT : Category.VIDEO;
             int buttonId = runPortTests ? R.id.smallPortButton : R.id.videoButton;
-            switch (v.getId()) {
-                case R.id.musicButton:
-                    cat = Category.MUSIC;
-                    buttonId = R.id.musicButton;
-                    break;
-                case R.id.conferencingButton:
-                    cat = Category.CONFERENCING;
-                    buttonId = R.id.conferencingButton;
-                    break;
-                case R.id.largePortButton:
+            if (v.getId() == R.id.musicButton) {
+                cat = Category.MUSIC;
+                buttonId = R.id.musicButton;
+            } else if (v.getId() == R.id.conferencingButton) {
+                cat = Category.CONFERENCING;
+                buttonId = R.id.conferencingButton;
+            } else if (v.getId() == R.id.largePortButton) {
                     cat = Category.LARGE_PORT;
                     buttonId = R.id.largePortButton;
             }
@@ -161,7 +158,7 @@ public class SelectionFragment extends Fragment {
                 return;
             }
 
-            //TODO: Swtich to non-deprecated library without increasing minSDK?
+            //TODO: Switch to non-deprecated library without increasing minSDK?
             NetworkInfo networkInfo = connectivityManager
                     .getNetworkInfo(ConnectivityManager.TYPE_WIFI);
             String carrierName;
@@ -177,8 +174,8 @@ public class SelectionFragment extends Fragment {
             } else {
                 carrierDisplay = carrierName;
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            Log.e("selectionFragment", "Something went wrong creating selectionFragment", e);
         }
     }
 
@@ -243,6 +240,9 @@ public class SelectionFragment extends Fragment {
      * @param carrier the user's phone carrier
      */
     private void showWifiToast(String carrier) {
+        if (carrier.equals("")) {
+            carrier = getString(R.string.your_carrier).toLowerCase();
+        }
         CharSequence text = String.format(getString(R.string.wifiWarning), carrier);
         Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
         toast.show();
@@ -311,19 +311,15 @@ public class SelectionFragment extends Fragment {
                 apps.add(bean);
             }
         } catch (IOException ex) {
-            Log.d(Consts.LOG_APP_NAME,
-                    "IOException while reading file " + Consts.APPS_FILENAME);
-            ex.printStackTrace();
+            Log.e("selectionFragment", "IOException reading file " + Consts.APPS_FILENAME, ex);
         } catch (JSONException ex) {
-            Log.d(Consts.LOG_APP_NAME,
-                    "JSONException while parsing JSON file " + Consts.APPS_FILENAME);
-            ex.printStackTrace();
+            Log.e("selectionFragment", "JSONException parsing JSON file " + Consts.APPS_FILENAME, ex);
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.w("selectionFragment", "Issue closing file", e);
                 }
             }
         }

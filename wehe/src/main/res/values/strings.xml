@@ -11,6 +11,7 @@
     <string name="selected">Selected</string>
     <string name="back_button">Back</string>
     <string name="replay_page_title">Running Tests</string>
+    <string name="tomography_page_title">Localizing Differentiation</string>
     <string name="replay">CLICK HERE TO PROCEED</string>
     <string name="title_activity_replay">Loading…</string>
     <string name="title_activity_crash">Crash Activity</string>
@@ -56,8 +57,12 @@
     <string name="timing_label">Enable Inter-packet Timing?</string>
     <string name="timing_Yes">true</string>
     <string name="timing_No">false</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
     <string name="server_label">Select Server</string>
     <string name="cust_server">Custom Server</string>
+    <string name="inval_percent">Must be integer between 0 and 100</string>
+    <string name="inval_server">Invalid server name</string>
     <string name="select_iteration">Select Iteration Times</string>
     <string name="select_metric">Select Which Metric to Use</string>
     <string name="select_a_threshhold">Select Area Test Threshold Percentage</string>
@@ -72,7 +77,7 @@
     <string name="default_settings">Use default values for thresholds</string>
     <string name="force_add_header">Check me to enable special identification header in all networks</string>
     <string name="replay_finished_title">Replays Finished!</string>
-    <string name="replay_size">Size: 2 x %d MB</string>
+    <string name="replay_size">Size: %d x %d MB</string>
     <string name="replay_time">Time: %d seconds</string>
     <string name="install_cert_label">Click the button below if you want to reinstall the credential. Please leave the password field empty and click "OK"!</string>
     <string name="install_cert_button">Reinstall credential</string>
@@ -126,6 +131,8 @@
     <string name="no_diff">No differentiation</string>
     <string name="has_diff">Differentiation detected</string>
     <string name="inconclusive">Results inconclusive, try running the test again</string>
+    <string name="tomo_failed">Localizing differentiation failed</string>
+    <string name="tomo_succ">Localizing differentiation succeeded</string>
     <string name="waiting">Waiting for server result</string>
     <string name="confirmation_replay">Possible differentiation, re-running test to confirm</string>
     <string name="dashboard_button">View Online Dashboard</string>
@@ -194,7 +201,7 @@
     <string name="pref_description_default">Use default values for server and thresholds</string>
     <string name="pref_title_server">Change Server</string>
     <string name="pref_cur_server">Current server: %s</string>
-    <string name="pref_cur_percent">Current percentage: %s%%</string>
+    <string name="pref_cur_percent">Current percentage: %d%%</string>
     <string name="pref_title_multiple_tests">Run multiple tests to confirm differentiation</string>
     <string name="pref_summary_multiple_tests">To precisely confirm differentiation</string>
     <string name="pref_title_threshold_area">Threshold percentage for area test</string>
@@ -235,7 +242,7 @@
     <string name="run_tests">Run tests</string>
     <string name="accept">Accept</string>
     <string name="decline">Decline</string>
-    <string name="wifiWarning">If you are trying to run tests for %s turn off WiFi and restart the app</string>
+    <string name="wifiWarning">If you are trying to run tests on %s, turn off WiFi and restart the app.</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
     <string name="dialog_permission_title">Permission Information</string>
@@ -284,9 +291,40 @@
     </string>
     <string name="test_results">Test Results</string>
     <string name="rerun">Re-run</string>
+    <string name="localize_diff">Who\'s at fault?</string>
     <string name="rerun_test_title">Rerun Tests?</string>
     <string name="rerun_test_descr">Would you like to rerun the tests?</string>
     <string name="rerun_diff_opt">Rerun Tests with Detected Differentiation</string>
     <string name="rerun_incon_opt">Rerun Inconclusive Tests</string>
+    <string name="rerun_tomography_descr">
+        Differentiation has been detected on certain tests. Would you like to determine which
+        network is causing the differentiation? todo - put something ab data consumption
+    </string>
+    <string name="tomography_not_supported">Tomography tests are not supported on your device.</string>
+    <string name="tomo_failed_desc">The network causing differentiation cannot be determined.</string>
+    <string name="tomo_succ_desc">The network causing differentiation is %s.</string>
     <string name="alert_arcep">Alert Arcep!</string>
+    <string name="normal_app_desc">
+        For each test, Wehe servers send network traffic to this app. We do this in two parts.
+        \n\nFirst we send real app traffic that we prerecorded. During this test, your Internet
+        provider sees traffic that looks like the traffic from the app being tested (e.g., Netflix,
+        YouTube).\n\nSecond, we send similar traffic, but we scramble the data so it does not look
+        like the traffic of any app.\n\nIf your Internet provider slows down or speeds up one of
+        these tests, then it may be singling out certain app\'s traffic. Wehe detects these cases
+        and reports them to you. See the \"How it Works\" page for more details.
+    </string>
+    <string name="normal_port_desc">
+        For each port, network traffic is sent from a Wehe server through the selected port and
+        through port 443. By comparing the speeds between these two ports, Wehe detects if your
+        Internet provider is throttling (slowing down) or prioritizing (speeding up) traffic
+        traveling through the selected port compared to port 443. See the \"How it Works\" page for
+        more details.
+    </string>
+    <string name="tomo_test_desc">
+        For tests where differentiation was detected, Wehe might be able to determine which network
+        or ISP is causing such differentiation to occur by running several duplicate tests at the
+        same time to different Wehe servers and comparing the results. See the \"How it Works\" page
+        for more details.
+    </string>
+
 </resources>

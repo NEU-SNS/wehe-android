@@ -66,7 +66,7 @@
     <string name="select_confirmation_replay">Faire des tests avec plusieurs replays pour confirmer la différence</string>
     <string name="default_settings">Utiliser les valeurs par défault pour les seuils</string>
     <string name="force_add_header">Activer l\'en-tête d\'identification spécial dans tous les réseaux</string>
-    <string name="replay_size">Taille : 2 x %d Mo</string>
+    <string name="replay_size">Taille : %d x %d Mo</string>
     <string name="replay_time">Durée : %d secondes</string>
     <string name="install_cert_label">Cliquez si vous voulez réinstaller les crédits. Ne remplissez pas le champ mot de passe et appuyez sur "OK"!</string>
     <string name="install_cert_button">réinstaller les crédits</string>
@@ -153,7 +153,7 @@
     <string name="pref_title_threshold_area">Seuil de la différence d\'aire, en %</string>
     <string name="pref_title_threshold_ks2p">Seuil du test KS2 p-value, en %</string>
     <string name="pref_summary_threshold_ks2p">Seuil du test KS2 p-value, en % (plus le seuil est élevé, plus Wehe sera sensible aux variations de débits)</string>
-    <string name="pref_cur_percent">Pourcentage retenu : %s%%</string>
+    <string name="pref_cur_percent">Pourcentage retenu : %d%%</string>
     <string name="pref_cur_server">Serveur utilisé : %s</string>
     <string name="pref_title_multiple_tests">Tests additionnels</string>
     <string name="pref_title_default">Utiliser les valeurs par défaut</string>

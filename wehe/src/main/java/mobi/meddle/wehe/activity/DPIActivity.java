@@ -24,6 +24,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -138,8 +139,8 @@ public class DPIActivity extends AppCompatActivity {
         startButton = findViewById(R.id.start_button);
         app = getIntent().getParcelableExtra("app");
         ImageView appIcon = findViewById(R.id.app_icon);
-        appIcon.setImageDrawable(getResources().getDrawable(
-                getResources().getIdentifier(app.getImage(), "drawable", getPackageName())));
+        appIcon.setImageDrawable(ContextCompat.getDrawable(context, getResources().getIdentifier(
+                app.getImage(), "drawable", getPackageName())));
 
         TextView appName = findViewById(R.id.app_name_textview);
         appName.setText(app.getName());
@@ -794,8 +795,8 @@ public class DPIActivity extends AppCompatActivity {
                         sideChannelPort, null);
                 Log.d("Server", server);
 
-                CombinedSideChannel sideChannel = new CombinedSideChannel(sslSocketFactory,
-                        server, sideChannelPort);
+                CombinedSideChannel sideChannel = new CombinedSideChannel(0, sslSocketFactory,
+                        server, sideChannelPort, appData.isTCP());
                 // adrian: new format of serverPortsMap
                 HashMap<String, HashMap<String, HashMap<String, ServerInstance>>> serverPortsMap;
                 UDPReplayInfoBean udpReplayInfoBean = new UDPReplayInfoBean();
@@ -974,7 +975,7 @@ public class DPIActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         //prgBar.setProgress(0);
-                        updateUIBean.setProgress(0);
+                        updateUIBean.clearProgress();
                         Thread.currentThread().setName("UIUpdateThread (Thread)");
                         while (updateUIBean.getProgress() < 100) {
                             publishProgress("updateUI");
@@ -1001,11 +1002,28 @@ public class DPIActivity extends AppCompatActivity {
 
                 publishProgress("updateStatus", getString(R.string.run_sender));
 
-                CombinedQueue queue = new CombinedQueue(appData.getQ(), jitterBean, analyzerTask, Consts.REPLAY_APP_TIMEOUT);
+                //below ArrayLists added so that code compiles for concurrent tests in ReplayActivity
+                ArrayList<CombinedAnalyzerTask> anTasks = new ArrayList<>();
+                anTasks.add(analyzerTask);
+                ArrayList<HashMap<String, CTCPClient>> CSPairMappings = new ArrayList<>();
+                CSPairMappings.add(CSPairMapping);
+                ArrayList<HashMap<String, CUDPClient>> udpPortMappings = new ArrayList<>();
+                udpPortMappings.add(udpPortMapping);
+                ArrayList<UDPReplayInfoBean> udpReplayInfoBeans = new ArrayList<>();
+                udpReplayInfoBeans.add(udpReplayInfoBean);
+                ArrayList<HashMap<String, HashMap<String, ServerInstance>>> udpServerMappings
+                        = new ArrayList<>();
+                udpServerMappings.add(serverPortsMap.get("udp"));
+                ArrayList<String> servers = new ArrayList<>();
+                servers.add(server);
+                ArrayList<JitterBean> jitterBeans = new ArrayList<>();
+                jitterBeans.add(jitterBean);
+
+                CombinedQueue queue = new CombinedQueue(appData.getQ(), jitterBeans, anTasks, Consts.REPLAY_APP_TIMEOUT);
                 long timeStarted = System.nanoTime();
-                queue.run(updateUIBean, 1, 1, CSPairMapping, udpPortMapping,
-                        udpReplayInfoBean, serverPortsMap.get("udp"),
-                        Boolean.valueOf(Config.get("timing")), server, this);
+                queue.run(updateUIBean, 1, CSPairMappings, udpPortMappings,
+                        udpReplayInfoBeans, udpServerMappings,
+                        Boolean.valueOf(Config.get("timing")), servers, this);
 
                 if (isCancelled()) {
                     return;

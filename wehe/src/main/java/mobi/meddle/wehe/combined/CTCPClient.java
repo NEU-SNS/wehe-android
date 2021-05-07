@@ -52,8 +52,8 @@ public class CTCPClient {
             socket.setKeepAlive(true);
             socket.setSoTimeout(30000);
             socket.connect(endPoint);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } catch (Exception e) {
+            Log.e("Client", "error creating TCP socket", e);
         }
     }
 
@@ -65,7 +65,7 @@ public class CTCPClient {
             this.socket.close();
             Log.i("Client", "Socket is now closed");
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.w("Client", "Problem closing TCP socket", e);
         }
     }
 

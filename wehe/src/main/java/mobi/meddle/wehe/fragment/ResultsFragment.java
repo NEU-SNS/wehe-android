@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.navigation.NavigationView;
@@ -96,6 +98,12 @@ public class ResultsFragment extends Fragment {
                         current.ipType = response.getBoolean("isIPv6") ? "IPv6" : "IPv4";
                         current.server = response.getString("server");
                         current.carrier = response.getString("carrier");
+                        if (response.has("tomographyNetwork")) {
+                            current.isTomography = true;
+                            current.differentiationNetwork = response.getString("tomographyNetwork");
+                        } else {
+                            current.isTomography = false;
+                        }
 
                         results.add(current);
                     }
@@ -104,7 +112,7 @@ public class ResultsFragment extends Fragment {
             }
             Collections.reverse(results);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e("resultFragment", "Error loading results", e);
         }
 
         //load results onto screen
@@ -134,16 +142,6 @@ public class ResultsFragment extends Fragment {
                     convertView.setTag(viewHolder);
                 }
 
-                TextView appLabel = convertView.findViewById(R.id.appThroughputNameText);
-                TextView nonAppLabel = convertView.findViewById(R.id.nonappThroughputNameText);
-                if (current.isPortTest) {
-                    appLabel.setText(String.format(getString(R.string.port_throughput),
-                            current.resultNameText.split(" ")[1]));
-                    nonAppLabel.setText(String.format(getString(R.string.port_throughput), "443"));
-                } else {
-                    appLabel.setText(getString(R.string.app_throughput));
-                    nonAppLabel.setText(getString(R.string.nonapp_throughput));
-                }
                 TextView resultNameText = ((ViewHolder) convertView.getTag()).resultNameText;
                 TextView dateText = ((ViewHolder) convertView.getTag()).dateText;
                 TextView ipTypeText = ((ViewHolder) convertView.getTag()).ipType;
@@ -160,10 +158,35 @@ public class ResultsFragment extends Fragment {
                 TextView nonAppThroughput = ((ViewHolder) convertView.getTag()).nonAppThroughput;
                 ImageView appImageView = ((ViewHolder) convertView.getTag()).appImageView;
 
+                TextView appLabel = convertView.findViewById(R.id.appThroughputNameText);
+                TextView nonAppLabel = convertView.findViewById(R.id.nonappThroughputNameText);
+                nonAppLabel.setVisibility(View.VISIBLE);
+                appThroughput.setVisibility(View.VISIBLE);
+                nonAppThroughput.setVisibility(View.VISIBLE);
+                if (current.isTomography) {
+                    if (current.differentiationNetwork.equals("")) {
+                        appLabel.setText(R.string.tomo_failed_desc);
+                    } else {
+                        appLabel.setText(String.format(getString(R.string.tomo_succ_desc),
+                                current.differentiationNetwork));
+                    }
+                    nonAppLabel.setVisibility(View.GONE);
+                    appThroughput.setVisibility(View.GONE);
+                    nonAppThroughput.setVisibility(View.GONE);
+                } else if (current.isPortTest) {
+                    appLabel.setText(String.format(getString(R.string.port_throughput),
+                            current.resultNameText.split(" ")[1]));
+                    nonAppLabel.setText(String.format(getString(R.string.port_throughput), "443"));
+                } else {
+                    appLabel.setText(getString(R.string.app_throughput));
+                    nonAppLabel.setText(getString(R.string.nonapp_throughput));
+                }
+
                 int appImageDrawableId = getResources().getIdentifier(current.appImage, "drawable",
                         requireActivity().getPackageName());
-                appImageView.setImageDrawable(getResources().getDrawable(appImageDrawableId));
+                appImageView.setImageDrawable(ContextCompat.getDrawable(getContext(), appImageDrawableId));
                 resultNameText.setText(current.resultNameText);
+                //display result type
                 switch (current.differentiationText) {
                     case "has diff":
                         differentiationText.setText(getString(R.string.has_diff));
@@ -176,6 +199,14 @@ public class ResultsFragment extends Fragment {
                     case "inconclusive":
                         differentiationText.setText(getString(R.string.inconclusive).split(",")[0]);
                         differentiationText.setTextColor(getResources().getColor(R.color.orange2));
+                        break;
+                    case "tomo failed":
+                        differentiationText.setText(R.string.tomo_failed);
+                        differentiationText.setTextColor(getResources().getColor(R.color.red));
+                        break;
+                    case "tomo succ":
+                        differentiationText.setText(R.string.tomo_succ);
+                        differentiationText.setTextColor(getResources().getColor(R.color.forestGreen));
                         break;
                     default:
                         differentiationText.setText(current.differentiationText);
@@ -224,5 +255,7 @@ public class ResultsFragment extends Fragment {
         String ipType;
         String server;
         String carrier;
+        boolean isTomography;
+        String differentiationNetwork;
     }
 }

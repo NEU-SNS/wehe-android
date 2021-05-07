@@ -31,29 +31,52 @@ import mobi.meddle.wehe.bean.UDPReplayInfoBean;
  * run traces; it send tcp and udp packets and receives the same from the server.
  */
 public class CombinedSideChannel {
-    private Socket socket;
-    private DataOutputStream dataOutputStream;
-    private DataInputStream dataInputStream;
+    private final Socket socket; //socket to server
+    private final DataOutputStream dataOutputStream; //write to server
+    private final DataInputStream dataInputStream; //read from server
     private final int objLen = 10; //length of response from server that tells the length of the actual response
+    private final boolean isTcp;
+    private final int id; //id of side channel of this instance - used for logs
 
     /**
      * Creates a socket and I/O streams to that socket
      *
+     * @param id               id of channel
      * @param sslSocketFactory socket factory to make socket
      * @param ip               IP of the server
      * @param port             server port to connect to
      * @throws IOException     something went wrong connecting to socket or getting I/O stream
      */
-    public CombinedSideChannel(@NonNull SSLSocketFactory sslSocketFactory, String ip, int port)
-            throws IOException {
+    public CombinedSideChannel(int id, @NonNull SSLSocketFactory sslSocketFactory, String ip, int port,
+                               boolean isTcp) throws IOException {
+        this.id = id;
         socket = sslSocketFactory.createSocket(ip, port);
         socket.setTcpNoDelay(true);
         socket.setReuseAddress(true);
         socket.setKeepAlive(true);
         socket.setSoTimeout(60000);
 
-        dataOutputStream = new DataOutputStream(socket.getOutputStream());
-        dataInputStream = new DataInputStream(socket.getInputStream());
+        try {
+            dataOutputStream = new DataOutputStream(socket.getOutputStream());
+        } catch (IOException e) {
+            throw new IOException("Channel " + id + ": Issue getting output stream");
+        }
+        try {
+            dataInputStream = new DataInputStream(socket.getInputStream());
+        } catch (IOException e) {
+            throw new IOException("Channel " + id + ": Issue getting input stream");
+        }
+
+        this.isTcp = isTcp;
+    }
+
+    /**
+     * Get ID number of SideChannel.
+     *
+     * @return ID number
+     */
+    public int getId() {
+        return id;
     }
 
     /**
@@ -73,22 +96,22 @@ public class CombinedSideChannel {
      * @param replayName   name of the replay
      * @param endOfTest    true if last replay in test; false otherwise
      * @param randomId     ID to identify the user's device
-     * @param testID       the replay number in the test
-     * @param extraString  true if testing data
      * @param historyCount the test number
+     * @param testID       the replay number in the test
+     * @param extraString  string to send data that might need to be sent in the future
      * @param realIP       the user's IP address
      * @param appVersion   the version of the app
      */
     public void declareID(String replayName, String endOfTest, String randomId, String historyCount,
                           String testID, String extraString, String realIP, String appVersion) {
-        Log.i("declareID", "Declaring ID");
+        Log.i("declareID", "Channel " + id + ": Declaring ID");
         String[] args = {randomId, testID, replayName, extraString,
                 historyCount, endOfTest, realIP, appVersion};
 
         String info = TextUtils.join(";", args);
 
         sendObject(info.getBytes());
-        Log.d("declareID", info);
+        Log.d("declareID", "Channel " + id + ": " + info);
     }
 
     /**
@@ -122,7 +145,7 @@ public class CombinedSideChannel {
      * Send NoIperf. Currently, doesn't seem too useful.
      */
     public void sendIperf() {
-        Log.i("sendIperf", "always no iperf!");
+        Log.i("sendIperf", "Channel " + id + ": always no iperf!");
         String noIperf = "NoIperf";
         sendObject(noIperf.getBytes());
     }
@@ -135,7 +158,7 @@ public class CombinedSideChannel {
      */
     public void sendMobileStats(@NonNull String sendMobileStat, Context context) {
         if (sendMobileStat.equalsIgnoreCase("true")) {
-            Log.i("sendMobileStats", "will send mobile stats!");
+            Log.i("sendMobileStats", "Channel " + id + ": will send mobile stats!");
             DeviceInfoBean deviceInfoBean = new DeviceInfoBean(context);
             JSONObject deviceInfo = new JSONObject();
             JSONObject osInfo = new JSONObject();
@@ -161,10 +184,10 @@ public class CombinedSideChannel {
 
                 deviceInfo.put("locationInfo", locationInfo);
             } catch (JSONException e) {
-                e.printStackTrace();
+                Log.e("sendMobileStats", "Channel " + id + ": JSON issue with mobile stats", e);
             }
 
-            Log.d("sendMobileStats", deviceInfo.toString());
+            Log.d("sendMobileStats", "Channel " + id + ": " + deviceInfo.toString());
 
             sendObject("WillSendMobileStats".getBytes());
             sendObject(deviceInfo.toString().getBytes());
@@ -190,7 +213,11 @@ public class CombinedSideChannel {
      *     "08801": ["", 8801]}
      *   ...
      * }}
-     * ReplayActivity chooses the correct ServerInstance to use based on the server IP and port
+     * ReplayActivity chooses the correct ServerInstance to use based on the server IP and port.
+     * This is not really useful now, as the tests connect to only one IP and port during the test.
+     * The tests used to connect to different IPs and ports to emulate real app traffic, as real
+     * apps connect to multiple IPs and ports. Each packet in the replays has a CS_Pair, which tells
+     * which IP and port to connect to. All CS_Pairs in a replay are now the same.
      *
      * @return mapping of IPs and ports like above
      * @throws IOException Probably issue with socket connection or unexpected end of data stream
@@ -200,7 +227,7 @@ public class CombinedSideChannel {
         HashMap<String, HashMap<String, HashMap<String, ServerInstance>>> ports = new HashMap<>();
         byte[] data = receiveObject(objLen);
         String tempStr = new String(data);
-        Log.d("receivePortMapping", "length: " + tempStr.length());
+        Log.d("receivePortMapping", "Channel " + id + ": length: " + tempStr.length());
         JSONObject jObject;
         try {
             jObject = new JSONObject(tempStr);
@@ -226,13 +253,14 @@ public class CombinedSideChannel {
                 ports.put(key, tempHolder);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e("receivingPortMapping", "Channel " + id + ": Error reading JSON", e);
         }
         return ports;
     }
 
     /**
-     * Receive sender count for UDP. Currently, doesn't seem too useful.
+     * Receive sender count for UDP. Currently, doesn't seem too useful. Currently, it seems to
+     * return 0 if test is TCP and 1 if test is UDP.
      *
      * @return sender count
      * @throws IOException Probably issue with socket connection or unexpected end of data stream
@@ -240,8 +268,17 @@ public class CombinedSideChannel {
     public int receiveSenderCount() throws IOException {
         byte[] data = receiveObject(objLen);
         String tempStr = new String(data);
-        Log.d("receiveSenderCount", "senderCount: " + Integer.valueOf(tempStr));
-        return Integer.parseInt(tempStr);
+        Log.d("receiveSenderCount", "Channel " + id + ": senderCount: " + tempStr);
+        int senderCount = 1;
+        try { //very very rarely, sometimes server sends something that isn't an int, and we don't know why
+            senderCount = Integer.parseInt(tempStr);
+        } catch (NumberFormatException e) {
+            Log.e("receiveSenderCount", "Channel " + id + ": senderCount: " + tempStr, e);
+            if (isTcp) {
+                senderCount = 0;
+            }
+        }
+        return senderCount;
     }
 
     /**
@@ -288,13 +325,13 @@ public class CombinedSideChannel {
                 data = receiveObject(objLen);
                 str = new String(data);
             }
-            Log.d("getResult", "received result is: " + str);
+            Log.d("getResult", "Channel " + id + ": received result is: " + str);
             return false;
         } else {
             sendObject("Result;Yes".getBytes());
             byte[] data = receiveObject(objLen);
             String str = new String(data);
-            Log.d("getResult", "received result is: " + str);
+            Log.d("getResult", "Channel " + id + ": received result is: " + str);
         }
         return true;
     }
@@ -306,7 +343,7 @@ public class CombinedSideChannel {
         try {
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.w("sideChannelLog", "Channel " + id + ": Issue closing side channel", e);
         }
     }
 
@@ -318,11 +355,11 @@ public class CombinedSideChannel {
     private void sendObject(@NonNull byte[] buf) {
         try {
             dataOutputStream.writeBytes(String.format(Locale.getDefault(), "%010d", buf.length));
-            Log.d("SideChannelLog", "Sending buffer " + String.format(Locale.getDefault(),
+            Log.d("SideChannelLog", "Channel " + id + ": Sending buffer " + String.format(Locale.getDefault(),
                     "%010d", buf.length) + "  " + new String(buf));
             dataOutputStream.write(buf);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("SideChannelLog", "Channel " + id + ": Error sending object", e);
         }
     }
 
@@ -339,7 +376,7 @@ public class CombinedSideChannel {
         // Log.d("Obj", new String(recvObjSizeBytes));
         int recvObjSize = Integer.parseInt(new String(recvObjSizeBytes));
         // Log.d("Obj", String.valueOf(recvObjSize));
-        Log.d("SideChannelLog", "Receiving buffer " + new String(recvObjSizeBytes));
+        Log.d("SideChannelLog", "Channel " + id + ": Receiving buffer " + new String(recvObjSizeBytes));
         return receiveKbytes(recvObjSize); //return the response
     }
 
@@ -365,11 +402,11 @@ public class CombinedSideChannel {
             try {
                 bytesRead = dataInputStream.read(b, totalRead, Math.min(k - totalRead, bufSize));
                 if (bytesRead < 0) {
-                    throw new IOException("Data stream ended prematurely");
+                    throw new IOException("Channel " + id + ": Data stream ended prematurely");
                 }
             } catch (IOException e) {
-                e.printStackTrace();
-                throw new IOException("Something went wrong receiving bytes");
+                Log.e("ReceiveBytes", "Channel " + id + ": Error receiving data", e);
+                throw new IOException("Channel " + id + ": Something went wrong receiving bytes");
             }
             totalRead += bytesRead;
         }

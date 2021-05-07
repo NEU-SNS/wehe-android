@@ -57,7 +57,7 @@ class CTCPClientThread implements Runnable {
             try {
                 client.socket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.w("TCPClientThread", "Issue closing TCP socket", e);
             }
         }
     }

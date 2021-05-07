@@ -11,30 +11,9 @@
         android:id="@+id/appsRecyclerView"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/summaryLinearLayout"
+        android:layout_above="@id/prgBarLayout"
         android:layout_below="@+id/replay_bar"
         android:scrollbarStyle="outsideOverlay" />
-
-    <LinearLayout
-        android:id="@+id/summaryLinearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/prgBarLayout"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/selectedAppsMsgTextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="end"
-            android:padding="@dimen/margin_medium"
-            android:textColor="@color/white"
-            android:textSize="@dimen/text_medium"
-            android:textStyle="bold"
-            android:visibility="gone" />
-
-    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/prgBarLayout"
@@ -54,13 +33,37 @@
             android:visibility="gone" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/rerunButton"
+    <LinearLayout
+        android:id="@+id/actionBtnsLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="@color/weheBlue"
-        android:text="@string/rerun"
-        android:textColor="@color/white"
-        android:visibility="gone" />
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/rerunButton"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="0dp"
+            android:layout_weight="1"
+            android:background="@color/weheBlue"
+            android:text="@string/rerun"
+            android:textColor="@color/white"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/localizeDiffButton"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="1dp"
+            android:layout_marginEnd="0dp"
+            android:layout_weight="1"
+            android:background="@color/weheBlue"
+            android:text="@string/localize_diff"
+            android:textColor="@color/white"
+            android:visibility="gone" />
+    </LinearLayout>
+
 </RelativeLayout>

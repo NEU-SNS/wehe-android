@@ -67,6 +67,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -111,7 +112,7 @@ public class ReplayActivity extends AppCompatActivity {
     private ArrayList<ApplicationBean> selectedApps = null; //apps to run
     private final ArrayList<ApplicationBean> diffApps = new ArrayList<>(); //apps with differentiation
     private final ArrayList<ApplicationBean> inconclusiveApps = new ArrayList<>();
-    private ProgressBar prgBar;
+    private ProgressBar prgBar; //progress bar at bottom of screen when tests are running
     private ImageReplayRecyclerViewAdapter adapter = null; //layout for each replay
     private Context context;
     private TraceRunAsync traceRunner; //runs the tests
@@ -120,6 +121,12 @@ public class ReplayActivity extends AppCompatActivity {
     private String carrier; //carrier to display in results
     private String serverDisplay; //server to display in the results
     private boolean mlabServerUsed;
+    //Tomography tests determine where exactly in the network differentiation occurs. If differentiation
+    //is detected in a test, the app will ask users if they want to run a tomography test. These
+    //tests run 3 concurrent tests to 3 optimal MLab servers. Based on the times the packets are sent,
+    //an algorithm can determine where differentiation occurs. All 3 of the tests count as one Wehe
+    //"Test", so 1 historyCount is used for all 3 tests.
+    private boolean isTomography = false; //true if tomography test, false if normal test
 
     private final DialogInterface.OnClickListener doNothing = new DialogInterface.OnClickListener() {
         @Override
@@ -128,7 +135,7 @@ public class ReplayActivity extends AppCompatActivity {
         }
     };
 
-    //this happens if rerun all or rerun inconclusive buttons clicked
+    //this happens if rerun differentiation or rerun inconclusive buttons clicked
     private final DialogInterface.OnClickListener rerunButtons = new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialog, int which) {
@@ -144,13 +151,18 @@ public class ReplayActivity extends AppCompatActivity {
             //rearrange layout to hide rerun button
             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)
                     findViewById(R.id.appsRecyclerView).getLayoutParams();
-            params.addRule(RelativeLayout.ABOVE, R.id.summaryLinearLayout);
+            params.addRule(RelativeLayout.ABOVE, R.id.prgBarLayout);
             findViewById(R.id.rerunButton).setVisibility(View.GONE);
+            findViewById(R.id.localizeDiffButton).setVisibility(View.GONE);
+            adapter.setTomography(false);
+            isTomography = false;
             for (ApplicationBean app : selectedApps) {
+                app.setTomography(false);
                 app.setArcepNeedsAlerting(false);
                 app.setStatus(getString(R.string.pending));
             }
             inconclusiveApps.clear();
+            diffApps.clear();
             traceRunner = new TraceRunAsync();
             traceRunner.execute("");
         }
@@ -186,6 +198,44 @@ public class ReplayActivity extends AppCompatActivity {
         }
     };
 
+    //run tomography dialogue
+    private final View.OnClickListener runTomoListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            //automatically pops up when tests end if some tests have differentiation
+            //asks if user wants to run tomography test
+            new AlertDialog.Builder(ReplayActivity.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                    .setTitle(R.string.localize_diff)
+                    .setMessage(R.string.rerun_tomography_descr)
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Objects.requireNonNull(getSupportActionBar()).setTitle(getString(R.string.tomography_page_title));
+
+                            //rearrange layout to hide rerun button
+                            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)
+                                    findViewById(R.id.appsRecyclerView).getLayoutParams();
+                            params.addRule(RelativeLayout.ABOVE, R.id.prgBarLayout);
+                            findViewById(R.id.rerunButton).setVisibility(View.GONE);
+                            findViewById(R.id.localizeDiffButton).setVisibility(View.GONE);
+
+                            //run tomography tests if user clicks yes
+                            isTomography = true;
+                            adapter.setTomography(true);
+                            selectedApps = new ArrayList<>(diffApps);
+                            for (ApplicationBean app : selectedApps) {
+                                app.setTomography(true);
+                                app.setArcepNeedsAlerting(false);
+                                app.setStatus(getString(R.string.pending));
+                            }
+                            traceRunner = new TraceRunAsync();
+                            traceRunner.execute("");
+                        }
+                    })
+                    .setNegativeButton(R.string.no, doNothing).create().show();
+        }
+    };
+
     /**
      * Force alert dialog to center align buttons.
      *
@@ -199,8 +249,35 @@ public class ReplayActivity extends AppCompatActivity {
         b.setLayoutParams(params);
     }
 
+    /**
+     * When tests are finished and there are tests with differentiation or inconclusive tests, show
+     * the rerun button, which allow users to rerun these tests. Also, if there is differentiation,
+     * show the Localize Differentiation button to allow users to run tomography tests.
+     */
+    private void displayRerunTomoButtons() {
+        //set rerun button to be visible if differentiation or inconclusive apps
+        Button rerunButton = findViewById(R.id.rerunButton);
+        rerunButton.setVisibility(View.VISIBLE);
+        rerunButton.setOnClickListener(rerunListener);
+
+        //TODO: uncomment to allow users to run tomography tests
+        /*
+        if (!isTomography && diffApps.size() > 0) { //show tomography button if necessary
+            Button runTomoButton = findViewById(R.id.localizeDiffButton);
+            runTomoButton.setVisibility(View.VISIBLE);
+            runTomoButton.setOnClickListener(runTomoListener);
+        }*/
+
+        //rearrange layout so progress bar disappears
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)
+                findViewById(R.id.appsRecyclerView).getLayoutParams();
+        params.addRule(RelativeLayout.ABOVE, R.id.actionBtnsLayout);
+        findViewById(R.id.prgBar).setVisibility(View.GONE);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //entry point coming from SelectionFragment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_replay);
         Toolbar mToolbar = findViewById(R.id.replay_bar);
@@ -250,6 +327,7 @@ public class ReplayActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        //does this before going back to SelectionFragment
         super.onDestroy();
         if (replayOngoing) {
             if (traceRunner != null) {
@@ -351,7 +429,6 @@ public class ReplayActivity extends AppCompatActivity {
             replayStop();
         }
         return true;
-
     }
 
     /**
@@ -364,18 +441,18 @@ public class ReplayActivity extends AppCompatActivity {
      * <p>
      * Because tests take a long time to run, AsyncTask is used to have the tests run on a dedicated
      * thread instead of running on the UI (main) thread, which makes UI thread more responsive to
-     * user.
+     * user. AsyncTask makes it easier to update UI.
      */
     private class TraceRunAsync extends AsyncTask<String, String, Void> {
         // TODO switch to better data structure, beans are not suitable for android
         private CombinedAppJSONInfoBean appData;
         private ApplicationBean app;
-        private String server; //server to run the replays to
+        private final ArrayList<String> servers = new ArrayList<>(); //servers to run the replays to
         private String metadataServer;
-        private WebSocketConnection wsConn = null;
+        private final ArrayList<WebSocketConnection> wsConns = new ArrayList<>();
         private UpdateUIBean updateUIBean;
         private boolean doTest; //add a tail for testing data if true
-        private String analyzerServerUrl;
+        private final ArrayList<String> analyzerServerUrls = new ArrayList<>();
         //true if confirmation replay should run if the first replay has differentiation
         private boolean confirmationReplays;
         private boolean useDefaultThresholds;
@@ -384,7 +461,7 @@ public class ReplayActivity extends AppCompatActivity {
         private SharedPreferences settings;
         private SSLSocketFactory sslSocketFactory = null;
         private HostnameVerifier hostnameVerifier = null;
-        private boolean rerun = false; //true if confirmation replay
+        //private boolean rerun = false; //true if confirmation replay
         //randomID, historyCount, and testId identifies the user, test number, and replay number
         //server uses these to determine which results to send back to client
         private String randomID; //unique user ID for certain device
@@ -396,6 +473,8 @@ public class ReplayActivity extends AppCompatActivity {
         //for ports - 0 non-443 port, 1 is port 443
         private int testId;
         private JSONArray results; //results containing apps or the port arrays (below)
+        private final ArrayList<Timer> timers = new ArrayList<>(); //for stopping sendRequest timers
+        private final ArrayList<Integer> numMLab = new ArrayList<>(); //number of tries before successful MLab connection
 
         // this method handles all UI updates, running on main thread
         @Override
@@ -423,9 +502,16 @@ public class ReplayActivity extends AppCompatActivity {
                 }
                 prgBar.setProgress(updateUIBean.getProgress());
             } else if (values[0].equalsIgnoreCase("finishProgress")) {
-                //hide progress bar
-                prgBar.setProgress(0);
-                prgBar.setVisibility(View.GONE);
+                //values[1] is 1 if just finished first replay; 2 if finished second replay
+                int iteration = Integer.parseInt(values[1]);
+                updateUIBean.finishProgress(Integer.parseInt(values[1]));
+                if (iteration == 1) { //finished first replay
+                    prgBar.setProgress(50);
+                } else { //finished test
+                    prgBar.setProgress(100);
+                    //hide progress bar
+                    prgBar.setVisibility(View.GONE);
+                }
             } else if (values[0].equalsIgnoreCase("makeToast")) {
                 Toast.makeText(ReplayActivity.this, values[1], Toast.LENGTH_LONG).show();
             } else if (values[0].equalsIgnoreCase("makeDialog")) {
@@ -446,18 +532,9 @@ public class ReplayActivity extends AppCompatActivity {
                                             replayStop();
                                         }
 
+                                        //All tests just finished
                                         if (diffApps.size() != 0 || inconclusiveApps.size() != 0) {
-                                            //tests finished
-                                            //set rerun button to be visible if differentiation or inconclusive apps
-                                            Button rerunButton = findViewById(R.id.rerunButton);
-                                            rerunButton.setVisibility(View.VISIBLE);
-                                            rerunButton.setOnClickListener(rerunListener);
-
-                                            //rearrange layout so rerun button appears
-                                            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)
-                                                    findViewById(R.id.appsRecyclerView).getLayoutParams();
-                                            params.addRule(RelativeLayout.ABOVE, R.id.rerunButton);
-                                            findViewById(R.id.prgBar).setVisibility(View.GONE);
+                                            displayRerunTomoButtons();
                                         }
                                     }
                                 }).show();
@@ -488,6 +565,15 @@ public class ReplayActivity extends AppCompatActivity {
         }
 
         /**
+         * Reset the progress bar to 0. Need to reset the actual progress bar and the bean keeping
+         * track of the progress.
+         */
+        private void clearProgressBar() {
+            prgBar.setProgress(0);
+            updateUIBean.clearProgress();
+        }
+
+        /**
          * This method begins process to run tests.
          * Step 1: Initialize several variables.
          * Step 2: Run tests.
@@ -498,6 +584,13 @@ public class ReplayActivity extends AppCompatActivity {
          */
         @Override
         protected Void doInBackground(String... args) {
+            //set each app's status to "Waiting"
+            for (ApplicationBean app : selectedApps) {
+                app.setStatus(getResources().getString(R.string.pending));
+            }
+
+            //adapter.notifyDataSetChanged();
+
             // Keep checking if the user exited from ReplayActivity or not
             // TODO find a better way stop the tests immediately without continues checking
             if (isCancelled()) {
@@ -517,9 +610,13 @@ public class ReplayActivity extends AppCompatActivity {
             Config.readConfigFile(Consts.CONFIG_FILE, context);
             //get settings from SettingsFragment
             SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+            if (isTomography) { //need to use MLab servers for tomography tests
+                serverDisplay = Consts.DEFAULT_SERVER;
+            } else {
+                serverDisplay = sharedPrefs.getString(getString(R.string.pref_server_key),
+                        Consts.DEFAULT_SERVER); //get server from SettingsFragment
+            }
             // metadata here is user's network type device used geolocation if permitted etc
-            serverDisplay = sharedPrefs.getString(getString(R.string.pref_server_key),
-                    Consts.DEFAULT_SERVER); //get server from SettingsFragment
             metadataServer = Consts.METADATA_SERVER;
             if (!setupServersAndCertificates(serverDisplay, metadataServer)) {
                 return null;
@@ -572,7 +669,8 @@ public class ReplayActivity extends AppCompatActivity {
             //replay will also pause for 2 seconds at that point in the replay
             //port tests try to run as fast as possible, so there is no timing for them
             Config.set("timing", runPortTests ? "false" : "true");
-            Config.set("server", server);
+            String serversStr = servers.toString();
+            Config.set("server", serversStr.substring(1, serversStr.length() - 1));
             String publicIP = getPublicIP("80"); //get user's IP address
             Config.set("publicIP", publicIP);
             Log.d("Replay", "public IP: " + publicIP);
@@ -596,7 +694,10 @@ public class ReplayActivity extends AppCompatActivity {
              */
             boolean firstApp = true;
             for (ApplicationBean app : selectedApps) {
-                rerun = false;
+                if (isCancelled()) {
+                    return null;
+                }
+
                 if (!firstApp && mlabServerUsed) {
                     if (!setupServersAndCertificates(serverDisplay, null)) {
                         return null;
@@ -604,18 +705,41 @@ public class ReplayActivity extends AppCompatActivity {
                 }
                 this.app = app; // Set the app to run test for
                 this.app.setArcepNeedsAlerting(false);
-                updateUIBean.setProgress(0); //make sure progress bar is clear
-                publishProgress("updateUI"); //make progress bar visible
-                runTest(); // Run the test on this.app
-                publishProgress("finishProgress"); // set progress bar to invisible
-                if (wsConn != null) {
-                    wsConn.close();
-                }
-                firstApp = false;
-            }
 
-            if (isCancelled()) {
-                return null;
+                if (isCancelled()) {
+                    return null;
+                }
+
+                //make sure progress bar is clear
+                clearProgressBar();
+                publishProgress("updateUI"); //make progress bar visible
+                boolean rerun = runTest(false); // Run the test on this.app
+                if (!isTomography && rerun) {
+                    //run confirmation test if confirmation tests are switched on in Settings and
+                    //first test was inconclusive or had differentiation
+                    //don't run confirmation tests for tomography tests
+                    //make sure progress bar is clear
+                    clearProgressBar();
+                    publishProgress("updateUI"); //make progress bar visible
+                    runTest(true);
+                }
+
+                //clean up
+                for (WebSocketConnection ws : wsConns) {
+                    if (ws != null) {
+                        ws.close();
+                    }
+                }
+                for (Timer t : timers) {
+                    t.cancel();
+                }
+                timers.clear();
+
+                firstApp = false;
+
+                if (isCancelled()) {
+                    return null;
+                }
             }
 
             /*
@@ -677,7 +801,7 @@ public class ReplayActivity extends AppCompatActivity {
          * necessary. Gets necessary certificates for server and metadata server.
          *
          * @param server         the hostname of the server to connect to
-         * @param metadataServer the host name of the metadata server to connect to
+         * @param metadataServer the hostname of the metadata server to connect to
          * @return true if everything properly sets up; false otherwise
          */
         private boolean setupServersAndCertificates(@NonNull String server, String metadataServer) {
@@ -688,73 +812,116 @@ public class ReplayActivity extends AppCompatActivity {
             if ((Double.parseDouble(BuildConfig.VERSION_NAME) >= 3.46) && (server.equals("wehe3.meddle.mobi"))) {
                 server = "wehe4.meddle.mobi";
             }
+            servers.clear();
             //extreme hack to temporarily get around French DNS look up issue
             if (server.equals("wehe4.meddle.mobi")) {
-                this.server = "10.0.0.0";
+                servers.add("10.0.0.0");
                 Log.d("Serverhack", "hacking wehe4");
             } else {
-                this.server = getServerIP(server);
+                servers.add(getServerIP(server));
+                if (servers.get(servers.size() - 1).equals("")) {
+                    publishProgress("makeDialog", getString(R.string.simple_error),
+                            getString(R.string.error_unknown_host), "true");
+                    return false;
+                }
             }
             // A hacky way to check server IP version
             boolean serverIPisV6 = false;
-            if (this.server.contains(":")) {
+            if (servers.get(0).contains(":")) {
                 serverIPisV6 = true;
             }
-            Log.d("ServerIPVersion", this.server + (serverIPisV6 ? "IPV6" : "IPV4"));
-            //Connect to an MLab server if wehe4.meddle.mobi IP is 10.0.0.0 or if the client is using ipv6.
-            // Steps to connect: 1) GET
-            //request to MLab site to get MLab servers that can be connected to; 2) Parse first
-            //server to get MLab server URL and the authentication URL to connect to; 3) Connect to
-            //authentication URL with WebSocket; have connection open for entire test so SideChannel
-            //server doesn't disconnect (for security). URL valid for connection for 2 min after GET
-            //request made. 4) Connect to SideChannel with MLab machine URL. 5) Authentication URL
-            //has another 2 min timeout after connecting; every MLab test needs to do this process.
+            Log.d("ServerIPVersion", servers.get(0) + (serverIPisV6 ? "IPV6" : "IPV4"));
+            //Connect to an MLab server if wehe4.meddle.mobi IP is 10.0.0.0 or if the client is
+            //using ipv6. Steps to connect:
+            //1) GET request to MLab site to get MLab servers that can be connected to
+            //2) Parse first server to get MLab server URL and the authentication URL to connect to
+            //3) Connect to authentication URL with WebSocket; have connection open for entire test
+            //so SideChannel server doesn't disconnect (for security). URL valid for connection for
+            //2 min after GET request made
+            //4) Connect to SideChannel with MLab machine URL
+            //5) Authentication URL has another 2 min timeout after connecting; every MLab test
+            //needs to do this process.
+            //Also connect to MLab server if running tomography tests
+            int numTests = isTomography ? Consts.NUM_TOMOGRAPHY_TESTS : 1;
             mlabServerUsed = false;
-            if (this.server.equals("10.0.0.0") || serverIPisV6) {
+            if (servers.get(0).equals("10.0.0.0") || serverIPisV6) {
                 mlabServerUsed = true;
-                JSONObject mLabResp = sendRequest(Consts.MLAB_SERVERS, "GET", false, null, null);
-                boolean webSocketConnected = false;
-                int i = 0;
-                while (!webSocketConnected) { //try the 4 servers before going to wehe2
-                    try {
-                        JSONArray servers = (JSONArray) mLabResp.get("results"); //get MLab servers list
-                        JSONObject serverObj = (JSONObject) servers.get(i); //get first MLab server
-                        server = "wehe-" + serverObj.getString("machine"); //SideChannel URL
-                        this.server = getServerIP(server);
-                        String mLabURL = ((JSONObject) serverObj.get("urls"))
-                                .getString(Consts.MLAB_WEB_SOCKET_SERVER_KEY); //authentication URL
-                        wsConn = new WebSocketConnection(new URI(mLabURL)); //connect to WebSocket
-                        Log.d("WebSocket", "New WebSocket connectivity check: "
-                                + (wsConn.isOpen() ? "CONNECTED" : "CLOSED") + " TO " + server);
-                        webSocketConnected = true;
-                    } catch (URISyntaxException | JSONException | DeploymentException | NullPointerException | InterruptedException e) {
-                        System.out.println(i + " " +Consts.MLAB_NUM_TRIES_TO_CONNECT);
-                        if (i == Consts.MLAB_NUM_TRIES_TO_CONNECT - 1) {
-                            //if can't connect to mlab, try an amazon server using wehe2.meddle.mobi
-                            Log.i("GetReplayServerIP", "Can't get MLab server, trying Amazon");
-                            this.server = getServerIP("wehe2.meddle.mobi");
-                            webSocketConnected = true;
+                servers.remove(0);
+                wsConns.clear();
+                try {
+                    int numTries = 0; //tracks num tries before successful MLab connection
+                    JSONObject mLabResp = sendRequest(Consts.MLAB_SERVERS, "GET", false, null, null);
+                    //TODO: make sure this outer try really necessary; check what happens if below line fails; will it exit gracefully?
+                    JSONArray mLabServers = (JSONArray) mLabResp.get("results"); //get MLab servers list
+                    for (int i = 0; wsConns.size() < numTests && i < mLabServers.length(); i++) {
+                        //try the 4 servers before going to wehe2
+                        try {
+                            numTries++;
+                            Log.d("WebSocket", "Attempting to connect to WebSocket " + i
+                                    + ": " + server);
+                            JSONObject serverObj = (JSONObject) mLabServers.get(i); //get first MLab server
+                            server = "wehe-" + serverObj.getString("machine"); //SideChannel URL
+                            String mLabURL = ((JSONObject) serverObj.get("urls"))
+                                    .getString(Consts.MLAB_WEB_SOCKET_SERVER_KEY); //authentication URL
+                            wsConns.add(new WebSocketConnection(i, new URI(mLabURL))); //connect to WebSocket
+
+                            //code below runs only if successful connection to WebSocket
+                            Log.d("WebSocket", "New WebSocket (id: " + i + ") connectivity check: "
+                                    + (wsConns.get(i).isOpen() ? "CONNECTED" : "CLOSED") + " TO " + server);
+                            servers.add(getServerIP(server));
+                            numMLab.add(numTries);
+                            numTries = 0;
+                        } catch (URISyntaxException | JSONException | DeploymentException
+                                | NullPointerException | InterruptedException e) {
+                            //failed to connect to WebSocket, try next one
+                            Log.w("WebSocket", "Failed to connect to WebSocket", e);
                         }
-                        i++;
                     }
+                    if (wsConns.size() != numTests) {
+                        //if can't connect to mlab, try an amazon server using wehe2.meddle.mobi
+                        Log.i("GetReplayServerIP", "Can't get MLab server, trying Amazon");
+                        servers.clear();
+                        for (WebSocketConnection ws : wsConns) { //close opened WebSockets
+                            if (ws.isOpen()) {
+                                ws.close();
+                            }
+                        }
+                        wsConns.clear();
+                        if (isTomography) {
+                            //user can't run tomography tests if can't connect to MLab servers
+                            //exit tests in this case
+                            publishProgress("makeDialog", getString(R.string.simple_error),
+                                    getString(R.string.tomography_not_supported), "true");
+                            return false;
+                        }
+                        numTests = 1;
+                        servers.add(getServerIP("wehe2.meddle.mobi"));
+                    }
+                } catch (JSONException | NullPointerException e) {
+                    Log.e("WebSocket", "Can't retrieve M-Lab servers", e);
                 }
             }
 
-            if (this.server.equals("")) { //check to make sure IP was returned by getServerIP
-                publishProgress("makeDialog", getString(R.string.simple_error),
-                        getString(R.string.error_unknown_host), "true");
-                if (wsConn != null && wsConn.isOpen()) {
-                    wsConn.close();
+            for (int i = 0; i < numTests; i++) {
+                if (servers.get(i).equals("")) { //check to make sure IP was returned by getServerIP
+                    publishProgress("makeDialog", getString(R.string.simple_error),
+                            getString(R.string.error_unknown_host), "true");
+                    if (wsConns.get(i) != null && wsConns.get(i).isOpen()) {
+                        wsConns.get(i).close();
+                    }
+                    return false;
                 }
-                return false;
             }
-            Log.d("GetReplayServerIP", "Server IP: " + this.server);
+            Log.d("GetReplayServerIP", "Server IP: " + servers);
             generateServerCertificate(true);
 
-            //get URL for analysis and results
+            //get URL(s) for analysis and results
             int port = Integer.parseInt(Config.get("result_port")); //get port to send tests through
-            analyzerServerUrl = ("https://" + this.server + ":" + port + "/Results");
-            Log.d("Result Channel", "path: " + this.server + " port: " + port);
+            analyzerServerUrls.clear();
+            for (String srvr : servers) {
+                analyzerServerUrls.add("https://" + srvr + ":" + port + "/Results");
+                Log.d("Result Channel", "path: " + srvr + " port: " + port);
+            }
 
             if (metadataServer != null) {
                 this.metadataServer = getServerIP(metadataServer);
@@ -796,7 +963,7 @@ public class ReplayActivity extends AppCompatActivity {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException ex) {
-                        ex.printStackTrace();
+                        Log.w("getServerIP", "Sleep interrupted", ex);
                     }
                 }
             }
@@ -838,7 +1005,7 @@ public class ReplayActivity extends AppCompatActivity {
                 }
             } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException
                     | KeyManagementException | IOException e) {
-                e.printStackTrace();
+                Log.e("Certificates", "Error generating certificates", e);
             }
         }
 
@@ -851,8 +1018,8 @@ public class ReplayActivity extends AppCompatActivity {
         private String getPublicIP(String port) {
             String publicIP = "127.0.0.1";
 
-            if (server != null && !server.equals("127.0.0.1")) {
-                String url = "http://" + server + ":" + port + "/WHATSMYIPMAN";
+            if (servers.size() != 0 && !servers.get(0).equals("127.0.0.1")) {
+                String url = "http://" + servers.get(0) + ":" + port + "/WHATSMYIPMAN";
                 Log.d("getPublicIP", "url: " + url);
 
                 int numFails = 0;
@@ -893,7 +1060,7 @@ public class ReplayActivity extends AppCompatActivity {
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e1) {
-                            e1.printStackTrace();
+                            Log.w("getPublicIP", "Sleep interrupted", e1);
                         }
                         if (++numFails == 5) { //Cannot connect to server after 5 tries
                             Log.w("getPublicIP", "Returning -1", e);
@@ -903,7 +1070,7 @@ public class ReplayActivity extends AppCompatActivity {
                     }
                 }
             } else {
-                Log.w("getPublicIP", "server ip is not available: " + server);
+                Log.w("getPublicIP", "server ip is not available: " + servers.get(0));
             }
             return publicIP;
         }
@@ -915,11 +1082,12 @@ public class ReplayActivity extends AppCompatActivity {
          * The server compares the throughputs of testId 1 to testId 0 of the same history count.
          * The server then determines if there is differentiation and stores the result on the server.
          *
+         * @param url          the url to the server where analysis will take place
          * @param id           the random ID assigned to specific user's device
          * @param historyCount the test to analyze
          * @return a JSONObject: { "success" : true | false }; true if server analyzes successfully
          */
-        private JSONObject ask4analysis(String id, int historyCount) {
+        private JSONObject ask4analysis(String url, String id, int historyCount) {
             HashMap<String, String> pairs = new HashMap<>();
 
             pairs.put("command", "analyze");
@@ -927,12 +1095,13 @@ public class ReplayActivity extends AppCompatActivity {
             pairs.put("historyCount", String.valueOf(historyCount));
             pairs.put("testID", "1");
 
-            return sendRequest(analyzerServerUrl, "POST", true, null, pairs);
+            return sendRequest(url, "POST", true, null, pairs);
         }
 
         /**
          * Retrieves a replay result from the server that it previously was requested to analyze.
          *
+         * @param url          the url of the server to get the result
          * @param id           the random ID assigned to a specific user's device
          * @param historyCount the test containing the replay to retrieve
          * @return a JSONObject with a key named "success". If value of "success" is false, a key
@@ -941,7 +1110,7 @@ public class ReplayActivity extends AppCompatActivity {
          * "replayName", "date", "userID", "extraString", "historyCount", "testID", "area_test",
          * "ks2_ratio_test", "xput_avg_original", "xput_avg_test", "ks2dVal", "ks2pVal"
          */
-        private JSONObject getSingleResult(String id, int historyCount) {
+        private JSONObject getSingleResult(String url, String id, int historyCount) {
             ArrayList<String> data = new ArrayList<>();
 
             data.add("userID=" + id);
@@ -949,7 +1118,7 @@ public class ReplayActivity extends AppCompatActivity {
             data.add("historyCount=" + historyCount);
             data.add("testID=1");
 
-            return sendRequest(analyzerServerUrl, "GET", true, data, null);
+            return sendRequest(url, "GET", true, data, null);
         }
 
         /**
@@ -961,7 +1130,7 @@ public class ReplayActivity extends AppCompatActivity {
          * @param data   data to send to server in a GET request, null if a POST request or if no
          *               data to send to server
          * @param pairs  data to send to server in a POST request, null if a GET request
-         * @return a response from the server in the form of a JSONObject
+         * @return a response from the server in the form of a JSONObject, null if error
          */
         private JSONObject sendRequest(String url, @NonNull String method, boolean main,
                                        ArrayList<String> data, HashMap<String, String> pairs) {
@@ -977,7 +1146,7 @@ public class ReplayActivity extends AppCompatActivity {
                             String dataURL = URLEncoder(data);
                             url_string += "?" + dataURL;
                         }
-                        Log.d("Send Request", url_string);
+                        Log.d("Send GET Request", url_string);
 
                         for (int i = 0; i < 3; i++) {
                             try {
@@ -1012,7 +1181,7 @@ public class ReplayActivity extends AppCompatActivity {
                             }
                         }
                     } else if (method.equalsIgnoreCase("POST")) {
-                        Log.d("Send Request", url_string);
+                        Log.d("Send POST Request", url_string);
 
                         try {
                             //connect to server
@@ -1060,6 +1229,7 @@ public class ReplayActivity extends AppCompatActivity {
             });
             serverComm.start();
             Timer t = new Timer();
+            timers.add(t);
             //timeout server after 8 sec; server timeout field times out only when nothing is sent;
             //if stuff sends too slowly, it could take forever, so this external timer prevents that
             t.schedule(new TimerTask() {
@@ -1123,7 +1293,7 @@ public class ReplayActivity extends AppCompatActivity {
                     result.append("=");
                     result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
                 } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+                    Log.e("paramsToPostData", "Encoding error", e);
                 }
             }
             return result.toString();
@@ -1197,7 +1367,7 @@ public class ReplayActivity extends AppCompatActivity {
                 appData.setReplayName((String) json.get(3)); //name of replay
 
             } catch (JSONException | IOException e) {
-                e.printStackTrace();
+                Log.e("UnpickleJSON", "Error reading test files", e);
             }
             return appData;
         }
@@ -1233,20 +1403,24 @@ public class ReplayActivity extends AppCompatActivity {
          * <p>
          * Step B has several sub-steps which run for each replay:
          * Step 0: Initialize variables.
-         * Step 1: Tell server about the replay that is about to happen.
-         * Step 2: Ask server for permission to run replay.
+         * Step 1: Tell server(s) about the replay that is about to happen.
+         * Step 2: Ask server(s) for permission to run replay.
          * Step 3: Send noIperf.
          * Step 4: Send device info.
-         * Step 5: Get port mapping from server.
+         * Step 5: Get port mapping from server(s).
          * Step 6: Create TCP clients from CSPairs and UDP clients from client ports.
-         * Step 7: Start notifier for UDP.
-         * Step 8: Start receiver to log throughputs on a given interval.
-         * Step 9: Send packets to server.
-         * Step 10: Tell server that replay is finished.
-         * Step 11: Send throughputs and slices to server.
-         * Step 12: Close side channel and TCP/UDP sockets.
+         * Step 7: Start notifier(s) for UDP.
+         * Step 8: Start receiver(s) to log throughputs on a given interval.
+         * Step 8.5?: Start progress bar.
+         * Step 9: Send packets to server(s).
+         * Step 10: Tell server(s) that replay is finished.
+         * Step 11: Send throughputs and slices to server(s).
+         * Step 12: Close side channel(s) and TCP/UDP sockets.
+         *
+         * @param isConfirmation true if running confirmation test; false if running original test
+         * @return true if test will be rerun; false otherwise
          */
-        private void runTest() {
+        private boolean runTest(boolean isConfirmation) {
             String[] types;
             /*
              * Step A: Flip a coin to decide which replay type to run first.
@@ -1264,17 +1438,20 @@ public class ReplayActivity extends AppCompatActivity {
             int iteration = 1;
             boolean portBlocked = false;
             for (String channel : types) {
-                if (wsConn != null) { //if using MLab, check that still connected
-                    Log.d("WebSocket", "Before running test WebSocket connectivity check: "
-                            + (wsConn.isOpen() ? "CONNECTED" : "CLOSED"));
+                for (WebSocketConnection ws : wsConns) {
+                    if (ws != null) { //if using MLab, check that still connected
+                        Log.d("WebSocket", "Before running test WebSocket (id: "
+                                + ws.getId() + ") connectivity check: "
+                                + (ws.isOpen() ? "CONNECTED" : "CLOSED"));
+                    }
                 }
 
                 if (isCancelled()) { //user cancels running tests
-                    return;
+                    return false;
                 }
                 if (isNetworkUnavailable()) { //no network available
                     displayNoNetworkDialogue();
-                    return;
+                    return false;
                 }
 
                 /*
@@ -1294,24 +1471,31 @@ public class ReplayActivity extends AppCompatActivity {
                             + types.length + " " + getResources().getString(R.string.create_side_channel));
                     int sideChannelPort = Integer.parseInt(Config.get("combined_sidechannel_port"));
 
-                    // This random ID is used to map the test results to a specific instance of app
-                    // It is generated only once and saved thereafter
-                    if (randomID == null) {
-                        Log.e("RecordReplay", "randomID does not exist!");
-                        setInconclusive(getString(R.string.error_no_user_id));
-                        return;
-                    }
-
-                    Log.d("Server", server + " metadata " + metadataServer);
-                    // This side channel is used to communicate with the server in bytes mode and to
-                    // run traces, it send tcp and udp packets and receives the same from the server
+                    Log.d("Servers", servers + " metadata " + metadataServer);
+                    //The Side Channel communicates, in bytes mode, with the server to set up the
+                    //tests, start them, end them, and let the server know what exactly is going on.
+                    //The tests themselves are conducted over 2 other channels with the server -
+                    //the TCP channel for TCP tests and UDP channel for UDP tests. These channels
+                    //can be found in CTCPClientThread.java, CUDPClient.java, CombinedReceiverThread.java,
+                    //and CombinedNotifierThread.java
                     //Server handles communication in handle() function in server_replay.py in server
                     //code
-                    CombinedSideChannel sideChannel = new CombinedSideChannel(sslSocketFactory,
-                            server, sideChannelPort);
+                    ArrayList<CombinedSideChannel> sideChannels = new ArrayList<>();
+                    ArrayList<JitterBean> jitterBeans = new ArrayList<>();
+                    //lots of for loops and ArrayLists in this method - tomography tests require
+                    //multiple tests to run at once; each test requires their own set of variables
+                    //so the variables for each test are stored in ArrayLists. Normal tests will only
+                    //need 1 test, so 1 element in the ArrayLists, but tomography tests will have more
+                    int id = 0;
+                    for (String server : servers) {
+                        sideChannels.add(new CombinedSideChannel(id, sslSocketFactory,
+                                server, sideChannelPort, appData.isTCP()));
+                        jitterBeans.add(new JitterBean());
+                        id++;
+                    }
 
-                    JitterBean jitterBean = new JitterBean();
-                    // increase history count only once during the run of a single test
+                    // increase history count only once during the run of a single test or set of
+                    // tomography tests
                     if (iteration == 1) {
                         // First update historyCount
                         historyCount++;
@@ -1322,6 +1506,14 @@ public class ReplayActivity extends AppCompatActivity {
                         editor.putInt("historyCount", historyCount);
                         editor.apply();
                         Log.d("Replay", "historyCount: " + historyCount);
+                    }
+
+                    // This random ID is used to map the test results to a specific instance of app
+                    // It is generated only once and saved thereafter
+                    if (randomID == null) {
+                        Log.e("RecordReplay", "randomID does not exist!");
+                        setInconclusive(getString(R.string.error_no_user_id));
+                        return false;
                     }
 
                     // initialize endOfTest value
@@ -1340,6 +1532,7 @@ public class ReplayActivity extends AppCompatActivity {
                         }
                         ipThroughProxy = getPublicIP(replayPort);
                         if (ipThroughProxy.equals("-1")) { //port is blocked; move on to next replay
+                            //TODO: check if ui needed here
                             portBlocked = true;
                             iteration++;
                             continue;
@@ -1354,79 +1547,91 @@ public class ReplayActivity extends AppCompatActivity {
                     }
 
                     /*
-                     * Step 1: Tell server about the replay that is about to happen.
+                     * Step 1: Tell server(s) about the replay that is about to happen.
                      */
-                    // This is group of values that is used to track traces on server
-                    // Youtube;False;0;DiffDetector;0;129.10.9.93;1.0
-                    sideChannel.declareID(appData.getReplayName(), endOfTest ? "True" : "False",
-                            randomID, String.valueOf(historyCount), String.valueOf(testId),
-                            doTest ? Config.get("extraString") + "-Test" : Config.get("extraString"),
-                            ipThroughProxy, BuildConfig.VERSION_NAME);
+                    int i = 0;
+                    for (CombinedSideChannel sc : sideChannels) {
+                        // This is group of values that is used to track traces on server
+                        // Youtube;False;0;DiffDetector;0;129.10.9.93;1.0
+                        //set extra string to number tries needed to access MLab server
+                        Config.set("extraString", numMLab.size() == 0 ? "0" : numMLab.get(i).toString());
+                        sc.declareID(appData.getReplayName(), endOfTest ? "True" : "False",
+                                randomID, String.valueOf(historyCount), String.valueOf(testId),
+                                doTest ? Config.get("extraString") + "-Test" : Config.get("extraString"),
+                                ipThroughProxy, BuildConfig.VERSION_NAME);
 
-                    // This tuple tells the server if the server should operate on packets of traces
-                    // and if so which packets to process
-                    sideChannel.sendChangeSpec(-1, "null", "null");
+                        // This tuple tells the server if the server should operate on packets of traces
+                        // and if so which packets to process
+                        sc.sendChangeSpec(-1, "null", "null");
+                        i++;
+                    }
 
                     if (isCancelled()) {
-                        return;
+                        return false;
                     }
                     if (isNetworkUnavailable()) {
                         displayNoNetworkDialogue();
-                        return;
+                        return false;
                     }
 
                     /*
-                     * Step 2: Ask server for permission to run replay.
+                     * Step 2: Ask server(s) for permission to run replay.
                      */
                     publishProgress("updateStatus", app.getName(), iteration + "/"
                             + types.length + " " + getString(R.string.ask4permission));
                     // Now to move forward we ask for server permission
-                    String[] permission = sideChannel.ask4Permission();
-                    String status = permission[0].trim();
+                    ArrayList<Integer> numOfTimeSlices = new ArrayList<>();
+                    for (CombinedSideChannel sc : sideChannels) {
+                        String[] permission = sc.ask4Permission();
+                        String status = permission[0].trim();
 
-                    Log.d("Replay", "permission[0]: " + status
-                            + " permission[1]: " + permission[1]);
+                        Log.d("Replay", "Channel " + sc.getId() + ": permission[0]: "
+                                + status + " permission[1]: " + permission[1]);
 
-                    String permissionError = permission[1].trim();
-                    String customError;
-                    if (status.equals("0")) {
-                        // These are the different errors that server can report
-                        switch (permissionError) {
-                            case "1": //server cannot identify replay
-                                customError = getString(R.string.error_unknown_replay);
-                                break;
-                            case "2": //only one replay can run at a time per IP
-                                customError = getString(R.string.error_IP_connected);
-                                break;
-                            case "3": //server CPU > 95%, disk > 95%, or bandwidth > 2000 Mbps
-                                customError = getString(R.string.error_low_resources);
-                                break;
-                            default:
-                                customError = getString(R.string.error_unknown);
+                        String permissionError = permission[1].trim();
+                        String customError;
+                        if (status.equals("0")) {
+                            // These are the different errors that server can report
+                            switch (permissionError) {
+                                case "1": //server cannot identify replay
+                                    customError = getString(R.string.error_unknown_replay);
+                                    break;
+                                case "2": //only one replay can run at a time per IP
+                                    customError = getString(R.string.error_IP_connected);
+                                    break;
+                                case "3": //server CPU > 95%, disk > 95%, or bandwidth > 2000 Mbps
+                                    customError = getString(R.string.error_low_resources);
+                                    break;
+                                default:
+                                    customError = getString(R.string.error_unknown);
+                            }
+                            setInconclusive(customError);
+                            return false;
                         }
-                        setInconclusive(customError);
-                        return;
+                        numOfTimeSlices.add(Integer.parseInt(permission[2].trim(), 10));
                     }
-
-                    int numOfTimeSlices = Integer.parseInt(permission[2].trim(), 10);
 
                     /*
                      * Step 3: Send noIperf.
                      */
-                    sideChannel.sendIperf(); // always send noIperf here
+                    for (CombinedSideChannel sc : sideChannels) {
+                        sc.sendIperf(); // always send noIperf here
+                    }
 
                     if (isCancelled()) {
-                        return;
+                        return false;
                     }
                     if (isNetworkUnavailable()) {
                         displayNoNetworkDialogue();
-                        return;
+                        return false;
                     }
 
                     /*
                      * Step 4: Send device info.
                      */
-                    sideChannel.sendMobileStats(Config.get("sendMobileStats"), getApplicationContext());
+                    for (CombinedSideChannel sc : sideChannels) {
+                        sc.sendMobileStats(Config.get("sendMobileStats"), getApplicationContext());
+                    }
 
                     /*
                      * Step 5: Get port mapping from server.
@@ -1439,11 +1644,17 @@ public class ReplayActivity extends AppCompatActivity {
                     publishProgress("updateStatus", app.getName(), iteration + "/"
                             + types.length + " " + getString(R.string.receive_server_port_mapping));
 
-                    HashMap<String, HashMap<String, HashMap<String, ServerInstance>>> serverPortsMap
-                            = sideChannel.receivePortMappingNonBlock();
-                    UDPReplayInfoBean udpReplayInfoBean = new UDPReplayInfoBean();
-                    udpReplayInfoBean.setSenderCount(sideChannel.receiveSenderCount());
-                    Log.i("Replay", "Successfully received serverPortsMap and senderCount!");
+                    ArrayList<HashMap<String, HashMap<String, HashMap<String, ServerInstance>>>> serverPortsMaps
+                            = new ArrayList<>();
+                    ArrayList<UDPReplayInfoBean> udpReplayInfoBeans = new ArrayList<>();
+                    for (CombinedSideChannel sc : sideChannels) {
+                        serverPortsMaps.add(sc.receivePortMappingNonBlock());
+                        UDPReplayInfoBean udpReplayInfoBean = new UDPReplayInfoBean();
+                        udpReplayInfoBean.setSenderCount(sc.receiveSenderCount());
+                        udpReplayInfoBeans.add(udpReplayInfoBean);
+                        Log.i("Replay", "Channel " + sc.getId() + ": Successfully"
+                                + " received serverPortsMap and senderCount!");
+                    }
 
                     /*
                      * Step 6: Create TCP clients from CSPairs and UDP clients from client ports.
@@ -1452,186 +1663,253 @@ public class ReplayActivity extends AppCompatActivity {
                             + types.length + " " + getString(R.string.create_tcp_client));
 
                     //map of all cs pairs to TCP clients for a replay
-                    HashMap<String, CTCPClient> CSPairMapping = new HashMap<>();
+                    ArrayList<HashMap<String, CTCPClient>> CSPairMappings = new ArrayList<>();
 
                     //create TCP clients
-                    for (String csp : appData.getTcpCSPs()) {
-                        //get server IP and port
-                        String destIP = csp.substring(csp.lastIndexOf('-') + 1,
-                                csp.lastIndexOf("."));
-                        String destPort = csp.substring(csp.lastIndexOf('.') + 1);
+                    for (CombinedSideChannel sc : sideChannels) {
+                        HashMap<String, CTCPClient> CSPairMapping = new HashMap<>();
+                        for (String csp : appData.getTcpCSPs()) {
+                            //get server IP and port
+                            String destIP = csp.substring(csp.lastIndexOf('-') + 1,
+                                    csp.lastIndexOf("."));
+                            String destPort = csp.substring(csp.lastIndexOf('.') + 1);
+                            //pad port to 5 digits with 0s; ex. 00443 or 00080
+                            destPort = String.format("%5s", destPort).replace(' ', '0');
 
-                        //get the server
-                        ServerInstance instance;
-                        try {
-                            instance = Objects.requireNonNull(Objects.requireNonNull(
-                                    serverPortsMap.get("tcp")).get(destIP)).get(destPort);
-                        } catch (NullPointerException e) {
-                            Log.e("Replay", "Cannot get instance", e);
-                            setInconclusive(getString(R.string.error_no_connection));
-                            return;
+                            //get the server
+                            ServerInstance instance;
+                            try {
+                                instance = Objects.requireNonNull(Objects.requireNonNull(
+                                        serverPortsMaps.get(sc.getId()).get("tcp")).get(destIP)).get(destPort);
+                                assert instance != null;
+                            } catch (NullPointerException | AssertionError e) {
+                                Log.e("Replay", "Channel " + sc.getId() + ": Cannot get instance", e);
+                                setInconclusive(getString(R.string.error_no_connection));
+                                return false;
+                            }
+                            if (instance.server.trim().equals(""))
+                                // TODO: Use a setter instead probably
+                                instance.server = servers.get(sc.getId()); // serverPortsMap.get(destPort);
+
+                            //create the client
+                            CTCPClient c = new CTCPClient(csp, instance.server,
+                                    Integer.parseInt(instance.port),
+                                    appData.getReplayName(), Config.get("publicIP"), false);
+                            CSPairMapping.put(csp, c);
                         }
-                        assert instance != null;
-                        if (instance.server.trim().equals(""))
-                            // Use a setter instead probably
-                            instance.server = server; // serverPortsMap.get(destPort);
-
-                        //create the client
-                        CTCPClient c = new CTCPClient(csp, instance.server,
-                                Integer.parseInt(instance.port),
-                                appData.getReplayName(), Config.get("publicIP"), false);
-                        CSPairMapping.put(csp, c);
+                        CSPairMappings.add(CSPairMapping);
+                        Log.i("Replay", "Channel " + sc.getId()
+                                + ": created clients from CSPairs");
+                        Log.d("Replay", "Size of CSPairMapping is " + CSPairMapping.size());
                     }
-                    Log.i("Replay", "created clients from CSPairs");
 
                     publishProgress("updateStatus", app.getName(), iteration + "/"
                             + types.length + " " + getString(R.string.create_udp_client));
 
                     //map of all client ports to UDP clients for a replay
-                    HashMap<String, CUDPClient> udpPortMapping = new HashMap<>();
+                    ArrayList<HashMap<String, CUDPClient>> udpPortMappings = new ArrayList<>();
 
                     //create client for each UDP port
-                    for (String originalClientPort : appData.getUdpClientPorts()) {
-                        CUDPClient c = new CUDPClient(Config.get("publicIP"));
-                        udpPortMapping.put(originalClientPort, c);
+                    for (CombinedSideChannel sc : sideChannels) {
+                        HashMap<String, CUDPClient> udpPortMapping = new HashMap<>();
+                        for (String originalClientPort : appData.getUdpClientPorts()) {
+                            CUDPClient c = new CUDPClient(Config.get("publicIP"));
+                            udpPortMapping.put(originalClientPort, c);
+                        }
+                        udpPortMappings.add(udpPortMapping);
+                        Log.i("Replay", "Channel " + sc.getId()
+                                + ": created clients from udpClientPorts");
+                        Log.d("Replay", "Size of udpPortMapping is " + udpPortMapping.size());
                     }
 
-                    Log.i("Replay", "created clients from udpClientPorts");
-                    Log.d("Replay", "Size of CSPairMapping is " + CSPairMapping.size());
-                    Log.d("Replay", "Size of udpPortMapping is " + udpPortMapping.size());
-
                     if (isCancelled()) {
-                        return;
+                        return false;
                     }
                     if (isNetworkUnavailable()) {
                         displayNoNetworkDialogue();
-                        return;
+                        return false;
                     }
 
                     /*
-                     * Step 7: Start notifier for UDP.
+                     * Step 7: Start notifier(s) for UDP.
                      */
                     publishProgress("updateStatus", app.getName(), iteration + "/"
                             + types.length + " " + getString(R.string.run_notf));
 
-                    CombinedNotifierThread notifier = sideChannel.notifierCreator(udpReplayInfoBean);
-                    Thread notfThread = new Thread(notifier);
-                    notfThread.start();
+                    ArrayList<CombinedNotifierThread> notifiers = new ArrayList<>();
+                    ArrayList<Thread> notfThreads = new ArrayList<>();
+                    for (CombinedSideChannel sc : sideChannels) {
+                        CombinedNotifierThread notifier = sc.notifierCreator(udpReplayInfoBeans.get(sc.getId()));
+                        notifiers.add(notifier);
+                        Thread notfThread = new Thread(notifier);
+                        notfThread.start();
+                        notfThreads.add(notfThread);
+                    }
 
                     /*
-                     * Step 8: Start receiver to log throughputs on a given interval.
+                     * Step 8: Start receiver(s) to log throughputs on a given interval.
                      */
                     publishProgress("updateStatus", app.getName(), iteration + "/"
                             + types.length + " " + getString(R.string.run_receiver));
 
-                    CombinedAnalyzerTask analyzerTask = new CombinedAnalyzerTask(app.getTime() / 2.0,
-                            appData.isTCP(), numOfTimeSlices, runPortTests); //throughput logged
-                    Timer analyzerTimer = new Timer(true); //timer to log throughputs on interval
-                    analyzerTimer.scheduleAtFixedRate(analyzerTask, 0, analyzerTask.getInterval());
+                    ArrayList<CombinedAnalyzerTask> analyzerTasks = new ArrayList<>();
+                    ArrayList<Timer> analyzerTimers = new ArrayList<>();
+                    ArrayList<CombinedReceiverThread> receivers = new ArrayList<>();
+                    ArrayList<Thread> rThreads = new ArrayList<>();
+                    for (CombinedSideChannel sc : sideChannels) {
+                        CombinedAnalyzerTask analyzerTask = new CombinedAnalyzerTask(app.getTime() / 2.0,
+                                appData.isTCP(), numOfTimeSlices.get(sc.getId()), runPortTests); //throughput logger
+                        Timer analyzerTimer = new Timer(true); //timer to log throughputs on interval
+                        analyzerTimer.scheduleAtFixedRate(analyzerTask, 0, analyzerTask.getInterval());
+                        analyzerTasks.add(analyzerTask);
+                        analyzerTimers.add(analyzerTimer);
 
-                    CombinedReceiverThread receiver = new CombinedReceiverThread(
-                            udpReplayInfoBean, jitterBean, analyzerTask); //receiver for udp
-                    Thread rThread = new Thread(receiver);
-                    rThread.start();
+                        CombinedReceiverThread receiver = new CombinedReceiverThread(
+                                udpReplayInfoBeans.get(sc.getId()), jitterBeans.get(sc.getId()), analyzerTask); //receiver for udp
+                        receivers.add(receiver);
+                        Thread rThread = new Thread(receiver);
+                        rThread.start();
+                        rThreads.add(rThread);
+                    }
+
+                    /*
+                     * Step 8.5?: Start progress bar.
+                     */
                     // This thread runs in parallel keeps progressbar up to date
+                    int finalIteration = iteration;
+                    //TODO: switch to ScheduledThreadExecutor?
                     Thread UIUpdateThread = new Thread(new Runnable() {
                         @Override
                         public void run() {
                             Thread.currentThread().setName("UIUpdateThread (Thread)");
+                            if (finalIteration == 1) {
+                                clearProgressBar();
+                            }
                             while (updateUIBean.getProgress() < 100 && !isCancelled()) {
                                 publishProgress("updateUI");
-                                try { //check for updates every 1/2 second
+                                try { //update progress bar every 1/2 second
                                     Thread.sleep(500);
                                 } catch (InterruptedException e) {
                                     Log.w("UpdateUI", "sleeping interrupted!", e);
                                 }
                             }
-                            // make progress bar to be 100%
-                            publishProgress("updateUI");
-                            Log.i("UpdateUI", "completed!");
                         }
                     });
+
 
                     UIUpdateThread.start(); //yay! progress bar now moving
 
                     /*
-                     * Step 9: Send packets to server.
+                     * Step 9: Send packets to server(s).
                      */
                     publishProgress("updateStatus", app.getName(), iteration + "/"
                             + types.length + " " + getString(R.string.run_sender));
 
-                    CombinedQueue queue = new CombinedQueue(appData.getQ(), jitterBean, analyzerTask,
+                    ArrayList<HashMap<String, HashMap<String, ServerInstance>>> udpServerMappings = new ArrayList<>();
+                    for (HashMap<String, HashMap<String, HashMap<String, ServerInstance>>> m : serverPortsMaps) {
+                        udpServerMappings.add(m.get("udp"));
+                    }
+
+                    CombinedQueue queue = new CombinedQueue(appData.getQ(), jitterBeans, analyzerTasks,
                             runPortTests ? Consts.REPLAY_PORT_TIMEOUT : Consts.REPLAY_APP_TIMEOUT);
                     long timeStarted = System.nanoTime(); //start time for sending
                     //send packets
-                    queue.run(updateUIBean, iteration, types.length, CSPairMapping,
-                            udpPortMapping, udpReplayInfoBean, serverPortsMap.get("udp"),
-                            Boolean.valueOf(Config.get("timing")), server, this);
+                    queue.run(updateUIBean, types.length, CSPairMappings,
+                            udpPortMappings, udpReplayInfoBeans, udpServerMappings,
+                            Boolean.valueOf(Config.get("timing")), servers, this);
 
                     //all packets sent - stop logging and receiving
-                    analyzerTimer.cancel();
-                    notifier.doneSending = true;
-                    notfThread.join();
-                    receiver.keepRunning = false;
-                    rThread.join();
+                    queue.stopTimers();
+                    for (Timer t : analyzerTimers) {
+                        t.cancel();
+                    }
+                    for (CombinedNotifierThread n : notifiers) {
+                        n.doneSending = true;
+                    }
+                    for (Thread t : notfThreads) {
+                        t.join();
+                    }
+                    for (CombinedReceiverThread r : receivers) {
+                        r.keepRunning = false;
+                    }
+                    for (Thread t : rThreads) {
+                        t.join();
+                    }
+
+                    if (iteration == 1) { //make progress bar to 50%
+                        publishProgress("finishProgress", "1");
+                    } else { //make progress bar to 100%
+                        publishProgress("finishProgress", "2");
+                        Log.i("UpdateUI", "completed!");
+                    }
 
                     if (isCancelled()) {
-                        return;
+                        return false;
                     }
                     if (isNetworkUnavailable()) {
                         displayNoNetworkDialogue();
-                        return;
+                        return false;
                     }
 
                     /*
-                     * Step 10: Tell server that replay is finished.
+                     * Step 10: Tell server(s) that replay is finished.
                      */
                     publishProgress("updateStatus", app.getName(), iteration + "/"
                             + types.length + " " + getString(R.string.send_done));
 
                     //time to send all packets
                     double duration = ((double) (System.nanoTime() - timeStarted)) / 1000000000;
-                    sideChannel.sendDone(duration);
-                    Log.d("Replay", "replay finished using time " + duration + " s");
+                    for (CombinedSideChannel sc : sideChannels) {
+                        sc.sendDone(duration);
+                    }
+                    Log.d("Replay", "replay(s) finished using time " + duration + " s");
 
                     /*
-                     * Step 11: Send throughputs and slices to server.
+                     * Step 11: Send throughputs and slices to server(s).
                      */
-                    ArrayList<ArrayList<Double>> avgThroughputsAndSlices
-                            = analyzerTask.getAverageThroughputsAndSlices();
-                    sideChannel.sendTimeSlices(avgThroughputsAndSlices);
+                    for (CombinedSideChannel sc : sideChannels) {
+                        sc.sendTimeSlices(analyzerTasks.get(sc.getId()).getAverageThroughputsAndSlices());
+                    }
 
                     //set avg of port 443, so it can be displayed if port being tested is blocked
                     if (runPortTests && channel.equalsIgnoreCase("random")) {
-                        app.randomThroughput = analyzerTask.getAvgThroughput();
+                        app.randomThroughput = analyzerTasks.get(0).getAvgThroughput(); //TODO: Multithread display
                     }
 
                     // TODO find a better way to do this
                     // Send Result;No and wait for OK before moving forward
-                    while (sideChannel.getResult(Config.get("result"))) {
-                        Thread.sleep(500);
+                    for (CombinedSideChannel sc : sideChannels) {
+                        while (sc.getResult(Config.get("result"))) {
+                            Thread.sleep(500);
+                        }
                     }
 
                     /*
-                     * Step 12: Close side channel and TCP/UDP sockets.
+                     * Step 12: Close side channel(s) and TCP/UDP sockets.
                      */
-                    // closing side channel socket
-                    sideChannel.closeSideChannelSocket();
+                    // closing side channel sockets
+                    for (CombinedSideChannel sc : sideChannels) {
+                        sc.closeSideChannelSocket();
+                    }
 
                     //close TCP sockets
-                    for (String csp : appData.getTcpCSPs()) {
-                        CTCPClient c = CSPairMapping.get(csp);
-                        if (c != null) {
-                            c.close();
+                    for (HashMap<String, CTCPClient> mapping : CSPairMappings) {
+                        for (String csp : appData.getTcpCSPs()) {
+                            CTCPClient c = mapping.get(csp);
+                            if (c != null) {
+                                c.close();
+                            }
                         }
                     }
                     Log.i("CleanUp", "Closed CSPairs 1");
 
                     //close UDP sockets
-                    for (String originalClientPort : appData.getUdpClientPorts()) {
-                        CUDPClient c = udpPortMapping.get(originalClientPort);
-                        if (c != null) {
-                            c.close();
+                    for (HashMap<String, CUDPClient> mapping : udpPortMappings) {
+                        for (String originalClientPort : appData.getUdpClientPorts()) {
+                            CUDPClient c = mapping.get(originalClientPort);
+                            if (c != null) {
+                                c.close();
+                            }
                         }
                     }
 
@@ -1642,14 +1920,14 @@ public class ReplayActivity extends AppCompatActivity {
                 } catch (IOException e) { //something wrong with receiveKbytes() or constructor in CombinedSideChannel
                     Log.e("Replay", "Some IO issue with server", e);
                     setInconclusive(getString(R.string.error_no_connection));
-                    return;
+                    return false;
                 }
             }
 
             /*
              * Step C: Determine if there is differentiation.
              */
-            getResults(portBlocked);
+            return getResults(portBlocked, isConfirmation);
         }
 
         /**
@@ -1672,42 +1950,58 @@ public class ReplayActivity extends AppCompatActivity {
          * Step 4: Determine if there is differentiation.
          * Step 5: Save and display results to user. Rerun test if necessary.
          *
-         * @param portBlocked true if a port in the port tests is blocked; false otherwise
+         * @param portBlocked    true if a port in the port tests is blocked; false otherwise
+         * @param isConfirmation true if confirmation test; false if original test
+         * @return true if confirmation test needs to be run; false otherwise
          */
-        private void getResults(boolean portBlocked) {
+        private boolean getResults(boolean portBlocked, boolean isConfirmation) {
             try {
                 if (isCancelled()) {
-                    return;
+                    return false;
                 }
                 if (isNetworkUnavailable()) {
                     displayNoNetworkDialogue();
-                    return;
+                    return false;
                 }
 
-                JSONObject result = null;
+                int id = 0;
+                for (WebSocketConnection w : wsConns) { //check websockets still connected if using MLab
+                    Log.d("WebSocket", "WebSocket (id: " + id + ") connectivity check: "
+                            + (w.isOpen() ? "CONNECTED" : "CLOSED"));
+                    id++;
+                }
+
+                ArrayList<JSONObject> analysisResults = new ArrayList<>();
                 if (!portBlocked) { //skip Step 1 and step 2 if port blocked
                     /*
                      * Step 1: Ask server to analyze a test.
                      */
-                    for (int ask4analysisRetry = 5; ask4analysisRetry > 0; ask4analysisRetry--) {
-                        result = ask4analysis(randomID, app.getHistoryCount()); //request analysis
-                        if (result == null) {
-                            Log.e("Result Channel", "ask4analysis returned null!");
-                        } else {
-                            break;
+                    JSONObject resp;
+                    for (String server : analyzerServerUrls) {
+                        for (int ask4analysisRetry = 3; ask4analysisRetry > 0; ask4analysisRetry--) {
+                            resp = ask4analysis(server, randomID, app.getHistoryCount()); //request analysis
+                            if (resp == null) {
+                                Log.e("Result Channel", server + ": ask4analysis returned null!");
+                            } else {
+                                analysisResults.add(resp);
+                                break;
+                            }
                         }
                     }
 
-                    if (result == null) {
+                    if (analysisResults.size() != analyzerServerUrls.size()) {
                         setInconclusive(getString(R.string.error_analysis_fail));
-                        return;
+                        return false;
                     }
 
-                    boolean success = result.getBoolean("success");
-                    if (!success) {
-                        Log.e("Result Channel", "ask4analysis failed!");
-                        setInconclusive(getString(R.string.error_analysis_fail));
-                        return;
+                    boolean success;
+                    for (JSONObject result : analysisResults) {
+                        success = result.getBoolean("success");
+                        if (!success) {
+                            Log.e("Result Channel", "ask4analysis failed!");
+                            setInconclusive(getString(R.string.error_analysis_fail));
+                            return false;
+                        }
                     }
 
                     publishProgress("updateStatus", app.getName(), getString(R.string.waiting));
@@ -1715,56 +2009,60 @@ public class ReplayActivity extends AppCompatActivity {
                     // sanity check
                     if (app.getHistoryCount() < 0) {
                         Log.e("Result Channel", "historyCount value not correct!");
-                        return;
+                        return false;
                     }
 
                     Log.i("Result Channel", "ask4analysis succeeded!");
                     if (isCancelled()) {
-                        return;
+                        return false;
                     }
                     if (isNetworkUnavailable()) {
                         displayNoNetworkDialogue();
-                        return;
+                        return false;
                     }
 
                     /*
-                     * Step 2: Get result of analysis from server.
+                     * Step 2: Get results of analysis from server.
                      */
-                    for (int i = 0; ; i++) { //3 attempts to get analysis from sever
-                        result = getSingleResult(randomID, app.getHistoryCount()); //get result
+                    analysisResults.clear();
+                    for (String url : analyzerServerUrls) {
+                        for (int i = 0; ; i++) { //3 attempts to get analysis from sever
+                            resp = getSingleResult(url, randomID, app.getHistoryCount()); //get results
 
-                        if (result == null) {
-                            Log.e("Result Channel", "getSingleResult returned null!");
-                        } else {
-                            success = result.getBoolean("success");
-                            if (success) { //success
-                                if (result.has("response")) { //success and has response
-                                    Log.i("Result Channel", "retrieve result succeeded");
-                                    break;
-                                } else { //success but response is missing
-                                    Log.w("Result Channel", "Server result not ready");
+                            if (resp == null) {
+                                Log.e("Result Channel", url + ": getSingleResult returned null!");
+                            } else {
+                                success = resp.getBoolean("success");
+                                if (success) { //success
+                                    if (resp.has("response")) { //success and has response
+                                        analysisResults.add(resp);
+                                        Log.i("Result Channel", url + ": retrieve result succeeded");
+                                        break;
+                                    } else { //success but response is missing
+                                        Log.w("Result Channel", url + ": Server result not ready");
+                                    }
+                                } else if (resp.has("error")) {
+                                    Log.e("Result Channel", "ERROR: " + url + ": " + resp.getString("error"));
+                                } else {
+                                    Log.e("Result Channel", "Error: " + url + ": Some error getting results.");
                                 }
-                            } else if (result.has("error")) {
-                                Log.e("Result Channel", "ERROR: " + result.getString("error"));
-                            } else {
-                                Log.e("Result Channel", "Error: Some error getting results.");
                             }
-                        }
 
-                        if (i < 3) { //wait 2 seconds to try again
-                            try {
-                                Thread.sleep(2000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        } else { //error after 3rd attempt
-                            if (runPortTests) { //"the port 80 issue"
-                                portBlocked = true;
-                                Log.i("Result Channel", "Can't retrieve result, port blocked");
-                                break;
-                            } else {
-                                setInconclusive(getString(R.string.not_all_tcp_sent_text));
-                                return;
+                            if (i < 3) { //wait 2 seconds to try again
+                                try {
+                                    Thread.sleep(2000);
+                                } catch (InterruptedException e) {
+                                    Log.w("Result Channel", "Sleep interrupted", e);
+                                }
+                            } else { //error after 3rd attempt
+                                if (runPortTests) { //"the port 80 issue"
+                                    portBlocked = true;
+                                    Log.i("Result Channel", "Can't retrieve result, port blocked");
+                                    break;
+                                } else {
+                                    setInconclusive(getString(R.string.not_all_tcp_sent_text));
+                                    return false;
+                                }
                             }
                         }
                     }
@@ -1773,9 +2071,24 @@ public class ReplayActivity extends AppCompatActivity {
                 /*
                  * Step 3: Parse the analysis results.
                  */
-                JSONObject response = portBlocked ? new JSONObject() : result.getJSONObject("response");
+                System.out.println("RESULLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLTS");
+                for (JSONObject j : analysisResults) {
+                    System.out.println(j);
+                }
 
-                if (portBlocked) { //generate result if port blocked
+                String differentiationNetwork = "";
+                if (isTomography) {
+                    //TODO: tomography api call here
+                    Random random = new Random();
+                    if (random.nextInt(2) == 1) {
+                        differentiationNetwork = carrier;
+                    }
+                }
+                //TODO: put multithread display here
+                JSONObject response = portBlocked ? new JSONObject() : analysisResults.get(0).getJSONObject("response");
+
+
+                if (portBlocked) { //generate results if port blocked
                     response.put("userID", randomID);
                     response.put("historyCount", historyCount);
                     response.put("replayName", app.getDataFile());
@@ -1790,11 +2103,11 @@ public class ReplayActivity extends AppCompatActivity {
 
                 String userID = response.getString("userID");
                 int historyCount = response.getInt("historyCount");
-                Double area_test = response.getDouble("area_test");
-                Double ks2pVal = response.getDouble("ks2pVal");
-                Double ks2RatioTest = response.getDouble("ks2_ratio_test");
-                Double xputOriginal = response.getDouble("xput_avg_original");
-                Double xputTest = response.getDouble("xput_avg_test");
+                double area_test = response.getDouble("area_test");
+                double ks2pVal = response.getDouble("ks2pVal");
+                double ks2RatioTest = response.getDouble("ks2_ratio_test");
+                double xputOriginal = response.getDouble("xput_avg_original");
+                double xputTest = response.getDouble("xput_avg_test");
 
                 // sanity check
                 if ((!userID.trim().equalsIgnoreCase(randomID))
@@ -1804,7 +2117,7 @@ public class ReplayActivity extends AppCompatActivity {
                             + " correct historyCount: " + app.getHistoryCount());
                     Log.e("Result Channel", "Result content: " + response.toString());
                     setInconclusive(getString(R.string.error_result));
-                    return;
+                    return false;
                 }
 
                 /*
@@ -1850,21 +2163,24 @@ public class ReplayActivity extends AppCompatActivity {
                  * Step 5: Save and display results to user. Rerun test if necessary.
                  */
                 //determine if the test needs to be rerun
-                if ((inconclusive || differentiation) && confirmationReplays && !rerun) {
+                if ((inconclusive || differentiation) && confirmationReplays && !isConfirmation && !isTomography) {
                     publishProgress("updateStatus", app.getName(), getString(R.string.confirmation_replay));
                     try { //wait 2 seconds so user can read message before it disappears
                         Thread.sleep(2000);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        Log.w("Result Channel", "sleep interrupted", e);
                     }
-                    rerun = true;
-                    runTest();
-                    return; //return so that first result isn't saved
+                    //runTest();
+                    return true; //return so that first result isn't saved
                 }
 
                 String displayStatus; //display for the user in their language
                 String saveStatus; //save to disk, so it can appear in the correct language in prev results
-                if (inconclusive) {
+                if (isTomography) {
+                    saveStatus = differentiationNetwork.equals("") ? "tomo failed" : "tomo succ";
+                    displayStatus = differentiationNetwork.equals("") ? getString(R.string.tomo_failed)
+                            : getString(R.string.tomo_succ);
+                } else if (inconclusive) {
                     saveStatus = "inconclusive";
                     displayStatus = getString(R.string.inconclusive);
                     inconclusiveApps.add(app);
@@ -1896,14 +2212,17 @@ public class ReplayActivity extends AppCompatActivity {
                     displayStatus = getString(R.string.no_diff);
                 }
 
+                //for results display on the Run Test page
                 app.setStatus(displayStatus);
                 app.area_test = area_test;
                 app.ks2pVal = ks2pVal;
                 app.ks2pRatio = ks2RatioTest;
                 app.originalThroughput = xputOriginal;
                 app.randomThroughput = xputTest;
+                app.setDifferentiationNetwork(differentiationNetwork);
 
-                Log.i("Result Channel", "writing result to json array");
+                Log.i("Result Channel", "writing results to json array");
+                //for results display on the Previous Results page
                 response.put("isPort", runPortTests);
                 response.put("appName", app.getName());
                 response.put("appImage", app.getImage());
@@ -1914,6 +2233,9 @@ public class ReplayActivity extends AppCompatActivity {
                 response.put("isIPv6", isIPv6);
                 response.put("server", serverDisplay);
                 response.put("carrier", carrier);
+                if (isTomography) {
+                    response.put("tomographyNetwork", differentiationNetwork);
+                }
                 Log.d("response", response.toString());
                 results.put(response); //put response in array to save
 
@@ -1921,6 +2243,11 @@ public class ReplayActivity extends AppCompatActivity {
             } catch (JSONException e) {
                 Log.e("Result Channel", "parsing json error", e);
             }
+            return false;
+            //todos: put description of tomography at top of reruns
+            //fix ui pop up
+            //does rerun button pop up after tomo tests?
+            //do no diff tests appear during tomo tests?
         }
     }
 }

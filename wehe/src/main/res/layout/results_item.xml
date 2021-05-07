@@ -103,7 +103,7 @@
                 android:id="@+id/ipTypeValue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/nonappThroughput"
+                android:layout_below="@id/nonappThroughputNameText"
                 android:layout_alignParentEnd="true"
                 android:layout_marginStart="@dimen/margin_large"
                 android:layout_marginTop="@dimen/margin_large"
