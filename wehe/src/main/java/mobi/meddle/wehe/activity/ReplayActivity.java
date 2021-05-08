@@ -850,24 +850,28 @@ public class ReplayActivity extends AppCompatActivity {
                 wsConns.clear();
                 try {
                     int numTries = 0; //tracks num tries before successful MLab connection
+                    int wsID; //WebSocket id
                     JSONObject mLabResp = sendRequest(Consts.MLAB_SERVERS, "GET", false, null, null);
                     //TODO: make sure this outer try really necessary; check what happens if below line fails; will it exit gracefully?
                     JSONArray mLabServers = (JSONArray) mLabResp.get("results"); //get MLab servers list
                     for (int i = 0; wsConns.size() < numTests && i < mLabServers.length(); i++) {
                         //try the 4 servers before going to wehe2
                         try {
+                            i++;
+                            wsID = wsConns.size();
                             numTries++;
-                            Log.d("WebSocket", "Attempting to connect to WebSocket " + i
-                                    + ": " + server);
                             JSONObject serverObj = (JSONObject) mLabServers.get(i); //get first MLab server
                             server = "wehe-" + serverObj.getString("machine"); //SideChannel URL
                             String mLabURL = ((JSONObject) serverObj.get("urls"))
                                     .getString(Consts.MLAB_WEB_SOCKET_SERVER_KEY); //authentication URL
-                            wsConns.add(new WebSocketConnection(i, new URI(mLabURL))); //connect to WebSocket
+
+                            Log.d("WebSocket", "Attempting to connect to server " + i
+                                    + ": " + server);
+                            wsConns.add(new WebSocketConnection(wsID, new URI(mLabURL))); //connect to WebSocket
 
                             //code below runs only if successful connection to WebSocket
-                            Log.d("WebSocket", "New WebSocket (id: " + i + ") connectivity check: "
-                                    + (wsConns.get(i).isOpen() ? "CONNECTED" : "CLOSED") + " TO " + server);
+                            Log.d("WebSocket", "New WebSocket (id: " + wsID + ") connectivity check: "
+                                    + (wsConns.get(wsID).isOpen() ? "CONNECTED" : "CLOSED") + " TO " + server);
                             servers.add(getServerIP(server));
                             numMLab.add(numTries);
                             numTries = 0;
