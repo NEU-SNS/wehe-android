@@ -809,7 +809,8 @@ public class ReplayActivity extends AppCompatActivity {
             // Using IP only, because we have multiple server under same domain and we want
             // the client not to switch server during a test run
             //wehe4.meddle.mobi 90% returns 10.0.0.0 (use MLab), 10% legit IP (is Amazon)
-            if ((Double.parseDouble(BuildConfig.VERSION_NAME) >= 3.46) && (server.equals("wehe3.meddle.mobi"))) {
+            //version code 40 = version name 3.46
+            if (BuildConfig.VERSION_CODE >= 40 && server.equals("wehe3.meddle.mobi")) {
                 server = "wehe4.meddle.mobi";
             }
             servers.clear();
