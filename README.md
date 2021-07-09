@@ -2,6 +2,13 @@
 
 This app helps user run a simple test on their Android devices to find out if their ISP is throttling internet for some app or not. Please refer https://dd.meddle.mobi/td_details.html fpr detailed understanding of the test.
 
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/mobi.meddle.wehe/)
+[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
+     alt="Get it on Google Play"
+     height="80">](https://play.google.com/store/apps/details?id=mobi.meddle.wehe)
+
 # Documentation of the API
 
 There are three different connections that the client can make to the server.
