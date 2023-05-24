@@ -1,6 +1,11 @@
 package mobi.meddle.wehe.bean;
 
+import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
+import static androidx.core.app.ActivityCompat.requestPermissions;
+
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -12,7 +17,10 @@ import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 /**
@@ -31,6 +39,7 @@ public class DeviceInfoBean {
 
     public String cellInfo;
     public Location location;
+
 
     public DeviceInfoBean(@NonNull Context context) {
         String[] NETWORK_TYPES = {"UNKNOWN", // 0 -
@@ -114,7 +123,11 @@ public class DeviceInfoBean {
         if (networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTED) {
             this.networkType = "WIFI";
         } else {
-            int typeIndex = telephonyManager.getNetworkType();
+            int typeIndex = 0;
+            // We only have the permission for devices that are old enough
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                typeIndex = telephonyManager.getDataNetworkType();
+            }
             if (typeIndex < NETWORK_TYPES.length) {
                 this.networkType = NETWORK_TYPES[typeIndex];
             } else {
@@ -153,3 +166,8 @@ public class DeviceInfoBean {
         }
     }
 }
+
+
+
+
+
