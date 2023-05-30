@@ -6,9 +6,9 @@ android {
         applicationId "mobi.meddle.wehe"
         minSdkVersion 19
         targetSdkVersion 33
-        multiDexEnabled false
-        versionCode 48
-        versionName "3.7.3"
+        multiDexEnabled true
+        versionCode 49
+        versionName "3.7.4"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
