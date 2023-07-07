@@ -170,7 +170,7 @@ public class CombinedQueue {
             }
         };
 
-        //each server gets its own thread; if normal tests, there's only one server, but tomography
+        //each server gets its own thread; if normal tests, there's only one server, but localization
         //tests require multiple servers, running the same tests at the same time
         for (int i = 0; i < servers.size(); i++) {
             Thread test = new Thread(sendPckts);

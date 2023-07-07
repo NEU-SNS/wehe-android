@@ -47,7 +47,7 @@ public class ApplicationBean implements Parcelable {
     //user to alert arcep; will become false when the user alerts arcep
     private boolean arcepNeedsAlerting = false;
     private Category cat; //category that the app belongs in
-    private boolean isTomography = false;
+    private boolean isLocalization = false;
     private String differentiationNetwork = ""; //network that caused differentiation
 
     public ApplicationBean() {
@@ -182,12 +182,12 @@ public class ApplicationBean implements Parcelable {
         return cat;
     }
 
-    public boolean isTomography() {
-        return isTomography;
+    public boolean isLocalization() {
+        return isLocalization;
     }
 
-    public void setTomography(boolean isTomography) {
-        this.isTomography = isTomography;
+    public void setLocalization(boolean isLocalization) {
+        this.isLocalization = isLocalization;
     }
 
     public String getDifferentiationNetwork() {

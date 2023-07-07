@@ -98,11 +98,11 @@ public class ResultsFragment extends Fragment {
                         current.ipType = response.getBoolean("isIPv6") ? "IPv6" : "IPv4";
                         current.server = response.getString("server");
                         current.carrier = response.getString("carrier");
-                        if (response.has("tomographyNetwork")) {
-                            current.isTomography = true;
-                            current.differentiationNetwork = response.getString("tomographyNetwork");
+                        if (response.has("localizationNetwork")) {
+                            current.isLocalization = true;
+                            current.differentiationNetwork = response.getString("localizationNetwork");
                         } else {
-                            current.isTomography = false;
+                            current.isLocalization = false;
                         }
 
                         results.add(current);
@@ -163,11 +163,11 @@ public class ResultsFragment extends Fragment {
                 nonAppLabel.setVisibility(View.VISIBLE);
                 appThroughput.setVisibility(View.VISIBLE);
                 nonAppThroughput.setVisibility(View.VISIBLE);
-                if (current.isTomography) {
+                if (current.isLocalization) {
                     if (current.differentiationNetwork.equals("")) {
-                        appLabel.setText(R.string.tomo_failed_desc);
+                        appLabel.setText(R.string.localize_failed_desc);
                     } else {
-                        appLabel.setText(String.format(getString(R.string.tomo_succ_desc),
+                        appLabel.setText(String.format(getString(R.string.localize_succ_desc),
                                 current.differentiationNetwork));
                     }
                     nonAppLabel.setVisibility(View.GONE);
@@ -200,12 +200,12 @@ public class ResultsFragment extends Fragment {
                         differentiationText.setText(getString(R.string.inconclusive).split(",")[0]);
                         differentiationText.setTextColor(getResources().getColor(R.color.orange2));
                         break;
-                    case "tomo failed":
-                        differentiationText.setText(R.string.tomo_failed);
+                    case "localize failed":
+                        differentiationText.setText(R.string.localize_failed);
                         differentiationText.setTextColor(getResources().getColor(R.color.red));
                         break;
-                    case "tomo succ":
-                        differentiationText.setText(R.string.tomo_succ);
+                    case "localize succ":
+                        differentiationText.setText(R.string.localize_succ);
                         differentiationText.setTextColor(getResources().getColor(R.color.forestGreen));
                         break;
                     default:
@@ -255,7 +255,7 @@ public class ResultsFragment extends Fragment {
         String ipType;
         String server;
         String carrier;
-        boolean isTomography;
+        boolean isLocalization;
         String differentiationNetwork;
     }
 }

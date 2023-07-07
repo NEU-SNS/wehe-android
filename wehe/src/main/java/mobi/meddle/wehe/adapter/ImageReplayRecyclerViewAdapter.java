@@ -36,7 +36,7 @@ public class ImageReplayRecyclerViewAdapter extends
     private final List<ApplicationBean> dataList; //list of apps/ports
     private final ReplayActivity replayAct; //replay activity, to get resources
     private final boolean runPortTests; //self explanatory
-    private boolean isTomography = false;
+    private boolean isLocalization = false;
 
     /**
      * Constructor.
@@ -52,8 +52,8 @@ public class ImageReplayRecyclerViewAdapter extends
         this.runPortTests = runPortTests;
     }
 
-    public void setTomography(boolean isTomography) {
-        this.isTomography = isTomography;
+    public void setLocalization(boolean isLocalization) {
+        this.isLocalization = isLocalization;
     }
 
     @Override
@@ -78,8 +78,8 @@ public class ImageReplayRecyclerViewAdapter extends
             holder.tvAppSize.setVisibility(View.GONE);
             holder.img.setVisibility(View.GONE);
             String description;
-            if (isTomography) {
-                description = replayAct.getString(R.string.tomo_test_desc);
+            if (isLocalization) {
+                description = replayAct.getString(R.string.localize_test_desc);
             } else if (runPortTests) {
                 description = replayAct.getString(R.string.normal_port_desc);
             } else {
@@ -111,7 +111,7 @@ public class ImageReplayRecyclerViewAdapter extends
             holder.tvAppTime.setVisibility(View.VISIBLE);
         }
         //load size
-        int numTests = 2 * (app.isTomography() ? Consts.NUM_TOMOGRAPHY_TESTS : 1);
+        int numTests = 2 * (app.isLocalization() ? Consts.NUM_LOCALIZATION_TESTS : 1);
         holder.tvAppSize.setText(String.format(Locale.getDefault(),
                 res.getString(R.string.replay_size), numTests, app.getSize()));
         holder.tvAppSize.setVisibility(View.VISIBLE);
@@ -180,10 +180,10 @@ public class ImageReplayRecyclerViewAdapter extends
                     }
                 });
             }
-        } else if (status.equals(res.getString(R.string.tomo_failed))) {
+        } else if (status.equals(res.getString(R.string.localize_failed))) {
             holder.tvAppStatus.setTextColor(red);
             holder.xputOriginalTextView.setVisibility(View.VISIBLE);
-        } else if (status.equals(res.getString(R.string.tomo_succ))) {
+        } else if (status.equals(res.getString(R.string.localize_succ))) {
             holder.tvAppStatus.setTextColor(green);
             holder.xputOriginalTextView.setVisibility(View.VISIBLE);
         } else {
@@ -201,11 +201,11 @@ public class ImageReplayRecyclerViewAdapter extends
         String xputOriginal = String.format(Locale.getDefault(), throughputFormat, app.originalThroughput);
         String xputTest = String.format(Locale.getDefault(), throughputFormat, app.randomThroughput);
 
-        if (app.isTomography()) {
+        if (app.isLocalization()) {
             if (app.getDifferentiationNetwork().equals("")) {
-                holder.xputOriginalTextView.setText(R.string.tomo_failed_desc);
+                holder.xputOriginalTextView.setText(R.string.localize_failed_desc);
             } else {
-                holder.xputOriginalTextView.setText(String.format(res.getString(R.string.tomo_succ_desc),
+                holder.xputOriginalTextView.setText(String.format(res.getString(R.string.localize_succ_desc),
                         app.getDifferentiationNetwork()));
             }
         } else {
