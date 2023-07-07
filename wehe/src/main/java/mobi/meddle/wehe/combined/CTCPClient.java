@@ -84,6 +84,6 @@ public class CTCPClient {
 
     @Override
     public int hashCode() {
-        return CSPair.hashCode();
+        return CSPair.hashCode() + destIP.hashCode();
     }
 }
