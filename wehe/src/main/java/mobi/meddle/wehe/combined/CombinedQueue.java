@@ -44,7 +44,6 @@ public class CombinedQueue {
     private final boolean isUDP;
     private final int timeout;
     private final ArrayList<Timer> timers = new ArrayList<>();
-    private final Semaphore stopSema; // semaphore needed when trying to stop the replays
 
     /**
      * Constructor.
@@ -62,7 +61,6 @@ public class CombinedQueue {
         this.analyzerTasks = analyzerTasks;
         this.isUDP = q.size() > 0 && q.get(0).isUDP();
         this.timeout = isUDP ? timeout - 5 : timeout;
-        this.stopSema = new Semaphore(1);
     }
 
     /**
@@ -159,10 +157,8 @@ public class CombinedQueue {
 
                             // adrian: every time when calling next we create and start a new thread
                             // adrian: here we start different thread according to the type of RS
-                            stopSema.acquire();
                             nextTCP(CSPairMappings.get(id).get(RS.getc_s_pair()), RS, timing,
                                     sendSema, recvSema, timeLeft, analyzerTasks.get(id));
-                            stopSema.release();
 
                             sendSema.acquire();
                         }
@@ -224,14 +220,10 @@ public class CombinedQueue {
     }
 
     public void stopTimers() {
-        try {
-            stopSema.acquire();
+        synchronized (timers) {
             for (Timer t : timers) {
                 t.cancel();
             }
-            stopSema.release();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -298,7 +290,9 @@ public class CombinedQueue {
         ++threads;
         // Log.d("nextTCP", "number of thread: " + String.valueOf(threads));
         cThreadList.add(cThread);
-        timers.add(t);
+        synchronized (timers) {
+            timers.add(t);
+        }
     }
 
     /**
