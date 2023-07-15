@@ -220,8 +220,10 @@ public class CombinedQueue {
     }
 
     public void stopTimers() {
-        for (Timer t : timers) {
-            t.cancel();
+        synchronized (timers) {
+            for (Timer t : timers) {
+                t.cancel();
+            }
         }
     }
 
@@ -288,7 +290,9 @@ public class CombinedQueue {
         ++threads;
         // Log.d("nextTCP", "number of thread: " + String.valueOf(threads));
         cThreadList.add(cThread);
-        timers.add(t);
+        synchronized (timers) {
+            timers.add(t);
+        }
     }
 
     /**
