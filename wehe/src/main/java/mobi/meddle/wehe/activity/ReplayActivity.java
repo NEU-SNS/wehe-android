@@ -457,6 +457,8 @@ public class ReplayActivity extends AppCompatActivity {
         private boolean useDefaultThresholds;
         private int a_threshold;
         private int ks2pvalue_threshold;
+        private int corrPValue_threshold;
+        private int corrRatio_threshold;
         private SharedPreferences settings;
         private SSLSocketFactory sslSocketFactory = null;
         private HostnameVerifier hostnameVerifier = null;
@@ -628,6 +630,11 @@ public class ReplayActivity extends AppCompatActivity {
                     sharedPrefs.getString("pref_threshold_area", "10")));
             ks2pvalue_threshold = Integer.parseInt(Objects.requireNonNull(
                     sharedPrefs.getString("pref_threshold_ks2p", "5")));
+            // TODO: add these settings in values/strings.xml
+            corrPValue_threshold = Integer.parseInt(Objects.requireNonNull(
+                    sharedPrefs.getString("pref_threshold_ks2p", "5")));
+            corrRatio_threshold = Integer.parseInt(Objects.requireNonNull(
+                    sharedPrefs.getString("pref_threshold_ks2p", "95")));
 
             // generate or retrieve an id for this phone
             boolean hasID = sharedPrefs.getBoolean("hasID", false);
@@ -2076,42 +2083,398 @@ public class ReplayActivity extends AppCompatActivity {
                  * Step 3: Parse the analysis results.
                  */
                 System.out.println("RESULLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLTS");
-                for (JSONObject j : analysisResults) {
-                    System.out.println(j);
-                }
 
-                String differentiationNetwork = "";
-                if (isLocalization) {
-                    //TODO: localization api call here
-                    Random random = new Random();
-                    if (random.nextInt(2) == 1) {
-                        differentiationNetwork = carrier;
+                ArrayList<Boolean> diffResults = new ArrayList<>(); // store diff decision of each server
+                for (JSONObject analysisResult : analysisResults) {
+                    System.out.println(analysisResult);
+
+                    //TODO: put multithread display here (Zeinab: handled)
+                    JSONObject response = portBlocked ? new JSONObject() : analysisResult.getJSONObject("response");
+
+
+                    if (portBlocked) { //generate results if port blocked
+                        response.put("userID", randomID);
+                        response.put("historyCount", historyCount);
+                        response.put("replayName", app.getDataFile());
+                        response.put("area_test", -1);
+                        response.put("ks2pVal", -1);
+                        response.put("ks2_ratio_test", -1);
+                        response.put("xput_avg_original", 0);
+                        response.put("xput_avg_test", app.randomThroughput); //calculated in runTest() Step 11
+                    }
+
+                    Log.d("Result Channel", "SERVER RESPONSE: " + response.toString());
+
+                    String userID = response.getString("userID");
+                    int historyCount = response.getInt("historyCount");
+                    double area_test = response.getDouble("area_test");
+                    double ks2pVal = response.getDouble("ks2pVal");
+                    double ks2RatioTest = response.getDouble("ks2_ratio_test");
+                    double xputOriginal = response.getDouble("xput_avg_original");
+                    double xputTest = response.getDouble("xput_avg_test");
+
+                    // sanity check
+                    if ((!userID.trim().equalsIgnoreCase(randomID))
+                            || (historyCount != app.getHistoryCount())) {
+                        Log.e("Result Channel", "Result didn't pass sanity check! "
+                                + "correct id: " + randomID
+                                + " correct historyCount: " + app.getHistoryCount());
+                        Log.e("Result Channel", "Result content: " + response.toString());
+                        setInconclusive(getString(R.string.error_result));
+                        return false;
+                    }
+
+                    /*
+                     * Step 4: Determine if there is differentiation.
+                     */
+                    //area test threshold default is 50%; ks2 p value test threshold default is 1%
+                    //if default switch is on and one of the throughputs is over 10 Mbps, change the
+                    //area threshold to 30%, which increases chance of Wehe finding differentiation.
+                    //If the throughputs are over 10 Mbps, the difference between the two throughputs
+                    //would need to be much larger than smaller throughputs for differentiation to be
+                    //triggered, which may confuse users
+                    //TODO: might have to relook at thresholds and do some formal research on optimal
+                    // thresholds. Currently thresholds chosen ad-hoc
+                    if (useDefaultThresholds && (xputOriginal > 10 || xputTest > 10)) {
+                        a_threshold = 30;
+                    }
+
+                    double area_test_threshold = (double) a_threshold / 100;
+                    double ks2pVal_threshold = (double) ks2pvalue_threshold / 100;
+                    //double ks2RatioTest_threshold = (double) 95 / 100;
+
+                    boolean aboveArea = Math.abs(area_test) >= area_test_threshold;
+                    //boolean trustPValue = ks2RatioTest >= ks2RatioTest_threshold;
+                    boolean belowP = ks2pVal < ks2pVal_threshold;
+                    boolean differentiation = false;
+                    boolean inconclusive = false;
+
+                    if (portBlocked) {
+                        differentiation = true;
+                    } else if (aboveArea) {
+                        if (belowP) {
+                            differentiation = true;
+                        } else {
+                            inconclusive = true;
+                        }
+                    }
+
+                    // TODO uncomment following code when you want differentiation to occur
+                    //differentiation = true;
+//                    inconclusive = true;
+                    diffResults.add(differentiation);
+
+                    /*
+                     * Step 5: Save and display results to user. Rerun test if necessary.
+                     */
+                    //determine if the test needs to be rerun
+                    if ((inconclusive || differentiation) && confirmationReplays && !isConfirmation && !isLocalization) {
+                        publishProgress("updateStatus", app.getName(), getString(R.string.confirmation_replay));
+                        try { //wait 2 seconds so user can read message before it disappears
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            Log.w("Result Channel", "sleep interrupted", e);
+                        }
+                        //runTest();
+                        return true; //return so that first result isn't saved
+                    }
+
+                    String displayStatus; //display for the user in their language
+                    String saveStatus; //save to disk, so it can appear in the correct language in prev results
+                    if (inconclusive) {
+                        saveStatus = "inconclusive";
+                        displayStatus = getString(R.string.inconclusive);
+                        inconclusiveApps.add(app);
+                    } else if (differentiation) {
+                        saveStatus = "has diff";
+                        displayStatus = getString(R.string.has_diff);
+
+                        String error = runPortTests ? getString(R.string.test_blocked_port_text) :
+                                getString(R.string.test_blocked_app_text);
+                        if (!portBlocked) {
+                            if (xputOriginal > xputTest) {
+                                error = runPortTests ? getString(R.string.test_prioritized_port_text) :
+                                        getString(R.string.test_prioritized_app_text);
+                            } else {
+                                error = runPortTests ? getString(R.string.test_throttled_port_text) :
+                                        getString(R.string.test_throttled_app_text);
+                            }
+                        }
+                        app.setError(error);
+
+                        Locale current = getResources().getConfiguration().locale;
+                        String country = current.getCountry();
+                        if (country.equals("FR")) { //show alert arcep button
+                            app.setArcepNeedsAlerting(true);
+                        }
+                        diffApps.add(app);
+                    } else {
+                        saveStatus = "no diff";
+                        displayStatus = getString(R.string.no_diff);
+                    }
+
+                    //for results display on the Run Test page
+                    app.setStatus(displayStatus);
+                    app.area_test = area_test;
+                    app.ks2pVal = ks2pVal;
+                    app.ks2pRatio = ks2RatioTest;
+                    app.originalThroughput = xputOriginal;
+                    app.randomThroughput = xputTest;
+
+                    Log.i("Result Channel", "writing results to json array");
+                    //for results display on the Previous Results page
+                    response.put("isPort", runPortTests);
+                    response.put("appName", app.getName());
+                    response.put("appImage", app.getImage());
+                    response.put("status", saveStatus);
+                    response.put("date", new Date().getTime());
+                    response.put("areaThreshold", area_test_threshold);
+                    response.put("ks2pThreshold", ks2pVal_threshold);
+                    response.put("isIPv6", isIPv6);
+                    response.put("server", serverDisplay);
+                    response.put("carrier", carrier);
+
+                    if (!isLocalization) {
+                        Log.d("response", response.toString());
+                        results.put(response); //put response in array to save
+
+                        publishProgress("updateStatus", app.getName(), app.getStatus()); //display results to user
+
+                        // by default for non-localization tests the size of analysisResults should
+                        // be 1 as we have only 1 server. However, to be cautious, we return after
+                        // the first iteration of the loop
+                        return true;
                     }
                 }
-                //TODO: put multithread display here
-                JSONObject response = portBlocked ? new JSONObject() : analysisResults.get(0).getJSONObject("response");
+                // check+run localization test (call runLocalizationTest)
+                if (isLocalization) {
+                    return runLocalizationTest(diffResults);
+                }
+            } catch (JSONException e) {
+                Log.e("Result Channel", "parsing json error", e);
+            }
+            return false;
+            //todos: put description of localization at top of reruns
+            //fix ui pop up
+            //does rerun button pop up after localize tests?
+            //do no diff tests appear during localize tests?
+        }
 
+        /**
+         * Asks the server to run localization test for the simultaneous replay.
+         *
+         * @param url             the url to the server where analysis will take place
+         * @param id              the random ID assigned to specific user's device
+         * @param historyCount    the test to analyze
+         * @param secondServerIP  the IP of the other server participating in replay; needed to collect measurements
+         * @return a JSONObject: { "success" : true | false }; true if server localize successfully
+         */
+        private JSONObject ask4Localization(String url, String id, int historyCount, String secondServerIP) {
+            HashMap<String, String> pairs = new HashMap<>();
 
-                if (portBlocked) { //generate results if port blocked
-                    response.put("userID", randomID);
-                    response.put("historyCount", historyCount);
-                    response.put("replayName", app.getDataFile());
-                    response.put("area_test", -1);
-                    response.put("ks2pVal", -1);
-                    response.put("ks2_ratio_test", -1);
-                    response.put("xput_avg_original", 0);
-                    response.put("xput_avg_test", app.randomThroughput); //calculated in runTest() Step 11
+            pairs.put("command", "localize");
+            pairs.put("userID", id);
+            pairs.put("historyCount", String.valueOf(historyCount));
+            pairs.put("testID", "0"); // localization tests run on the original replay
+            pairs.put("secondServerIP", secondServerIP);
+
+            return sendRequest(url, "POST", true, null, pairs);
+        }
+
+        /**
+         * Retrieves the localization test result from the server that it previously requested.
+         *
+         * @param url          the url of the server to get the result
+         * @param id           the random ID assigned to a specific user's device
+         * @param historyCount the test containing the replay to retrieve
+         * @return a JSONObject with a key named "success". If value of "success" is false, a key named
+         * "error" is also contained in the result. If the value of "success" is true, a key named
+         * "response" is the result.
+         */
+        private JSONObject getLocalizeResult(String url, String id, int historyCount) {
+            ArrayList<String> data = new ArrayList<>();
+
+            data.add("userID=" + id);
+            data.add("command=" + "localizeResult");
+            data.add("historyCount=" + historyCount);
+            data.add("testID=0"); // localization tests run on the original replay
+
+            return sendRequest(url, "GET", true, data, null);
+        }
+
+        /**
+         * Determines if the detected differentiation is deployed at the client's edge ISP.
+         * This test requires two servers to participate in simultaneous replay.
+         * <p>
+         * This method first confirms differentiation by all servers:
+         *  - If yes, run getLocalizeResults() from the analyzerServer
+         *  - Else, report no evidence of common differentiation
+         *
+         * @param diffResults the differentiation decision results by analyzerServers
+         * @return 0 if successful; otherwise error code
+         */
+        private boolean runLocalizationTest(ArrayList<Boolean> diffResults) {
+            try {
+                // sanity check
+                if (diffResults.size() != analyzerServerUrls.size()) {
+                    Log.e("Result Channel", "error checking if all servers report differentiation");
+                    return false;
                 }
 
-                Log.d("Result Channel", "SERVER RESPONSE: " + response.toString());
+                // check if all servers reported differentiation
+                boolean runLocalize = true;
+                for (Boolean diffResult : diffResults) {
+                    runLocalize = runLocalize && diffResult;
+                }
+
+                if (runLocalize) {
+                    return getLocalizeResults();
+                }
+
+                String saveStatus = "no evidence of common differentiation";
+                String displayStatus = getString(R.string.localize_noevidence);
+                String differentiationNetwork = "";
+                app.setStatus(displayStatus);
+                app.setDifferentiationNetwork(differentiationNetwork);
+
+                Log.i("LOCALIZE RESULT", "No evidence of common differentiation");
+
+                JSONObject result = new JSONObject();
+                result.put("userID", randomID);
+                result.put("historyCount", app.getHistoryCount());
+                result.put("localization_tests", new JSONArray());
+                result.put("isPort", runPortTests);
+                result.put("appName", app.getName());
+                result.put("appImage", app.getImage());
+                result.put("status", saveStatus);
+                result.put("date", new Date().getTime());
+                result.put("isIPv6", isIPv6);
+                result.put("server", serverDisplay);
+                result.put("carrier", carrier);
+                result.put("LocalizationNetwork", differentiationNetwork);
+                Log.d("localizeResult", result.toString());
+                results.put(result); //put response in array to save
+
+                publishProgress("updateStatus", app.getName(), app.getStatus()); //display results to user
+
+                return true;
+            } catch (JSONException e) {
+                Log.e("Result Channel", "parsing json error", e);
+            }
+            return false;
+        }
+
+        /**
+         * This method is called from runLocalizationTest after it confirms that all analyzer server reported differentiation
+         * <p>
+         * Step 1: Ask first sever (from the server-pair) to run a localize test. Step 2: Get localization results for
+         * analysis from that first server. Step 3: Parse the analysis results. Step 4: Determine if differentiation is due
+         * to a common bottleneck at the edge ISP. Step 5: Save and display results to user.
+         *
+         * @return 0 if successful; otherwise error code
+         */
+        private boolean getLocalizeResults() {
+            try {
+                /*
+                 *  Use S1 as the analyzer server and share the ip of S2 to request measurements
+                 */
+                String serverS1IP = servers.get(0);
+                String serverS2IP = servers.get(1);
+
+                int port = Integer.parseInt(Config.get("result_port")); //get port to send tests through
+                String analyzerServerURL = "https://" + serverS1IP + ":" + port + "/Results";
+
+                /*
+                 * Step 1: Ask server to run a localize test
+                 *
+                 */
+                JSONObject resp, result = null;
+                for (int ask4localizationRetry = 3; ask4localizationRetry > 0; ask4localizationRetry--) {
+                    resp = ask4Localization(analyzerServerURL, randomID, app.getHistoryCount(), serverS2IP); //request localization
+                    if (resp == null) {
+                        Log.e("Result Channel", analyzerServerURL + ": ask4Localization returned null!");
+                    } else {
+                        result = resp;
+                        break;
+                    }
+                }
+                if (result == null) {
+                    setInconclusive(getString(R.string.error_analysis_fail));
+                    return false;
+                }
+
+                boolean success;
+                success = result.has("success") && result.getBoolean("success");
+                if (!success) {
+                    Log.e("Result Channel", "ask4Localization failed!");
+                    setInconclusive(getString(R.string.error_analysis_fail));
+                    return false;
+                }
+                publishProgress("updateStatus", app.getName(), getString(R.string.waiting));
+
+                // sanity check
+                if (app.getHistoryCount() < 0) {
+                    Log.e("Result Channel", "historyCount value not correct!");
+                    return false;
+                }
+
+                Log.i("Result Channel", "ask4Localization succeeded!");
+                if (isCancelled()) {
+                    return false;
+                }
+                if (isNetworkUnavailable()) {
+                    displayNoNetworkDialogue();
+                    return false;
+                }
+
+                /*
+                 * Step 2: Get result of analysis from server.
+                 */
+                result = null;
+                for (int i = 0; i < 3; i++) { //3 attempts to get localization from sever
+                    resp = getLocalizeResult(analyzerServerURL, randomID, app.getHistoryCount()); //get result
+
+                    if (resp == null) {
+                        Log.e("Result Channel", analyzerServerURL + ": getLocalizeResult returned null!");
+                    } else {
+                        success = resp.has("success") && resp.getBoolean("success");
+                        if (success) { //success
+                            if (resp.has("response")) { //success and has response
+                                result = resp;
+                                Log.i("Result Channel", analyzerServerURL + ": retrieve localize result succeeded");
+                                break;
+                            } else { //success but response is missing
+                                Log.w("Result Channel", analyzerServerURL + ": Server localize result not ready");
+                            }
+                        } else if (resp.has("error")) {
+                            Log.e("Result Channel", "ERROR: " + analyzerServerURL + ": " + resp.getString("error"));
+                        } else {
+                            Log.e("Result Channel", "Error: Some error getting localize results.");
+                        }
+                    }
+
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        Log.w("Result Channel", "Sleep interrupted", e);
+                    }
+                }
+
+                if (result == null) {
+                    setInconclusive(getString(R.string.not_all_tcp_sent_text));
+                    return false;
+                }
+
+
+                /*
+                 * Step 3: Parse the analysis results.
+                 */
+                JSONObject response = result.getJSONObject("response");
+
+                Log.d("Result Channel", "SERVER RESPONSE FOR localizeResult: " + response.toString());
 
                 String userID = response.getString("userID");
                 int historyCount = response.getInt("historyCount");
-                double area_test = response.getDouble("area_test");
-                double ks2pVal = response.getDouble("ks2pVal");
-                double ks2RatioTest = response.getDouble("ks2_ratio_test");
-                double xputOriginal = response.getDouble("xput_avg_original");
-                double xputTest = response.getDouble("xput_avg_test");
 
                 // sanity check
                 if ((!userID.trim().equalsIgnoreCase(randomID))
@@ -2125,133 +2488,107 @@ public class ReplayActivity extends AppCompatActivity {
                 }
 
                 /*
-                 * Step 4: Determine if there is differentiation.
+                 * Step 4: Determine if there is evidence of differentiation at the access ISP.
+                 * Check for localization tests results (if exists) in the following order:
+                 *  1- check if the xput sum of pair replay is of the same distributions as that of single replay
+                 *  2- check if the pair replay have correlated loss
                  */
-                //area test threshold default is 50%; ks2 p value test threshold default is 1%
-                //if default switch is on and one of the throughputs is over 10 Mbps, change the
-                //area threshold to 30%, which increases chance of Wehe finding differentiation.
-                //If the throughputs are over 10 Mbps, the difference between the two throughputs
-                //would need to be much larger than smaller throughputs for differentiation to be
-                //triggered, which may confuse users
-                //TODO: might have to relook at thresholds and do some formal research on optimal
-                // thresholds. Currently thresholds chosen ad-hoc
-                if (useDefaultThresholds && (xputOriginal > 10 || xputTest > 10)) {
-                    a_threshold = 30;
+                boolean commonDiff = false;
+                boolean inconclusive = true;
+
+                // 1- KS test results for pair replay xput sum v.s. single replay xput
+                boolean isXputHalved = false;
+                if (response.has(Consts.LOC_XPUT_PAIR_VS_SINGLE)) {
+                    JSONObject ksResults = response.getJSONObject(Consts.LOC_XPUT_PAIR_VS_SINGLE);
+                    double area_test = ksResults.getDouble("area_test");
+                    double ks2pVal = ksResults.getDouble("ks2pVal");
+                    double ks2RatioTest = ksResults.getDouble("ks2_ratio_test");
+                    double xputPairSum = ksResults.getDouble("xput_avg_pairsum");
+                    double xputSingle = ksResults.getDouble("xput_avg_single");
+
+                    inconclusive = false;
+                    // TODO: design a statistical test to check if the pair xput sum and single
+                    //  replay xput have the same mean (i.e., a test to confidently reject that
+                    //  their mean is different)
+                    // isXputHalved = ...
+                    // ksResults.put("statistic_param_name", "statistic_param_value");
+                } else {
+                    Log.d("Result Channel", "LOCALIZE RESULTS have no KS test results.");
                 }
 
-                double area_test_threshold = (double) a_threshold / 100;
-                double ks2pVal_threshold = (double) ks2pvalue_threshold / 100;
-                //double ks2RatioTest_threshold = (double) 95 / 100;
+                // 2- spearman loss correlation results
+                boolean isLossCorrelated = false;
+                if (response.has(Consts.LOC_LOSS_CORR)) {
+                    JSONObject corrResults = response.getJSONObject(Consts.LOC_LOSS_CORR);
+                    JSONArray corrPValues = corrResults.getJSONArray("corr_pvalues");
 
-                boolean aboveArea = Math.abs(area_test) >= area_test_threshold;
-                //boolean trustPValue = ks2RatioTest >= ks2RatioTest_threshold;
-                boolean belowP = ks2pVal < ks2pVal_threshold;
-                boolean differentiation = false;
-                boolean inconclusive = false;
+                    double corr_pVal_threshold = (double) corrPValue_threshold / 100;
+                    double corr_ratio_threshold = (double) corrRatio_threshold / 100;
 
-                if (portBlocked) {
-                    differentiation = true;
-                } else if (aboveArea) {
-                    if (belowP) {
-                        differentiation = true;
-                    } else {
-                        inconclusive = true;
+                    inconclusive = false;
+                    double corrRatio = 0;
+                    for (int i = 0; i < corrPValues.length(); i++) {
+                        if (corrPValues.getDouble(i) < corr_pVal_threshold) {
+                            corrRatio++;
+                        }
                     }
+                    corrRatio = corrRatio / corrPValues.length();
+                    if (corrRatio >= corr_ratio_threshold) {
+                        isLossCorrelated = true;
+                    }
+
+                    corrResults.put("corrPValThreshold", corr_pVal_threshold);
+                    corrResults.put("corrRatioThreshold", corr_ratio_threshold);
+                } else {
+                    Log.d("Result Channel", "PAIR REPLAY did not experience significant loss.");
                 }
 
-                // TODO uncomment following code when you want differentiation to occur
-                //differentiation = true;
-                //inconclusive = true;
+                if (isXputHalved || isLossCorrelated) {
+                    commonDiff = true;
+                }
 
                 /*
-                 * Step 5: Save and display results to user. Rerun test if necessary.
+                 * Step 5: Save and display results to user.
                  */
-                //determine if the test needs to be rerun
-                if ((inconclusive || differentiation) && confirmationReplays && !isConfirmation && !isLocalization) {
-                    publishProgress("updateStatus", app.getName(), getString(R.string.confirmation_replay));
-                    try { //wait 2 seconds so user can read message before it disappears
-                        Thread.sleep(2000);
-                    } catch (InterruptedException e) {
-                        Log.w("Result Channel", "sleep interrupted", e);
-                    }
-                    //runTest();
-                    return true; //return so that first result isn't saved
-                }
-
                 String displayStatus; //display for the user in their language
                 String saveStatus; //save to disk, so it can appear in the correct language in prev results
-                if (isLocalization) {
-                    saveStatus = differentiationNetwork.equals("") ? "localize failed" : "localize succ";
-                    displayStatus = differentiationNetwork.equals("") ? getString(R.string.localize_failed)
-                            : getString(R.string.localize_succ);
-                } else if (inconclusive) {
+                String differentiationNetwork = "";
+                if (inconclusive) {
                     saveStatus = "inconclusive";
                     displayStatus = getString(R.string.inconclusive);
                     inconclusiveApps.add(app);
-                } else if (differentiation) {
-                    saveStatus = "has diff";
-                    displayStatus = getString(R.string.has_diff);
-
-                    String error = runPortTests ? getString(R.string.test_blocked_port_text) :
-                            getString(R.string.test_blocked_app_text);
-                    if (!portBlocked) {
-                        if (xputOriginal > xputTest) {
-                            error = runPortTests ? getString(R.string.test_prioritized_port_text) :
-                                    getString(R.string.test_prioritized_app_text);
-                        } else {
-                            error = runPortTests ? getString(R.string.test_throttled_port_text) :
-                                    getString(R.string.test_throttled_app_text);
-                        }
-                    }
-                    app.setError(error);
-
-                    Locale current = getResources().getConfiguration().locale;
-                    String country = current.getCountry();
-                    if (country.equals("FR")) { //show alert arcep button
-                        app.setArcepNeedsAlerting(true);
-                    }
-                    diffApps.add(app);
+                } else if (commonDiff) {
+                    differentiationNetwork = carrier;
+                    saveStatus = "The network causing differentiation is your access network.";
+                    displayStatus = getString(R.string.localize_succ);
                 } else {
-                    saveStatus = "no diff";
-                    displayStatus = getString(R.string.no_diff);
+                    saveStatus = "no evidence of common differentiation";
+                    displayStatus = getString(R.string.localize_noevidence);
                 }
 
-                //for results display on the Run Test page
                 app.setStatus(displayStatus);
-                app.area_test = area_test;
-                app.ks2pVal = ks2pVal;
-                app.ks2pRatio = ks2RatioTest;
-                app.originalThroughput = xputOriginal;
-                app.randomThroughput = xputTest;
                 app.setDifferentiationNetwork(differentiationNetwork);
 
-                Log.i("Result Channel", "writing results to json array");
-                //for results display on the Previous Results page
+                Log.i("Result Channel", "writing localization result to json array");
                 response.put("isPort", runPortTests);
                 response.put("appName", app.getName());
                 response.put("appImage", app.getImage());
                 response.put("status", saveStatus);
                 response.put("date", new Date().getTime());
-                response.put("areaThreshold", area_test_threshold);
-                response.put("ks2pThreshold", ks2pVal_threshold);
                 response.put("isIPv6", isIPv6);
-                response.put("server", serverDisplay);
+                response.put("servers", servers.toString());
                 response.put("carrier", carrier);
-                if (isLocalization) {
-                    response.put("LocalizationNetwork", differentiationNetwork);
-                }
+                response.put("LocalizationNetwork", differentiationNetwork);
+
                 Log.d("response", response.toString());
                 results.put(response); //put response in array to save
-
                 publishProgress("updateStatus", app.getName(), app.getStatus()); //display results to user
+
+                return true;
             } catch (JSONException e) {
                 Log.e("Result Channel", "parsing json error", e);
             }
             return false;
-            //todos: put description of localization at top of reruns
-            //fix ui pop up
-            //does rerun button pop up after localize tests?
-            //do no diff tests appear during localize tests?
         }
     }
 }

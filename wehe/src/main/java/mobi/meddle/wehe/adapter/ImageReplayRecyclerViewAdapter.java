@@ -181,10 +181,13 @@ public class ImageReplayRecyclerViewAdapter extends
                 });
             }
         } else if (status.equals(res.getString(R.string.localize_failed))) {
-            holder.tvAppStatus.setTextColor(red);
+            holder.tvAppStatus.setTextColor(yellow);
+            holder.xputOriginalTextView.setVisibility(View.VISIBLE);
+        } else if (status.equals(res.getString(R.string.localize_noevidence))) {
+            holder.tvAppStatus.setTextColor(green);
             holder.xputOriginalTextView.setVisibility(View.VISIBLE);
         } else if (status.equals(res.getString(R.string.localize_succ))) {
-            holder.tvAppStatus.setTextColor(green);
+            holder.tvAppStatus.setTextColor(red);
             holder.xputOriginalTextView.setVisibility(View.VISIBLE);
         } else {
             holder.tvAppStatus.setTextColor(blue);

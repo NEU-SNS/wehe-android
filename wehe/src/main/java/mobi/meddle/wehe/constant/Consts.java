@@ -14,6 +14,10 @@ public class Consts {
 
     public static final int A_THRESHOLD = 50; //percent
     public static final int KS2PVAL_THRESHOLD = 1; //percent
+    public static final String LOC_XPUT_PAIR_VS_SINGLE= "pairsum_vs_single_xput";
+    public static final String LOC_LOSS_CORR = "loss_correlation";
+    public static final int CORR_PVAL_THRESHOLD = 5; //percent
+    public static final int CORR_RATIO_THRESHOLD = 95; //percent
 
     public static final boolean TIMEOUT_ENABLED = true;
     public static final int REPLAY_APP_TIMEOUT = 45; //in seconds
