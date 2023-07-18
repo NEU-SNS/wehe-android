@@ -225,6 +225,8 @@ public class ReplayActivity extends AppCompatActivity {
                             selectedApps = new ArrayList<>(diffApps);
                             for (ApplicationBean app : selectedApps) {
                                 app.setLocalization(true);
+                                app.saveSingleReplayInfo(traceRunner.randomID,
+                                        app.getHistoryCount(), traceRunner.servers.get(0)); // info used by localization test
                                 app.setArcepNeedsAlerting(false);
                                 app.setStatus(getString(R.string.pending));
                             }
@@ -2160,7 +2162,7 @@ public class ReplayActivity extends AppCompatActivity {
                     }
 
                     // TODO uncomment following code when you want differentiation to occur
-                    //differentiation = true;
+                    // differentiation = true;
 //                    inconclusive = true;
                     diffResults.add(differentiation);
 
@@ -2243,7 +2245,7 @@ public class ReplayActivity extends AppCompatActivity {
                         // by default for non-localization tests the size of analysisResults should
                         // be 1 as we have only 1 server. However, to be cautious, we return after
                         // the first iteration of the loop
-                        return true;
+                        return false;
                     }
                 }
                 // check+run localization test (call runLocalizationTest)
@@ -2269,7 +2271,7 @@ public class ReplayActivity extends AppCompatActivity {
          * @param secondServerIP  the IP of the other server participating in replay; needed to collect measurements
          * @return a JSONObject: { "success" : true | false }; true if server localize successfully
          */
-        private JSONObject ask4Localization(String url, String id, int historyCount, String secondServerIP) {
+        private JSONObject ask4Localization(String url, String id, int historyCount, String secondServerIP, JSONObject kwargs) {
             HashMap<String, String> pairs = new HashMap<>();
 
             pairs.put("command", "localize");
@@ -2277,6 +2279,7 @@ public class ReplayActivity extends AppCompatActivity {
             pairs.put("historyCount", String.valueOf(historyCount));
             pairs.put("testID", "0"); // localization tests run on the original replay
             pairs.put("secondServerIP", secondServerIP);
+            pairs.put("kwargs", kwargs.toString());
 
             return sendRequest(url, "POST", true, null, pairs);
         }
@@ -2311,7 +2314,7 @@ public class ReplayActivity extends AppCompatActivity {
          *  - Else, report no evidence of common differentiation
          *
          * @param diffResults the differentiation decision results by analyzerServers
-         * @return 0 if successful; otherwise error code
+         * @return true if confirmation test needs to be run; false otherwise
          */
         private boolean runLocalizationTest(ArrayList<Boolean> diffResults) {
             try {
@@ -2356,8 +2359,6 @@ public class ReplayActivity extends AppCompatActivity {
                 results.put(result); //put response in array to save
 
                 publishProgress("updateStatus", app.getName(), app.getStatus()); //display results to user
-
-                return true;
             } catch (JSONException e) {
                 Log.e("Result Channel", "parsing json error", e);
             }
@@ -2371,7 +2372,7 @@ public class ReplayActivity extends AppCompatActivity {
          * analysis from that first server. Step 3: Parse the analysis results. Step 4: Determine if differentiation is due
          * to a common bottleneck at the edge ISP. Step 5: Save and display results to user.
          *
-         * @return 0 if successful; otherwise error code
+         * @return true if confirmation test needs to be run; false otherwise
          */
         private boolean getLocalizeResults() {
             try {
@@ -2390,7 +2391,8 @@ public class ReplayActivity extends AppCompatActivity {
                  */
                 JSONObject resp, result = null;
                 for (int ask4localizationRetry = 3; ask4localizationRetry > 0; ask4localizationRetry--) {
-                    resp = ask4Localization(analyzerServerURL, randomID, app.getHistoryCount(), serverS2IP); //request localization
+                    JSONObject kwargs = new JSONObject(app.getSingleReplayInfo());
+                    resp = ask4Localization(analyzerServerURL, randomID, app.getHistoryCount(), serverS2IP, kwargs); //request localization
                     if (resp == null) {
                         Log.e("Result Channel", analyzerServerURL + ": ask4Localization returned null!");
                     } else {
@@ -2584,7 +2586,6 @@ public class ReplayActivity extends AppCompatActivity {
                 results.put(response); //put response in array to save
                 publishProgress("updateStatus", app.getName(), app.getStatus()); //display results to user
 
-                return true;
             } catch (JSONException e) {
                 Log.e("Result Channel", "parsing json error", e);
             }

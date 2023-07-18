@@ -6,6 +6,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import java.util.HashMap;
+
 /**
  * Data structure to hold info about an app/port
  */
@@ -48,6 +50,7 @@ public class ApplicationBean implements Parcelable {
     private boolean arcepNeedsAlerting = false;
     private Category cat; //category that the app belongs in
     private boolean isLocalization = false;
+    HashMap<String, String> singleReplaysJSONInfo = new HashMap<>();
     private String differentiationNetwork = ""; //network that caused differentiation
 
     public ApplicationBean() {
@@ -188,6 +191,16 @@ public class ApplicationBean implements Parcelable {
 
     public void setLocalization(boolean isLocalization) {
         this.isLocalization = isLocalization;
+    }
+
+    public void saveSingleReplayInfo (String userID, int historyCount, String server) {
+        this.singleReplaysJSONInfo.put("singleReplay_userID", userID);
+        this.singleReplaysJSONInfo.put("singleReplay_historyCount", String.valueOf(historyCount));
+        this.singleReplaysJSONInfo.put("singleReplay_server", server);
+    }
+
+    public HashMap<String, String> getSingleReplayInfo () {
+        return singleReplaysJSONInfo;
     }
 
     public String getDifferentiationNetwork() {
