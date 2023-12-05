@@ -464,9 +464,12 @@ public class ReplayActivity extends AppCompatActivity {
         //randomID, historyCount, and testId identifies the user, test number, and replay number
         //server uses these to determine which results to send back to client
         private String randomID; //unique user ID for certain device
-        //historyCount is the test number; current number can be seen as number of apps run
-        //or number of times user hit the run button for ports
+        //historyCount is the test number; current number can be seen as number of apps replays (original+bit-inverted) done
+        //if current test is localization the historyCount is incremented by the number of simultaneous replays
+        //the list historyCounts contain the historyCount values of tests running simultaneously with 1 or more servers
+        //note: we do not use the same historyCount during simultaneous replay to avoid duplicate result files when collected from the servers
         private int historyCount;
+        private final ArrayList<Integer> historyCounts = new ArrayList<>();
         //testId is replay number in a test
         //for apps - 0 is original replay, 1 is random replay
         //for ports - 0 non-443 port, 1 is port 443
@@ -1502,7 +1505,11 @@ public class ReplayActivity extends AppCompatActivity {
                     // localization tests
                     if (iteration == 1) {
                         // First update historyCount
-                        historyCount++;
+                        historyCounts.clear();
+                        int numTests = isLocalization ? Consts.NUM_LOCALIZATION_TESTS : 1;
+                        for (int i = 0; i < numTests; i++) {
+                            historyCounts.add(++historyCount);
+                        }
                         // Then write current historyCount to applicationBean
                         app.setHistoryCount(historyCount);
                         settings = getSharedPreferences(STATUS, Context.MODE_PRIVATE);
@@ -1553,21 +1560,21 @@ public class ReplayActivity extends AppCompatActivity {
                     /*
                      * Step 1: Tell server(s) about the replay that is about to happen.
                      */
-                    int i = 0;
+                    int serverIdx = 0;
                     for (CombinedSideChannel sc : sideChannels) {
                         // This is group of values that is used to track traces on server
                         // Youtube;False;0;DiffDetector;0;129.10.9.93;1.0
                         //set extra string to number tries needed to access MLab server
-                        Config.set("extraString", numMLab.size() == 0 ? "0" : numMLab.get(i).toString());
+                        Config.set("extraString", numMLab.size() == 0 ? "0" : numMLab.get(serverIdx).toString());
                         sc.declareID(appData.getReplayName(), endOfTest ? "True" : "False",
-                                randomID, String.valueOf(historyCount), String.valueOf(testId),
+                                randomID, String.valueOf(historyCounts.get(serverIdx)), String.valueOf(testId),
                                 doTest ? Config.get("extraString") + "-Test" : Config.get("extraString"),
                                 ipThroughProxy, BuildConfig.VERSION_NAME);
 
                         // This tuple tells the server if the server should operate on packets of traces
                         // and if so which packets to process
                         sc.sendChangeSpec(-1, "null", "null");
-                        i++;
+                        serverIdx++;
                     }
 
                     if (isCancelled()) {
@@ -1981,9 +1988,10 @@ public class ReplayActivity extends AppCompatActivity {
                      * Step 1: Ask server to analyze a test.
                      */
                     JSONObject resp;
+                    int serverIdx = 0;
                     for (String server : analyzerServerUrls) {
                         for (int ask4analysisRetry = 3; ask4analysisRetry > 0; ask4analysisRetry--) {
-                            resp = ask4analysis(server, randomID, app.getHistoryCount()); //request analysis
+                            resp = ask4analysis(server, randomID, historyCounts.get(serverIdx)); //request analysis
                             if (resp == null) {
                                 Log.e("Result Channel", server + ": ask4analysis returned null!");
                             } else {
@@ -1991,6 +1999,7 @@ public class ReplayActivity extends AppCompatActivity {
                                 break;
                             }
                         }
+                        serverIdx++;
                     }
 
                     if (analysisResults.size() != analyzerServerUrls.size()) {
@@ -2029,9 +2038,10 @@ public class ReplayActivity extends AppCompatActivity {
                      * Step 2: Get results of analysis from server.
                      */
                     analysisResults.clear();
+                    serverIdx = 0;
                     for (String url : analyzerServerUrls) {
                         for (int i = 0; ; i++) { //3 attempts to get analysis from sever
-                            resp = getSingleResult(url, randomID, app.getHistoryCount()); //get results
+                            resp = getSingleResult(url, randomID, historyCounts.get(serverIdx)); //get results
 
                             if (resp == null) {
                                 Log.e("Result Channel", url + ": getSingleResult returned null!");
@@ -2069,6 +2079,7 @@ public class ReplayActivity extends AppCompatActivity {
                                 }
                             }
                         }
+                        serverIdx++;
                     }
                 }
 
@@ -2089,7 +2100,8 @@ public class ReplayActivity extends AppCompatActivity {
                     }
                 }
                 //TODO: put multithread display here
-                JSONObject response = portBlocked ? new JSONObject() : analysisResults.get(0).getJSONObject("response");
+                int numServers = servers.size(); // consider response of last to be consistent with the app historyCount
+                JSONObject response = portBlocked ? new JSONObject() : analysisResults.get(numServers-1).getJSONObject("response");
 
 
                 if (portBlocked) { //generate results if port blocked
