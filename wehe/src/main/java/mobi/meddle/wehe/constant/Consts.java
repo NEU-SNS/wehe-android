@@ -8,7 +8,7 @@ public class Consts {
     public static final String METADATA_SERVER = "wehe-metadata.meddle.mobi";
     public static final String MLAB_SERVERS = "https://locate.measurementlab.net/v2/nearest/wehe/replay";
     public static final String MLAB_WEB_SOCKET_SERVER_KEY = "wss://:4443/v0/envelope/access";
-    public static final int NUM_TOMOGRAPHY_TESTS = 3;
+    public static final int NUM_LOCALIZATION_TESTS = 2;
 
     public static final String ARCEP_URL = "https://jalerte.arcep.fr/jalerte/?2";
 

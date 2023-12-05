@@ -121,12 +121,12 @@ public class ReplayActivity extends AppCompatActivity {
     private String carrier; //carrier to display in results
     private String serverDisplay; //server to display in the results
     private boolean mlabServerUsed;
-    //Tomography tests determine where exactly in the network differentiation occurs. If differentiation
-    //is detected in a test, the app will ask users if they want to run a tomography test. These
-    //tests run 3 concurrent tests to 3 optimal MLab servers. Based on the times the packets are sent,
-    //an algorithm can determine where differentiation occurs. All 3 of the tests count as one Wehe
-    //"Test", so 1 historyCount is used for all 3 tests.
-    private boolean isTomography = false; //true if tomography test, false if normal test
+    //Localization tests determine where exactly in the network differentiation occurs. If differentiation
+    //is detected in a test, the app will ask users if they want to run a localization test. These
+    //tests run 2 concurrent tests to 2 optimal MLab servers. Based on the times the packets are sent,
+    //an algorithm can determine where differentiation occurs. All 2 of the tests count as one Wehe
+    //"Test", so 1 historyCount is used for all 2 tests.
+    private boolean isLocalization = false; //true if localization test, false if normal test
 
     private final DialogInterface.OnClickListener doNothing = new DialogInterface.OnClickListener() {
         @Override
@@ -154,10 +154,10 @@ public class ReplayActivity extends AppCompatActivity {
             params.addRule(RelativeLayout.ABOVE, R.id.prgBarLayout);
             findViewById(R.id.rerunButton).setVisibility(View.GONE);
             findViewById(R.id.localizeDiffButton).setVisibility(View.GONE);
-            adapter.setTomography(false);
-            isTomography = false;
+            adapter.setLocalization(false);
+            isLocalization = false;
             for (ApplicationBean app : selectedApps) {
-                app.setTomography(false);
+                app.setLocalization(false);
                 app.setArcepNeedsAlerting(false);
                 app.setStatus(getString(R.string.pending));
             }
@@ -198,19 +198,19 @@ public class ReplayActivity extends AppCompatActivity {
         }
     };
 
-    //run tomography dialogue
-    private final View.OnClickListener runTomoListener = new View.OnClickListener() {
+    //run localization dialogue
+    private final View.OnClickListener runLocalizeListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             //automatically pops up when tests end if some tests have differentiation
-            //asks if user wants to run tomography test
+            //asks if user wants to run localization test
             new AlertDialog.Builder(ReplayActivity.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
                     .setTitle(R.string.localize_diff)
-                    .setMessage(R.string.rerun_tomography_descr)
+                    .setMessage(R.string.rerun_localization_descr)
                     .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Objects.requireNonNull(getSupportActionBar()).setTitle(getString(R.string.tomography_page_title));
+                            Objects.requireNonNull(getSupportActionBar()).setTitle(getString(R.string.localization_page_title));
 
                             //rearrange layout to hide rerun button
                             RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)
@@ -219,12 +219,12 @@ public class ReplayActivity extends AppCompatActivity {
                             findViewById(R.id.rerunButton).setVisibility(View.GONE);
                             findViewById(R.id.localizeDiffButton).setVisibility(View.GONE);
 
-                            //run tomography tests if user clicks yes
-                            isTomography = true;
-                            adapter.setTomography(true);
+                            //run localization tests if user clicks yes
+                            isLocalization = true;
+                            adapter.setLocalization(true);
                             selectedApps = new ArrayList<>(diffApps);
                             for (ApplicationBean app : selectedApps) {
-                                app.setTomography(true);
+                                app.setLocalization(true);
                                 app.setArcepNeedsAlerting(false);
                                 app.setStatus(getString(R.string.pending));
                             }
@@ -252,21 +252,20 @@ public class ReplayActivity extends AppCompatActivity {
     /**
      * When tests are finished and there are tests with differentiation or inconclusive tests, show
      * the rerun button, which allow users to rerun these tests. Also, if there is differentiation,
-     * show the Localize Differentiation button to allow users to run tomography tests.
+     * show the Localize Differentiation button to allow users to run localization tests.
      */
-    private void displayRerunTomoButtons() {
+    private void displayRerunLocalizeButtons() {
         //set rerun button to be visible if differentiation or inconclusive apps
         Button rerunButton = findViewById(R.id.rerunButton);
         rerunButton.setVisibility(View.VISIBLE);
         rerunButton.setOnClickListener(rerunListener);
 
-        //TODO: uncomment to allow users to run tomography tests
-        /*
-        if (!isTomography && diffApps.size() > 0) { //show tomography button if necessary
-            Button runTomoButton = findViewById(R.id.localizeDiffButton);
-            runTomoButton.setVisibility(View.VISIBLE);
-            runTomoButton.setOnClickListener(runTomoListener);
-        }*/
+        //TODO: uncomment to allow users to run localization tests
+        if (!isLocalization && diffApps.size() > 0) { //show localization button if necessary
+            Button runLocalizeButton = findViewById(R.id.localizeDiffButton);
+            runLocalizeButton.setVisibility(View.VISIBLE);
+            runLocalizeButton.setOnClickListener(runLocalizeListener);
+        }
 
         //rearrange layout so progress bar disappears
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams)
@@ -534,7 +533,7 @@ public class ReplayActivity extends AppCompatActivity {
 
                                         //All tests just finished
                                         if (diffApps.size() != 0 || inconclusiveApps.size() != 0) {
-                                            displayRerunTomoButtons();
+                                            displayRerunLocalizeButtons();
                                         }
                                     }
                                 }).show();
@@ -610,7 +609,7 @@ public class ReplayActivity extends AppCompatActivity {
             Config.readConfigFile(Consts.CONFIG_FILE, context);
             //get settings from SettingsFragment
             SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-            if (isTomography) { //need to use MLab servers for tomography tests
+            if (isLocalization) { //need to use MLab servers for localization tests
                 serverDisplay = Consts.DEFAULT_SERVER;
             } else {
                 serverDisplay = sharedPrefs.getString(getString(R.string.pref_server_key),
@@ -714,10 +713,10 @@ public class ReplayActivity extends AppCompatActivity {
                 clearProgressBar();
                 publishProgress("updateUI"); //make progress bar visible
                 boolean rerun = runTest(false); // Run the test on this.app
-                if (!isTomography && rerun) {
+                if (!isLocalization && rerun) {
                     //run confirmation test if confirmation tests are switched on in Settings and
                     //first test was inconclusive or had differentiation
-                    //don't run confirmation tests for tomography tests
+                    //don't run confirmation tests for localization tests
                     //make sure progress bar is clear
                     clearProgressBar();
                     publishProgress("updateUI"); //make progress bar visible
@@ -842,8 +841,8 @@ public class ReplayActivity extends AppCompatActivity {
             //4) Connect to SideChannel with MLab machine URL
             //5) Authentication URL has another 2 min timeout after connecting; every MLab test
             //needs to do this process.
-            //Also connect to MLab server if running tomography tests
-            int numTests = isTomography ? Consts.NUM_TOMOGRAPHY_TESTS : 1;
+            //Also connect to MLab server if running localization tests
+            int numTests = isLocalization ? Consts.NUM_LOCALIZATION_TESTS : 1;
             mlabServerUsed = false;
             if (servers.get(0).equals("10.0.0.0") || serverIPisV6) {
                 mlabServerUsed = true;
@@ -892,11 +891,11 @@ public class ReplayActivity extends AppCompatActivity {
                             }
                         }
                         wsConns.clear();
-                        if (isTomography) {
-                            //user can't run tomography tests if can't connect to MLab servers
+                        if (isLocalization) {
+                            //user can't run localization tests if can't connect to MLab servers
                             //exit tests in this case
                             publishProgress("makeDialog", getString(R.string.simple_error),
-                                    getString(R.string.tomography_not_supported), "true");
+                                    getString(R.string.localization_not_supported), "true");
                             return false;
                         }
                         numTests = 1;
@@ -1487,10 +1486,10 @@ public class ReplayActivity extends AppCompatActivity {
                     //code
                     ArrayList<CombinedSideChannel> sideChannels = new ArrayList<>();
                     ArrayList<JitterBean> jitterBeans = new ArrayList<>();
-                    //lots of for loops and ArrayLists in this method - tomography tests require
+                    //lots of for loops and ArrayLists in this method - localization tests require
                     //multiple tests to run at once; each test requires their own set of variables
                     //so the variables for each test are stored in ArrayLists. Normal tests will only
-                    //need 1 test, so 1 element in the ArrayLists, but tomography tests will have more
+                    //need 1 test, so 1 element in the ArrayLists, but localization tests will have more
                     int id = 0;
                     for (String server : servers) {
                         sideChannels.add(new CombinedSideChannel(id, sslSocketFactory,
@@ -1500,7 +1499,7 @@ public class ReplayActivity extends AppCompatActivity {
                     }
 
                     // increase history count only once during the run of a single test or set of
-                    // tomography tests
+                    // localization tests
                     if (iteration == 1) {
                         // First update historyCount
                         historyCount++;
@@ -2082,8 +2081,8 @@ public class ReplayActivity extends AppCompatActivity {
                 }
 
                 String differentiationNetwork = "";
-                if (isTomography) {
-                    //TODO: tomography api call here
+                if (isLocalization) {
+                    //TODO: localization api call here
                     Random random = new Random();
                     if (random.nextInt(2) == 1) {
                         differentiationNetwork = carrier;
@@ -2168,7 +2167,7 @@ public class ReplayActivity extends AppCompatActivity {
                  * Step 5: Save and display results to user. Rerun test if necessary.
                  */
                 //determine if the test needs to be rerun
-                if ((inconclusive || differentiation) && confirmationReplays && !isConfirmation && !isTomography) {
+                if ((inconclusive || differentiation) && confirmationReplays && !isConfirmation && !isLocalization) {
                     publishProgress("updateStatus", app.getName(), getString(R.string.confirmation_replay));
                     try { //wait 2 seconds so user can read message before it disappears
                         Thread.sleep(2000);
@@ -2181,10 +2180,10 @@ public class ReplayActivity extends AppCompatActivity {
 
                 String displayStatus; //display for the user in their language
                 String saveStatus; //save to disk, so it can appear in the correct language in prev results
-                if (isTomography) {
-                    saveStatus = differentiationNetwork.equals("") ? "tomo failed" : "tomo succ";
-                    displayStatus = differentiationNetwork.equals("") ? getString(R.string.tomo_failed)
-                            : getString(R.string.tomo_succ);
+                if (isLocalization) {
+                    saveStatus = differentiationNetwork.equals("") ? "localize failed" : "localize succ";
+                    displayStatus = differentiationNetwork.equals("") ? getString(R.string.localize_failed)
+                            : getString(R.string.localize_succ);
                 } else if (inconclusive) {
                     saveStatus = "inconclusive";
                     displayStatus = getString(R.string.inconclusive);
@@ -2238,8 +2237,8 @@ public class ReplayActivity extends AppCompatActivity {
                 response.put("isIPv6", isIPv6);
                 response.put("server", serverDisplay);
                 response.put("carrier", carrier);
-                if (isTomography) {
-                    response.put("tomographyNetwork", differentiationNetwork);
+                if (isLocalization) {
+                    response.put("localizationNetwork", differentiationNetwork);
                 }
                 Log.d("response", response.toString());
                 results.put(response); //put response in array to save
@@ -2249,10 +2248,10 @@ public class ReplayActivity extends AppCompatActivity {
                 Log.e("Result Channel", "parsing json error", e);
             }
             return false;
-            //todos: put description of tomography at top of reruns
+            //todos: put description of localization at top of reruns
             //fix ui pop up
-            //does rerun button pop up after tomo tests?
-            //do no diff tests appear during tomo tests?
+            //does rerun button pop up after localize tests?
+            //do no diff tests appear during localize tests?
         }
     }
 }

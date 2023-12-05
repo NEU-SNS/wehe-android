@@ -11,7 +11,7 @@
     <string name="selected">Selected</string>
     <string name="back_button">Back</string>
     <string name="replay_page_title">Running Tests</string>
-    <string name="tomography_page_title">Localizing Differentiation</string>
+    <string name="localization_page_title">Localizing Differentiation</string>
     <string name="replay">CLICK HERE TO PROCEED</string>
     <string name="title_activity_replay">Loading…</string>
     <string name="title_activity_crash">Crash Activity</string>
@@ -131,8 +131,8 @@
     <string name="no_diff">No differentiation</string>
     <string name="has_diff">Differentiation detected</string>
     <string name="inconclusive">Results inconclusive, try running the test again</string>
-    <string name="tomo_failed">Localizing differentiation failed</string>
-    <string name="tomo_succ">Localizing differentiation succeeded</string>
+    <string name="localize_failed">Localizing differentiation failed</string>
+    <string name="localize_succ">Localizing differentiation succeeded</string>
     <string name="waiting">Waiting for server result</string>
     <string name="confirmation_replay">Possible differentiation, re-running test to confirm</string>
     <string name="dashboard_button">View Online Dashboard</string>
@@ -296,13 +296,13 @@
     <string name="rerun_test_descr">Would you like to rerun the tests?</string>
     <string name="rerun_diff_opt">Rerun Tests with Detected Differentiation</string>
     <string name="rerun_incon_opt">Rerun Inconclusive Tests</string>
-    <string name="rerun_tomography_descr">
+    <string name="rerun_localization_descr">
         Differentiation has been detected on certain tests. Would you like to determine which
         network is causing the differentiation? todo - put something ab data consumption
     </string>
-    <string name="tomography_not_supported">Tomography tests are not supported on your device.</string>
-    <string name="tomo_failed_desc">The network causing differentiation cannot be determined.</string>
-    <string name="tomo_succ_desc">The network causing differentiation is %s.</string>
+    <string name="localization_not_supported">Localization tests are not supported on your device.</string>
+    <string name="localize_failed_desc">The network causing differentiation cannot be determined.</string>
+    <string name="localize_succ_desc">The network causing differentiation is %s.</string>
     <string name="alert_arcep">Alert Arcep!</string>
     <string name="normal_app_desc">
         For each test, Wehe servers send network traffic to this app. We do this in two parts.
@@ -320,7 +320,7 @@
         traveling through the selected port compared to port 443. See the \"How it Works\" page for
         more details.
     </string>
-    <string name="tomo_test_desc">
+    <string name="localize_test_desc">
         For tests where differentiation was detected, Wehe might be able to determine which network
         or ISP is causing such differentiation to occur by running several duplicate tests at the
         same time to different Wehe servers and comparing the results. See the \"How it Works\" page
