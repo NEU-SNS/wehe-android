@@ -202,11 +202,15 @@ public class ResultsFragment extends Fragment {
                         break;
                     case "localize failed":
                         differentiationText.setText(R.string.localize_failed);
-                        differentiationText.setTextColor(getResources().getColor(R.color.red));
+                        differentiationText.setTextColor(getResources().getColor(R.color.orange2));
+                        break;
+                    case "localize noevidence":
+                        differentiationText.setText(R.string.localize_noevidence);
+                        differentiationText.setTextColor(getResources().getColor(R.color.forestGreen));
                         break;
                     case "localize succ":
                         differentiationText.setText(R.string.localize_succ);
-                        differentiationText.setTextColor(getResources().getColor(R.color.forestGreen));
+                        differentiationText.setTextColor(getResources().getColor(R.color.red));
                         break;
                     default:
                         differentiationText.setText(current.differentiationText);

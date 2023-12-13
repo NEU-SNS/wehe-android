@@ -37,4 +37,24 @@
         android:key="@string/pref_ks2p_key"
         android:summary="@string/pref_cur_percent"
         android:title="@string/pref_title_threshold_ks2p" />
+    <EditTextPreference
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:defaultValue="5"
+        android:dependency="@string/pref_switch_key"
+        android:dialogMessage="@string/pref_summary_threshold_mwup"
+        android:inputType="number"
+        android:key="@string/pref_mwup_key"
+        android:summary="@string/pref_cur_percent"
+        android:title="@string/pref_title_threshold_mwup" />
+    <EditTextPreference
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:defaultValue="5"
+        android:dependency="@string/pref_switch_key"
+        android:dialogMessage="@string/pref_summary_threshold_corrp"
+        android:inputType="number"
+        android:key="@string/pref_corrp_key"
+        android:summary="@string/pref_cur_percent"
+        android:title="@string/pref_title_threshold_corrp" />
 </PreferenceScreen>

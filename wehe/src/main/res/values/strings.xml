@@ -132,6 +132,7 @@
     <string name="has_diff">Differentiation detected</string>
     <string name="inconclusive">Results inconclusive, try running the test again</string>
     <string name="localize_failed">Localizing differentiation failed</string>
+    <string name="localize_noevidence">Localizing differentiation did not find evidence</string>
     <string name="localize_succ">Localizing differentiation succeeded</string>
     <string name="waiting">Waiting for server result</string>
     <string name="confirmation_replay">Possible differentiation, re-running test to confirm</string>
@@ -208,9 +209,16 @@
     <string name="pref_summary_threshold_area">Threshold percentage for area test</string>
     <string name="pref_title_threshold_ks2p">Threshold percentage for KS2 P value test</string>
     <string name="pref_summary_threshold_ks2p">Threshold percentage for KS2 P value test</string>
+    <string name="pref_title_threshold_mwup">Threshold percentage for MWU P value test</string>
+    <string name="pref_summary_threshold_mwup">Threshold percentage for MWU P value test</string>
+    <string name="pref_title_threshold_corrp">Threshold percentage for Spearman P value test</string>
+    <string name="pref_summary_threshold_corrp">Threshold percentage for Spearman P value test</string>
     <string name="pref_server_key" translatable="false">pref_server</string>
     <string name="pref_area_key" translatable="false">pref_threshold_area</string>
     <string name="pref_ks2p_key" translatable="false">pref_threshold_ks2p</string>
+    <string name="pref_mwup_key" translatable="false">pref_threshold_mwup</string>
+    <string name="pref_corrp_key" translatable="false">pref_threshold_corrp</string>
+    <string name="pref_corr_ratio_key" translatable="false">pref_threshold_corr_ratio</string>
     <string name="pref_switch_key" translatable="false">pref_switch</string>
 
     <string name="total_size">Total size: %d MB</string>
@@ -302,6 +310,7 @@
     </string>
     <string name="localization_not_supported">Localization tests are not supported on your device.</string>
     <string name="localize_failed_desc">The network causing differentiation cannot be determined.</string>
+    <string name="localize_noevidence_desc">Could not find evidence which network causing differentiation. </string>
     <string name="localize_succ_desc">The network causing differentiation is %s.</string>
     <string name="alert_arcep">Alert Arcep!</string>
     <string name="normal_app_desc">

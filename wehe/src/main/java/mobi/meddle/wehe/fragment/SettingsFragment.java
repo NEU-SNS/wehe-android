@@ -56,6 +56,18 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         assert ks2pPref != null;
         ks2pPref.setSummary(String.format(getString(R.string.pref_cur_percent),
                 Integer.parseInt(ks2pPref.getText())));
+
+        EditTextPreference mwupPref
+                = getPreferenceScreen().findPreference(getString(R.string.pref_mwup_key));
+        assert mwupPref != null;
+        mwupPref.setSummary(String.format(getString(R.string.pref_cur_percent),
+                Integer.parseInt(mwupPref.getText())));
+
+        EditTextPreference corrpPref
+                = getPreferenceScreen().findPreference(getString(R.string.pref_corrp_key));
+        assert corrpPref != null;
+        corrpPref.setSummary(String.format(getString(R.string.pref_cur_percent),
+                Integer.parseInt(corrpPref.getText())));
     }
 
     private void attachListeners() {
@@ -152,6 +164,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                         getPreferenceScreen().findPreference(getString(R.string.pref_area_key));
                 EditTextPreference ks2pPref =
                         getPreferenceScreen().findPreference(getString(R.string.pref_ks2p_key));
+                EditTextPreference mwupPref =
+                        getPreferenceScreen().findPreference(getString(R.string.pref_mwup_key));
+                EditTextPreference corrpPref =
+                        getPreferenceScreen().findPreference(getString(R.string.pref_corrp_key));
 
                 assert serverPref != null;
                 serverPref.setValue(Consts.DEFAULT_SERVER);
@@ -159,6 +175,10 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 areaPref.setText(String.valueOf(Consts.A_THRESHOLD));
                 assert ks2pPref != null;
                 ks2pPref.setText(String.valueOf(Consts.KS2PVAL_THRESHOLD));
+                assert mwupPref != null;
+                mwupPref.setText(String.valueOf(Consts.MWU_PVAL_THRESHOLD));
+                assert corrpPref != null;
+                corrpPref.setText(String.valueOf(Consts.CORR_PVAL_THRESHOLD));
 
                 setCurrentPreferences();
 
@@ -176,6 +196,16 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                 getPreferenceScreen().findPreference(getString(R.string.pref_ks2p_key));
         assert ks2pPref != null;
         ks2pPref.setOnPreferenceChangeListener(numberListener);
+
+        EditTextPreference mwupPref =
+                getPreferenceScreen().findPreference(getString(R.string.pref_mwup_key));
+        assert mwupPref != null;
+        mwupPref.setOnPreferenceChangeListener(numberListener);
+
+        EditTextPreference corrpPref =
+                getPreferenceScreen().findPreference(getString(R.string.pref_corrp_key));
+        assert corrpPref != null;
+        corrpPref.setOnPreferenceChangeListener(numberListener);
 
         ListPreference serverPref =
                 getPreferenceScreen().findPreference(getString(R.string.pref_server_key));

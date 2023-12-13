@@ -6,6 +6,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import java.util.HashMap;
+
 /**
  * Data structure to hold info about an app/port
  */
@@ -49,6 +51,7 @@ public class ApplicationBean implements Parcelable {
     private Category cat; //category that the app belongs in
     private boolean isLocalization = false;
     private String differentiationNetwork = ""; //network that caused differentiation
+    private HashMap<String, String> singleReplaysJSONInfo = new HashMap<>();
 
     public ApplicationBean() {
 
@@ -190,6 +193,21 @@ public class ApplicationBean implements Parcelable {
         this.isLocalization = isLocalization;
     }
 
+    /**
+     * A localization test should consist of two replay rounds:
+     *  1- single replay round (which is the default of Wehe)
+     *  2- a simultaneous replay round with more than one server
+     * Information from the first round are stored and by the localization after the second round
+     */
+    public void saveSingleReplayInfo (String userID, int historyCount, String server) {
+        this.singleReplaysJSONInfo.put("singleReplay_userID", userID);
+        this.singleReplaysJSONInfo.put("singleReplay_historyCount", String.valueOf(historyCount));
+        this.singleReplaysJSONInfo.put("singleReplay_server", server);
+    }
+
+    public HashMap<String, String> getSingleReplayInfo () {
+        return singleReplaysJSONInfo;
+    }
     public String getDifferentiationNetwork() {
         return differentiationNetwork;
     }
