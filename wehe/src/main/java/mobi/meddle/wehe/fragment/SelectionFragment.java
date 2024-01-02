@@ -87,6 +87,8 @@ public class SelectionFragment extends Fragment {
     private final OnClickListener changeTab = new OnClickListener() {
         @Override
         public void onClick(@NonNull View v) {
+
+
             Category cat = runPortTests ? Category.SMALL_PORT : Category.VIDEO;
             int buttonId = runPortTests ? R.id.smallPortButton : R.id.videoButton;
             if (v.getId() == R.id.musicButton) {
@@ -99,6 +101,12 @@ public class SelectionFragment extends Fragment {
                     cat = Category.LARGE_PORT;
                     buttonId = R.id.largePortButton;
             }
+
+            CharSequence text = cat.name();
+            int duration = Toast.LENGTH_SHORT;
+
+            Toast toast = Toast.makeText(getContext(), text, duration);
+            toast.show();
 
             //set all buttons back to default background color
             if (runPortTests) {

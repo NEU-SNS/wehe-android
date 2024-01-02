@@ -326,5 +326,6 @@
         same time to different Wehe servers and comparing the results. See the \"How it Works\" page
         for more details.
     </string>
+    <string name="title_activity_main2">MainActivity2</string>
 
 </resources>
