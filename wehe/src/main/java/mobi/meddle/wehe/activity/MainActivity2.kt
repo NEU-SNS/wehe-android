@@ -10,6 +10,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -62,7 +63,7 @@ class MainActivity2 : ComponentActivity() {
 
 @Composable
 fun AppCard(app: AppsListing) {
-    Card (modifier = Modifier.size(width = 200.dp, height = 100.dp)) {
+    Card (modifier = Modifier.size(width = 400.dp, height = 100.dp)) {
         Text(text = app.name)
     }
 }
@@ -93,12 +94,20 @@ fun GreetingPreview() {
 @Composable
 fun HomeView(apps : List<AppsListing>) {
     val pagerState = rememberPagerState(pageCount = {
-        2
+        3
     })
-    val coroutineScope = rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope();
     Column {
+        HorizontalPager(state = pagerState) { page ->
+            val scrollState = rememberScrollState()
+            Column (modifier = Modifier.height(700.dp).verticalScroll(scrollState)){
+                Greeting("Android")
+                AppsListComponent(apps)
+            }
+        }
+        
         TabRow(
-            selectedTabIndex = 0,
+            selectedTabIndex = 1,
             modifier = Modifier.fillMaxWidth()
         ) {
             Tab(
@@ -113,14 +122,13 @@ fun HomeView(apps : List<AppsListing>) {
                 text = { Text(text = "Music") },
                 unselectedContentColor = Color.Gray
             )
+            Tab(
+                selected = pagerState.currentPage == 2,
+                onClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
+                text = { Text(text = "Conferencing") },
+                unselectedContentColor = Color.Gray
+            )
         }
-
-        HorizontalPager(state = pagerState) { page ->
-            val scrollState = rememberScrollState()
-            Column (modifier = Modifier.verticalScroll(scrollState)){
-                Greeting("Android")
-                AppsListComponent(apps)
-            }
-        }
+//        Text(text = "testing")
     }
 }
