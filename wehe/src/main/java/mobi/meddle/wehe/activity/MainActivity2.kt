@@ -7,7 +7,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +19,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -26,10 +29,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
+import mobi.meddle.wehe.R
 import mobi.meddle.wehe.activity.ui.theme.WeheandroidTheme
 import mobi.meddle.wehe.constant.Consts.APPS_FILENAME
 import mobi.meddle.wehe.data.AppsList
@@ -63,8 +68,17 @@ class MainActivity2 : ComponentActivity() {
 
 @Composable
 fun AppCard(app: AppsListing) {
-    Card (modifier = Modifier.size(width = 400.dp, height = 100.dp)) {
-        Text(text = app.name)
+    Card (
+        modifier = Modifier.size(width = 400.dp, height = 100.dp)
+    ) {
+        Row {
+            Text(text = app.name)
+            Image(
+                painter = painterResource(id = R.drawable.whatsapp),
+                contentDescription = app.name + " icon",
+                modifier = Modifier.size(50.dp)
+            )
+        }
     }
 }
 @Composable
@@ -100,7 +114,9 @@ fun HomeView(apps : List<AppsListing>) {
     Column {
         HorizontalPager(state = pagerState) { page ->
             val scrollState = rememberScrollState()
-            Column (modifier = Modifier.height(700.dp).verticalScroll(scrollState)){
+            Column (modifier = Modifier
+                .height(700.dp)
+                .verticalScroll(scrollState)){
                 Greeting("Android")
                 AppsListComponent(apps)
             }
