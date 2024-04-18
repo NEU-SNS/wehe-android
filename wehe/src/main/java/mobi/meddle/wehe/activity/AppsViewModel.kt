@@ -1,16 +1,16 @@
-package mobi.meddle.wehe.activity.ui.theme
+package mobi.meddle.wehe.activity
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
-import kotlinx.coroutines.Dispatchers
+import dagger.hilt.android.lifecycle.HiltViewModel
 import mobi.meddle.wehe.data.AppsListing
-import mobi.meddle.wehe.data.AppsRepository
+import mobi.meddle.wehe.data.DefaultAppsRepository
+import javax.inject.Inject
 
-class AppsViewModel(private val appsRepository: AppsRepository) : ViewModel() {
-
-    val appsList: LiveData<List<AppsListing>> = liveData(Dispatchers.IO) { // Using coroutines
+@HiltViewModel
+class AppsViewModel @Inject constructor(private val appsRepository: DefaultAppsRepository) : ViewModel() {
+// write a getter function
+    fun appsList() : List<AppsListing> {
         val apps = appsRepository.getApps()
-        emit(apps)
+        return apps
     }
 }

@@ -1,10 +1,10 @@
 package mobi.meddle.wehe.data
 
-interface AppsRepository {
-    fun getApps(): List<AppsListing>
-}
-class DefaultAppsRepository(private val source: AppsSource) : AppsRepository {
-    override fun getApps(): List<AppsListing> {
-        return source.loadApps();
+import javax.inject.Inject
+
+class DefaultAppsRepository @Inject constructor(private val dataSource: LocalAppsSource) {
+    fun getApps(): List<AppsListing> {
+        return dataSource.loadApps()
     }
 }
+

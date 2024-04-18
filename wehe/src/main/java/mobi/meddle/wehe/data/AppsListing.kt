@@ -2,7 +2,6 @@ package mobi.meddle.wehe.data
 
 import mobi.meddle.wehe.bean.ApplicationBean.Category
 
-
 data class AppsListing(
     val name: String,
     val size: Int,
