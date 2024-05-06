@@ -67,7 +67,6 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -127,6 +126,7 @@ public class ReplayActivity extends AppCompatActivity {
     //an algorithm can determine where differentiation occurs. All these tests count as one Wehe
     //"Test", but with different historyCount values.
     private boolean isLocalization = false; //true if localization test, false if normal test
+    private JSONArray locServerPairs = null;
 
     private final DialogInterface.OnClickListener doNothing = new DialogInterface.OnClickListener() {
         @Override
@@ -198,6 +198,17 @@ public class ReplayActivity extends AppCompatActivity {
         }
     };
 
+    //run localization unavailable dialogue
+    private final View.OnClickListener runLocalizeUnavailable = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            new AlertDialog.Builder(ReplayActivity.this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                    .setTitle(R.string.localize_unavailable)
+                    .setMessage(R.string.no_localization_topo)
+                    .create().show();
+        }
+    };
+
     //run localization dialogue
     private final View.OnClickListener runLocalizeListener = new View.OnClickListener() {
         @Override
@@ -231,6 +242,7 @@ public class ReplayActivity extends AppCompatActivity {
                                 app.setArcepNeedsAlerting(false);
                                 app.setStatus(getString(R.string.pending));
                             }
+                            adapter.notifyDataSetChanged();
                             traceRunner = new TraceRunAsync();
                             traceRunner.execute("");
                         }
@@ -267,7 +279,12 @@ public class ReplayActivity extends AppCompatActivity {
         if (!isLocalization && diffApps.size() > 0) { //show localization button if necessary
             Button runLocalizeButton = findViewById(R.id.localizeDiffButton);
             runLocalizeButton.setVisibility(View.VISIBLE);
-            runLocalizeButton.setOnClickListener(runLocalizeListener);
+            if (locServerPairs != null && locServerPairs.length() != 0) {
+                runLocalizeButton.setOnClickListener(runLocalizeListener);
+            } else {
+                runLocalizeButton.setBackgroundResource(R.color.shadyGray);
+                runLocalizeButton.setOnClickListener(runLocalizeUnavailable);
+            }
         }
 
         //rearrange layout so progress bar disappears
@@ -463,6 +480,7 @@ public class ReplayActivity extends AppCompatActivity {
         private int mwuPValue_threshold;
         private int corrPValue_threshold;
         private int corrRatio_threshold;
+        private String differentiationNetworks;
         private SharedPreferences settings;
         private SSLSocketFactory sslSocketFactory = null;
         private HostnameVerifier hostnameVerifier = null;
@@ -834,8 +852,8 @@ public class ReplayActivity extends AppCompatActivity {
                 servers.add("10.0.0.0");
                 Log.d("Serverhack", "hacking wehe4");
             } else {
-                servers.add(getServerIP(server));
-                if (servers.get(servers.size() - 1).equals("")) {
+                servers.addAll(getServerIPList(server));
+                if (servers.size() == 0 || servers.get(servers.size() - 1).equals("")) {
                     publishProgress("makeDialog", getString(R.string.simple_error),
                             getString(R.string.error_unknown_host), "true");
                     return false;
@@ -867,9 +885,7 @@ public class ReplayActivity extends AppCompatActivity {
                 try {
                     int numTries = 0; //tracks num tries before successful MLab connection
                     int wsID; //WebSocket id
-                    JSONObject mLabResp = sendRequest(Consts.MLAB_SERVERS, "GET", false, null, null);
-                    //TODO: make sure this outer try really necessary; check what happens if below line fails; will it exit gracefully?
-                    JSONArray mLabServers = (JSONArray) mLabResp.get("results"); //get MLab servers list
+                    JSONArray mLabServers = getMLabServerList();
                     for (int i = 0; wsConns.size() < numTests && i < mLabServers.length(); i++) {
                         //try the 4 servers before going to wehe2
                         try {
@@ -953,6 +969,89 @@ public class ReplayActivity extends AppCompatActivity {
                 generateServerCertificate(false);
             }
             return true;
+        }
+
+        /**
+         * Retrieves the server pair topologies from Wehe analyzer server.
+         *
+         * @param url           the url of the server to get the result
+         * @return a JSONObject with a key named "success". If value of "success" is false, a key named
+         * "error" is also contained in the result. If the value of "success" is true, a key named
+         * "response" is the result.
+         */
+        private JSONArray getTopologies(String url) {
+            ArrayList<String> requestInfo = new ArrayList<>();
+            requestInfo.add("command=" + "getServers");
+            for (int i = 0; i < 3; i++) {
+                JSONObject resp = sendRequest(url, "GET", true, requestInfo, null);
+                try {
+                    if (resp != null && resp.getBoolean("success")) {
+                        String key = mlabServerUsed ? "server-site-pairs" : "server-ip-pairs";
+                        return resp.getJSONObject("response").getJSONArray(key);
+                    }
+                } catch (JSONException e) {
+                    Log.e("Send Request", "JSON Parse failed", e);
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Find MLab servers to connect to.
+         * When running localization test with Y-shaped topology, the method perform two steps:
+         *    1- Send Get (getServers) request to Wehe Analyzer server for server-pair site-info
+         *    2- Use M-Lab locate service to retrieve the server keys
+         * In other cases, the method returns the nearest Mlab server.
+         *
+         * @return JSONArray with the result of mlab locate service response
+         */
+        private JSONArray getMLabServerList() throws JSONException {
+            JSONObject mLabResp = sendRequest(Consts.MLAB_LOCATE_SERVERS, "GET", false, null, null);
+            //TODO: make sure this outer try really necessary; check what happens if below line fails; will it exit gracefully?
+            JSONArray mLabNearestServers = (JSONArray) mLabResp.get("results"); //get MLab servers list
+
+            // for single replay test, simply return the returned server
+            if (!isLocalization) {
+                return mLabNearestServers;
+            }
+
+            for (int j = 0; j < locServerPairs.length(); j++) {
+                JSONArray pair = locServerPairs.getJSONArray(j);
+                String mlabLocateURL = String.format("%s?site=%s&site=%s",
+                    Consts.MLAB_LOCATE_SERVERS, pair.getString(0), pair.getString(1));
+                mLabResp = sendRequest(mlabLocateURL, "GET", false, null, null);
+                if (mLabResp.getJSONArray("results").length() >= 2) {
+                    differentiationNetworks = pair.getString(2);
+                    return mLabResp.getJSONArray("results");
+                }
+            }
+            return new JSONArray();
+        }
+
+        private ArrayList<String> getServerIPList(String server) {
+            ArrayList<String> serverIPs = new ArrayList<>();
+
+            // TODO: also handle case of passing multiple servers
+            serverIPs.add(getServerIP(server));
+
+            // for single replay test, simply return the server ip value
+            if (!isLocalization) {
+                return serverIPs;
+            }
+
+            try {
+                if (locServerPairs.length() != 0) {
+                    JSONArray pair = locServerPairs.getJSONArray(0);
+                    ArrayList<String> serverPairIPs = new ArrayList<>();
+                    serverPairIPs.add(pair.getString(0));
+                    serverPairIPs.add(pair.getString(1));
+                    differentiationNetworks = pair.getString(2);
+                    return serverPairIPs;
+                }
+            } catch (JSONException e) {
+                Log.e("Send Request", "JSON Parse failed", e);
+            }
+            return new ArrayList<>();
         }
 
         /**
@@ -2224,6 +2323,11 @@ public class ReplayActivity extends AppCompatActivity {
                         if (country.equals("FR")) { //show alert arcep button
                             app.setArcepNeedsAlerting(true);
                         }
+                        // when differentiation detected, look for Y-shaped topology
+                        Log.d("Topologies Channel", "send getServers request to: " + analyzerServerUrls.get(0));
+                        if (locServerPairs == null) {
+                            locServerPairs = getTopologies(analyzerServerUrls.get(0));
+                        }
                         diffApps.add(app);
                     } else {
                         saveStatus = "no diff";
@@ -2576,7 +2680,7 @@ public class ReplayActivity extends AppCompatActivity {
                 }
 
                 commonDiff = isXputSimilar || isLossCorrelated;
-
+//                commonDiff = true;
                 /*
                  * Step 5: Save and display results to user.
                  */
@@ -2587,7 +2691,7 @@ public class ReplayActivity extends AppCompatActivity {
                     saveStatus = "inconclusive";
                     displayStatus = getString(R.string.inconclusive);
                 } else if (commonDiff) {
-                    differentiationNetwork = carrier;
+                    differentiationNetwork = differentiationNetworks;
                     saveStatus = "The network causing differentiation is your access network.";
                     displayStatus = getString(R.string.localize_succ);
                 } else {
