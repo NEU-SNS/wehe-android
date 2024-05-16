@@ -12,31 +12,31 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
-import kotlinx.coroutines.launch
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.activity.ui.theme.WeheandroidTheme
 import mobi.meddle.wehe.data.AppsListing
@@ -86,7 +86,10 @@ fun AppCard(app: AppsListing) {
 }
 @Composable
 fun AppsListComponent(apps: List<AppsListing>) {
-    Column(){
+    Column(
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+    ){
         for (app in apps) {
             AppCard(app)
         }
@@ -109,68 +112,51 @@ fun GreetingPreview() {
 
 @Composable
 fun HomeView(apps : List<AppsListing>) {
-    val pagerState = rememberPagerState(pageCount = {
-        3
-    })
-    val scrollState = rememberScrollState()
-//    val scrollState = rememberScrollState()
-//    var state by remember { mutableStateOf(0) }
-//    val titles = listOf("TAB 1", "TAB 2", "TAB 3 WITH LOTS OF TEXT")
-    val coroutineScope = rememberCoroutineScope()
-    Column {
-//        TabRow(selectedTabIndex = state) {
-//            titles.forEachIndexed { index, title ->
-//                Tab(
-//                    text = { Text(title) },
-//                    selected = state == index,
-//                    onClick = { state = index }
-//                )
-//            }
-//        }
-//        Column (modifier = Modifier
-//                .height(700.dp)
-//                .verticalScroll(scrollState)){
-////                Greeting("Android")
-//                AppsListComponent(apps)
-//            }
-//        Text(
-//            text = "Text tab ${state + 1} selected",
-//        )
-        HorizontalPager(state = pagerState) { page ->
-            val scrollState = rememberScrollState()
-            Column(
-                modifier = Modifier
-                    .height(700.dp)
-                    .verticalScroll(scrollState)
-            ) {
-                Greeting("Android")
-                AppsListComponent(apps)
+    val tabItems = listOf(
+       TabItem(
+           title = "Video",
+       ),
+       TabItem(
+           title = "Music"
+       ),
+       TabItem(
+           title = "Conferencing"
+       ),
+    )
+
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    val pagerState = rememberPagerState {
+        tabItems.size
+    }
+    LaunchedEffect(selectedTabIndex) {
+        pagerState.animateScrollToPage(selectedTabIndex)
+    }
+    LaunchedEffect(pagerState.currentPage) {
+        selectedTabIndex = pagerState.currentPage
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {index ->
+            AppsListComponent(apps)
+        }
+        TabRow(selectedTabIndex = selectedTabIndex) {
+            tabItems.forEachIndexed { index, item ->
+                Tab(
+                    selected = index == selectedTabIndex,
+                    onClick = { selectedTabIndex = index },
+                    text = { Text(item.title) },
+                )
             }
         }
-
-        TabRow(
-            selectedTabIndex = 1,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Tab(
-                onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
-                selected = pagerState.currentPage == 0,
-                text = { Text(text = "Video") },
-                unselectedContentColor = Color.Gray
-            )
-            Tab(
-                onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
-                selected = pagerState.currentPage == 1,
-                text = { Text(text = "Music") },
-                unselectedContentColor = Color.Gray
-            )
-            Tab(
-                onClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
-                selected = pagerState.currentPage == 2,
-                text = { Text(text = "Conferencing") },
-                unselectedContentColor = Color.Gray
-            )
-        }
-        Text(text = "testing")
     }
+
 }
+
+data class TabItem(val title: String)
