@@ -11,6 +11,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -72,6 +73,7 @@ import mobi.meddle.wehe.data.AppsListing
 import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.activity.ui.theme.WEHE_BLUE
 import mobi.meddle.wehe.activity.ui.theme.WEHE_GREY
+import mobi.meddle.wehe.bean.ApplicationBean
 
 private var appsList = mutableListOf<AppsListing>()
 @AndroidEntryPoint
@@ -150,7 +152,6 @@ fun AppSelection() {
 @Composable
 fun AppDataObserver(appsViewModel: AppsViewModel) {
     val apps = appsViewModel.appsList();
-
 }
 
 @Composable
@@ -251,9 +252,16 @@ fun HomeView(apps: List<AppsListing>) {
             state = pagerState,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .weight(1f),
+            verticalAlignment = Alignment.Top,
         ) { index ->
-            AppsListComponent(apps)
+            if (index == 0) {
+                AppsListComponent(apps.filter { it.category == ApplicationBean.Category.VIDEO})
+            } else if (index == 1) {
+                AppsListComponent(apps.filter { it.category == ApplicationBean.Category.MUSIC})
+            } else if (index == 2) {
+                AppsListComponent(apps.filter { it.category == ApplicationBean.Category.CONFERENCING})
+            }
         }
         TabRow(selectedTabIndex = selectedTabIndex) {
             tabItems.forEachIndexed { index, item ->
