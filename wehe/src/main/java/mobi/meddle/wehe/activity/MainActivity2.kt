@@ -73,6 +73,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.activity.ui.theme.WEHE_BLUE
 import mobi.meddle.wehe.activity.ui.theme.WEHE_GREY
 
+private var appsList = mutableListOf<AppsListing>()
 @AndroidEntryPoint
 class MainActivity2 : ComponentActivity() {
 
@@ -80,6 +81,7 @@ class MainActivity2 : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val appsViewModel = ViewModelProvider(this)[AppsViewModel::class.java]
+        appsList = appsViewModel.appsList().toMutableList();
         val context: Context = this
         setContent {
             Scaffold(topBar = {
@@ -102,7 +104,7 @@ class MainActivity2 : ComponentActivity() {
             }) {
                 innerPadding ->
                 Column (modifier = Modifier.padding(innerPadding)) {
-                    AppSelection(appsViewModel)
+                    AppSelection()
                 }
             }
         }
@@ -110,13 +112,20 @@ class MainActivity2 : ComponentActivity() {
 }
 
 @Composable
-fun AppSelection(appsViewModel: AppsViewModel) {
+fun AppSelection() {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(modifier = Modifier.height(720.dp)) {
-            AppDataObserver(appsViewModel = appsViewModel);
+            WeheandroidTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    HomeView(apps = appsList)
+                }
+            };
         }
         Row(modifier = Modifier.height(70.dp)) {
             Button(
@@ -141,14 +150,7 @@ fun AppSelection(appsViewModel: AppsViewModel) {
 @Composable
 fun AppDataObserver(appsViewModel: AppsViewModel) {
     val apps = appsViewModel.appsList();
-    WeheandroidTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            HomeView(apps)
-        }
-    }
+
 }
 
 @Composable
