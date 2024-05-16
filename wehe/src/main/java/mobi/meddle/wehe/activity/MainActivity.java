@@ -27,7 +27,6 @@ import mobi.meddle.wehe.fragment.AboutFragment;
 import mobi.meddle.wehe.fragment.DashboardFragment;
 import mobi.meddle.wehe.fragment.FunctionalityFragment;
 import mobi.meddle.wehe.fragment.ResultsFragment;
-import mobi.meddle.wehe.fragment.SelectionFragment;
 import mobi.meddle.wehe.fragment.SettingsFragment;
 
 /**
@@ -75,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
      * Go to the screen to select apps/ports to test
      */
     private void goToAppSelection() {
-        Fragment fragment = new SelectionFragment2();
+        Fragment fragment = new SelectionFragment();
         // We're adding fragments to the backstack as we navigate otherwise back button will
         // Land you out of the application
         // TODO find a better way to navigate using back button currently it keeps
@@ -84,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putBoolean("runPortTest", false);
         fragment.setArguments(bundle);
-        mFragmentManager.beginTransaction().add(fragment, SelectionFragment2.TAG).commit();
+        mFragmentManager.beginTransaction().add(fragment, SelectionFragment.TAG).commit();
         mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment)
                 .addToBackStack(null)
                 .commit();
@@ -160,19 +159,17 @@ public class MainActivity extends AppCompatActivity {
                 Fragment fragment = null;
 
                 if (id == R.id.nav_run) {
-                    fragment = new SelectionFragment2();
+                    fragment = new SelectionFragment();
                     Bundle bundle = new Bundle();
-                    boolean isPortTest = id == R.id.nav_run_port;
-                    bundle.putBoolean("runPortTest", isPortTest);
+                    bundle.putBoolean("runPortTest", false);
                     fragment.setArguments(bundle);
                     mFragmentManager.beginTransaction()
-                            .add(fragment, SelectionFragment2.TAG).commit();
+                            .add(fragment, SelectionFragment.TAG).commit();
                 }
                 else if (id == R.id.nav_run_port) {
                     fragment = new SelectionFragment();
                     Bundle bundle = new Bundle();
-                    boolean isPortTest = id == R.id.nav_run_port;
-                    bundle.putBoolean("runPortTest", isPortTest);
+                    bundle.putBoolean("runPortTest", true);
                     fragment.setArguments(bundle);
                     mFragmentManager.beginTransaction()
                             .add(fragment, SelectionFragment.TAG).commit();

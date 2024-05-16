@@ -61,7 +61,6 @@ import mobi.meddle.wehe.activity.ui.theme.WEHE_GREY
 import mobi.meddle.wehe.activity.ui.theme.WeheandroidTheme
 import mobi.meddle.wehe.bean.ApplicationBean
 import mobi.meddle.wehe.constant.Consts
-import mobi.meddle.wehe.data.AppsListing
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -70,9 +69,9 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.util.Locale
 
-class SelectionFragment2 : Fragment() {
+class SelectionFragment : Fragment() {
     private var app_beans: ArrayList<ApplicationBean> = ArrayList<ApplicationBean>()//all the apps/ports to display on the page
-    val TAG: String = "SelectionFragment2"
+    val TAG: String = "SelectionFragment"
     private var context: Context? = null
     private var runPortTests = false
     private var carrierDisplay: String? = null //cell carrier or "Wi-Fi"
@@ -145,39 +144,6 @@ class SelectionFragment2 : Fragment() {
             }
         }
     }
-
-    //    @OptIn(ExperimentalMaterial3Api::class)
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        val appsViewModel = ViewModelProvider(this)[AppsViewModel::class.java]
-//        appsList = appsViewModel.appsList().toMutableList();
-//        val context: Context = this
-//        setContent {
-//            Scaffold(topBar = {
-//                TopAppBar(
-//                    navigationIcon = {
-//                        IconButton(onClick = { /* do something */ }) {
-//                            Icon(
-//                                imageVector = Icons.Filled.Menu,
-//                                contentDescription = "Localized description",
-//                                tint = androidx.compose.ui.graphics.Color.White
-//                            )
-//                        }
-//                    },
-//                    title = { Text("Wehe") },
-//                    colors = topAppBarColors(
-//                        containerColor = WEHE_BLUE,
-//                        titleContentColor = androidx.compose.ui.graphics.Color.White
-//                    )
-//                )
-//            }) {
-//                    innerPadding ->
-//                Column (modifier = Modifier.padding(innerPadding)) {
-//                    AppSelection()
-//                }
-//            }
-//        }
-//    }
     @Composable
     fun AppSelection() {
         Column(
@@ -197,9 +163,7 @@ class SelectionFragment2 : Fragment() {
             Row(modifier = Modifier.height(70.dp)) {
                 Button(
                     onClick = {
-                        if (selectedApps == null) {
-                            throw NullPointerException("selectedApps is null");
-                        } else if (selectedApps.size == 0) {
+                        if (selectedApps.size == 0) {
                             Toast.makeText(
                                 context,
                                 getString(R.string.select_at_least_one),
@@ -228,6 +192,7 @@ class SelectionFragment2 : Fragment() {
                         disabledContentColor = androidx.compose.ui.graphics.Color.White,
                     )
                 ) {
+                    if (runPortTests) Text("Port Tests") else
                     Text("Differentiation Tests")
                 }
             }
@@ -315,17 +280,29 @@ class SelectionFragment2 : Fragment() {
 
     @Composable
     fun HomeView(apps: List<ApplicationBean>) {
-        val tabItems = listOf(
-            TabItem(
-                title = "Video",
-            ),
-            TabItem(
-                title = "Music"
-            ),
-            TabItem(
-                title = "Conferencing"
-            ),
-        )
+        var tabItems: List<TabItem>
+        if (runPortTests) {
+            tabItems = listOf(
+                TabItem(
+                    title = "10 MB files",
+                ),
+                TabItem(
+                    title = "50 MB files"
+                ),
+            )
+        } else {
+           tabItems = listOf(
+                TabItem(
+                    title = "Video",
+                ),
+                TabItem(
+                    title = "Music"
+                ),
+                TabItem(
+                    title = "Conferencing"
+                ),
+            )
+        }
 
         var selectedTabIndex by remember { mutableStateOf(0) }
         val pagerState = rememberPagerState {
@@ -348,12 +325,21 @@ class SelectionFragment2 : Fragment() {
                     .weight(1f),
                 verticalAlignment = Alignment.Top,
             ) { index ->
-                if (index == 0) {
-                    AppsListComponent(apps.filter { it.category == ApplicationBean.Category.VIDEO })
-                } else if (index == 1) {
-                    AppsListComponent(apps.filter { it.category == ApplicationBean.Category.MUSIC })
-                } else if (index == 2) {
-                    AppsListComponent(apps.filter { it.category == ApplicationBean.Category.CONFERENCING })
+                if (runPortTests) {
+                    if (index == 0) {
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.SMALL_PORT })
+                    } else if (index == 1) {
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.LARGE_PORT })
+                    }
+
+                } else {
+                    if (index == 0) {
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.VIDEO })
+                    } else if (index == 1) {
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.MUSIC })
+                    } else if (index == 2) {
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.CONFERENCING })
+                    }
                 }
             }
             TabRow(selectedTabIndex = selectedTabIndex) {
