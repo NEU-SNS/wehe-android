@@ -25,7 +25,11 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -108,41 +112,65 @@ fun HomeView(apps : List<AppsListing>) {
     val pagerState = rememberPagerState(pageCount = {
         3
     })
+    val scrollState = rememberScrollState()
+//    val scrollState = rememberScrollState()
+//    var state by remember { mutableStateOf(0) }
+//    val titles = listOf("TAB 1", "TAB 2", "TAB 3 WITH LOTS OF TEXT")
     val coroutineScope = rememberCoroutineScope()
     Column {
+//        TabRow(selectedTabIndex = state) {
+//            titles.forEachIndexed { index, title ->
+//                Tab(
+//                    text = { Text(title) },
+//                    selected = state == index,
+//                    onClick = { state = index }
+//                )
+//            }
+//        }
+//        Column (modifier = Modifier
+//                .height(700.dp)
+//                .verticalScroll(scrollState)){
+////                Greeting("Android")
+//                AppsListComponent(apps)
+//            }
+//        Text(
+//            text = "Text tab ${state + 1} selected",
+//        )
         HorizontalPager(state = pagerState) { page ->
             val scrollState = rememberScrollState()
-            Column (modifier = Modifier
-                .height(700.dp)
-                .verticalScroll(scrollState)){
+            Column(
+                modifier = Modifier
+                    .height(700.dp)
+                    .verticalScroll(scrollState)
+            ) {
                 Greeting("Android")
                 AppsListComponent(apps)
             }
         }
-        
+
         TabRow(
             selectedTabIndex = 1,
             modifier = Modifier.fillMaxWidth()
         ) {
             Tab(
-                selected = pagerState.currentPage == 0,
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(0) } },
+                selected = pagerState.currentPage == 0,
                 text = { Text(text = "Video") },
                 unselectedContentColor = Color.Gray
             )
             Tab(
-                selected = pagerState.currentPage == 1,
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(1) } },
+                selected = pagerState.currentPage == 1,
                 text = { Text(text = "Music") },
                 unselectedContentColor = Color.Gray
             )
             Tab(
-                selected = pagerState.currentPage == 2,
                 onClick = { coroutineScope.launch { pagerState.animateScrollToPage(2) } },
+                selected = pagerState.currentPage == 2,
                 text = { Text(text = "Conferencing") },
                 unselectedContentColor = Color.Gray
             )
         }
-//        Text(text = "testing")
+        Text(text = "testing")
     }
 }
