@@ -27,7 +27,6 @@ import mobi.meddle.wehe.fragment.AboutFragment;
 import mobi.meddle.wehe.fragment.DashboardFragment;
 import mobi.meddle.wehe.fragment.FunctionalityFragment;
 import mobi.meddle.wehe.fragment.ResultsFragment;
-import mobi.meddle.wehe.fragment.SelectionFragment;
 import mobi.meddle.wehe.fragment.SettingsFragment;
 
 /**
@@ -159,11 +158,18 @@ public class MainActivity extends AppCompatActivity {
                 int id = menuItem.getItemId();
                 Fragment fragment = null;
 
-                if (id == R.id.nav_run || id == R.id.nav_run_port) {
+                if (id == R.id.nav_run) {
                     fragment = new SelectionFragment();
                     Bundle bundle = new Bundle();
-                    boolean isPortTest = id == R.id.nav_run_port;
-                    bundle.putBoolean("runPortTest", isPortTest);
+                    bundle.putBoolean("runPortTest", false);
+                    fragment.setArguments(bundle);
+                    mFragmentManager.beginTransaction()
+                            .add(fragment, SelectionFragment.TAG).commit();
+                }
+                else if (id == R.id.nav_run_port) {
+                    fragment = new SelectionFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putBoolean("runPortTest", true);
                     fragment.setArguments(bundle);
                     mFragmentManager.beginTransaction()
                             .add(fragment, SelectionFragment.TAG).commit();

@@ -14,7 +14,8 @@
     <color name="blue3">#A8DFF4</color>
     <color name="blue2">#C5EAF8</color>
     <color name="blue1">#E2F4FB</color>
-    <color name="weheBlue">#4b81b5</color>
+    <color name="wehe_blue">#4b81b5</color>
+    <color name="wehe_grey">#4b81b5</color>
 
     <color name="orange0">#FFECB3</color>
     <color name="orange1">#FFD54F</color>
