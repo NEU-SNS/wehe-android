@@ -2276,7 +2276,7 @@ public class ReplayActivity extends AppCompatActivity {
                     }
 
                     // TODO uncomment following code when you want differentiation to occur
-                    //differentiation = true;
+//                    differentiation = true;
                     //inconclusive = true;
                     diffResults.add(differentiation);
 
