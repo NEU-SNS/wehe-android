@@ -150,16 +150,16 @@ class SelectionFragment : Fragment() {
     @Composable
     fun AppSelection() {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().fillMaxHeight(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(modifier = Modifier.height(720.dp)) {
+            Row(modifier = Modifier.weight(1f)) {
                 WeheandroidTheme {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        HomeView(apps = app_beans!!)
+                        HomeView(apps = app_beans)
                     }
                 };
             }
