@@ -54,6 +54,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.activity.ui.theme.WEHE_BLUE
@@ -76,6 +77,8 @@ class SelectionFragment : Fragment() {
     private var runPortTests = false
     private var carrierDisplay: String? = null //cell carrier or "Wi-Fi"
     private val selectedApps: java.util.ArrayList<ApplicationBean> = ArrayList<ApplicationBean>()
+    val currentLocale = Locale.getDefault()
+    val countryCode = currentLocale.country
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
@@ -247,8 +250,7 @@ class SelectionFragment : Fragment() {
                         .weight(1f)
                         .fillMaxHeight()
                         .background(MaterialTheme.colorScheme.surface)
-                ) // height and background only for demonstration
-
+                )
 
                 Switch(
                     checked = toggleState,
@@ -273,6 +275,16 @@ class SelectionFragment : Fragment() {
                 .verticalScroll(rememberScrollState())
         ) {
             for (app in apps) {
+                if (app.isEnglishOnly) {
+                    if (countryCode != "US") {
+                        continue
+                    }
+                }
+                else if (app.isFrenchOnly) {
+                    if (countryCode != "FR") {
+                        continue
+                    }
+                }
                 AppCard(app)
             }
         }
