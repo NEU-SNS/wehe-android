@@ -48,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
+import com.google.android.material.tabs.TabItem
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.activity.ui.theme.WEHE_BLUE
 import mobi.meddle.wehe.activity.ui.theme.WEHE_GREY
@@ -150,7 +152,9 @@ class SelectionFragment : Fragment() {
     @Composable
     fun AppSelection() {
         Column(
-            modifier = Modifier.fillMaxSize().fillMaxHeight(),
+            modifier = Modifier
+                .fillMaxSize()
+                .fillMaxHeight(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(modifier = Modifier.weight(1f)) {
@@ -202,7 +206,7 @@ class SelectionFragment : Fragment() {
         }
     }
     @Composable
-    fun AppCard(app: ApplicationBean) {
+    fun AppCard(app: ApplicationBean, updatePayloadSize: (Int) -> Unit) {
         fun getImageResourceByName(resourceName: String, context: Context): Int {
             return context.resources.getIdentifier(resourceName, "drawable", context.packageName)
         }
@@ -257,9 +261,11 @@ class SelectionFragment : Fragment() {
                     onCheckedChange = { newChekcedState ->
                         if (newChekcedState) {
                             selectedApps.add(app)
+                            updatePayloadSize(app.size)
                         }
                         if (!newChekcedState) {
                             selectedApps.remove(app)
+                            updatePayloadSize(-app.size)
                         }
                         toggleState = newChekcedState },
                     colors = SwitchDefaults.colors(uncheckedTrackColor = WEHE_GREY)
@@ -269,7 +275,7 @@ class SelectionFragment : Fragment() {
     }
 
     @Composable
-    fun AppsListComponent(apps: List<ApplicationBean>) {
+    fun AppsListComponent(apps: List<ApplicationBean>, updatePayloadSize: (Int) -> Unit) {
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
@@ -285,13 +291,15 @@ class SelectionFragment : Fragment() {
                         continue
                     }
                 }
-                AppCard(app)
+                AppCard(app, updatePayloadSize)
             }
         }
     }
 
     @Composable
     fun HomeView(apps: List<ApplicationBean>) {
+        var payloadSize by remember { mutableStateOf(0) }
+        val updatePayloadSize = { newSize: Int -> payloadSize += newSize }
         var tabItems: List<TabItem>
         if (runPortTests) {
             tabItems = listOf(
@@ -339,20 +347,23 @@ class SelectionFragment : Fragment() {
             ) { index ->
                 if (runPortTests) {
                     if (index == 0) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.SMALL_PORT })
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.SMALL_PORT }, updatePayloadSize)
                     } else if (index == 1) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.LARGE_PORT })
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.LARGE_PORT }, updatePayloadSize)
                     }
 
                 } else {
                     if (index == 0) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.VIDEO })
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.VIDEO }, updatePayloadSize)
                     } else if (index == 1) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.MUSIC })
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.MUSIC }, updatePayloadSize)
                     } else if (index == 2) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.CONFERENCING })
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.CONFERENCING }, updatePayloadSize)
                     }
                 }
+            }
+            Row (Modifier.background(color = Color.LightGray).fillMaxWidth()) {
+               Text(text = "Payload size: ${payloadSize} MB")
             }
             TabRow(selectedTabIndex = selectedTabIndex) {
                 tabItems.forEachIndexed { index, item ->
