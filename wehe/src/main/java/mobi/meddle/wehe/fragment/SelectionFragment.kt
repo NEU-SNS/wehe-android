@@ -55,9 +55,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
-import com.google.android.material.tabs.TabItem
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.activity.ui.theme.WEHE_BLUE
 import mobi.meddle.wehe.activity.ui.theme.WEHE_GREY
@@ -165,8 +163,9 @@ class SelectionFragment : Fragment() {
                     ) {
                         HomeView(apps = app_beans)
                     }
-                };
+                }
             }
+            // Button for running the tests
             Row(modifier = Modifier.height(70.dp)) {
                 Button(
                     onClick = {
@@ -194,9 +193,9 @@ class SelectionFragment : Fragment() {
                     shape = RectangleShape,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = WEHE_BLUE,
-                        contentColor = androidx.compose.ui.graphics.Color.White,
+                        contentColor = Color.White,
                         disabledContainerColor = WEHE_GREY,
-                        disabledContentColor = androidx.compose.ui.graphics.Color.White,
+                        disabledContentColor = Color.White,
                     )
                 ) {
                     if (runPortTests) Text("Port Tests") else
@@ -300,7 +299,7 @@ class SelectionFragment : Fragment() {
     fun HomeView(apps: List<ApplicationBean>) {
         var payloadSize by remember { mutableStateOf(0) }
         val updatePayloadSize = { newSize: Int -> payloadSize += newSize }
-        var tabItems: List<TabItem>
+        val tabItems: List<TabItem>
         if (runPortTests) {
             tabItems = listOf(
                 TabItem(
@@ -392,7 +391,7 @@ class SelectionFragment : Fragment() {
         try {
             val buf = StringBuilder()
             if (context == null) {
-                throw NullPointerException("context is null");
+                throw NullPointerException("context is null")
             }
             val assets = requireContext().assets
             val json: InputStream = assets.open(Consts.APPS_FILENAME)
@@ -438,7 +437,7 @@ class SelectionFragment : Fragment() {
 
                 if (cat == ApplicationBean.Category.SMALL_PORT || cat == ApplicationBean.Category.LARGE_PORT) {
                     bean.name =
-                        kotlin.String.format(
+                        String.format(
                             getString(R.string.port_name),
                             appObj.getString(("name"))
                         )
