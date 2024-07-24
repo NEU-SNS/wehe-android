@@ -43,6 +43,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -56,6 +57,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.activity.ui.theme.WEHE_BLUE
 import mobi.meddle.wehe.activity.ui.theme.WEHE_GREY
@@ -205,7 +207,10 @@ class SelectionFragment : Fragment() {
         }
     }
     @Composable
-    fun AppCard(app: ApplicationBean, updatePayloadSize: (Int) -> Unit) {
+    fun AppCard(app: ApplicationBean,
+                updatePayloadSize: (Int) -> Unit,
+                appToggleStates: MutableMap<ApplicationBean, Boolean>) {
+
         fun getImageResourceByName(resourceName: String, context: Context): Int {
             return context.resources.getIdentifier(resourceName, "drawable", context.packageName)
         }
@@ -247,7 +252,7 @@ class SelectionFragment : Fragment() {
                     )
                 }
 
-                var toggleState by remember { mutableStateOf(false) }
+                val toggleState = appToggleStates[app] ?: false
                 Spacer(
                     Modifier
                         .weight(1f)
@@ -256,8 +261,8 @@ class SelectionFragment : Fragment() {
                 )
 
                 Switch(
-                    checked = toggleState,
                     onCheckedChange = { newChekcedState ->
+                        appToggleStates[app] = newChekcedState
                         if (newChekcedState) {
                             selectedApps.add(app)
                             updatePayloadSize(app.size)
@@ -266,7 +271,8 @@ class SelectionFragment : Fragment() {
                             selectedApps.remove(app)
                             updatePayloadSize(-app.size)
                         }
-                        toggleState = newChekcedState },
+                        },
+                    checked = toggleState,
                     colors = SwitchDefaults.colors(uncheckedTrackColor = WEHE_GREY)
                 )
             }
@@ -274,7 +280,7 @@ class SelectionFragment : Fragment() {
     }
 
     @Composable
-    fun AppsListComponent(apps: List<ApplicationBean>, updatePayloadSize: (Int) -> Unit) {
+    fun AppsListComponent(apps: List<ApplicationBean>, updatePayloadSize: (Int) -> Unit, appToggleStates: MutableMap<ApplicationBean, Boolean>) {
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
@@ -290,7 +296,7 @@ class SelectionFragment : Fragment() {
                         continue
                     }
                 }
-                AppCard(app, updatePayloadSize)
+                AppCard(app, updatePayloadSize, appToggleStates)
             }
         }
     }
@@ -300,6 +306,14 @@ class SelectionFragment : Fragment() {
         var payloadSize by remember { mutableStateOf(0) }
         val updatePayloadSize = { newSize: Int -> payloadSize += newSize }
         val tabItems: List<TabItem>
+        val appToggleStates = remember { mutableStateMapOf<ApplicationBean, Boolean>() }
+
+        LaunchedEffect(apps) {
+            apps.forEach { app ->
+                appToggleStates[app] = false
+            }
+        }
+
         if (runPortTests) {
             tabItems = listOf(
                 TabItem(
@@ -346,18 +360,18 @@ class SelectionFragment : Fragment() {
             ) { index ->
                 if (runPortTests) {
                     if (index == 0) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.SMALL_PORT }, updatePayloadSize)
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.SMALL_PORT }, updatePayloadSize, appToggleStates)
                     } else if (index == 1) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.LARGE_PORT }, updatePayloadSize)
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.LARGE_PORT }, updatePayloadSize, appToggleStates)
                     }
 
                 } else {
                     if (index == 0) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.VIDEO }, updatePayloadSize)
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.VIDEO }, updatePayloadSize, appToggleStates)
                     } else if (index == 1) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.MUSIC }, updatePayloadSize)
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.MUSIC }, updatePayloadSize, appToggleStates)
                     } else if (index == 2) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.CONFERENCING }, updatePayloadSize)
+                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.CONFERENCING }, updatePayloadSize, appToggleStates)
                     }
                 }
             }
@@ -385,7 +399,7 @@ class SelectionFragment : Fragment() {
      *
      * @return ArrayList of all apps/ports in the JSON file
      */
-    private fun parseAppJSON(): java.util.ArrayList<ApplicationBean> {
+    fun parseAppJSON(): java.util.ArrayList<ApplicationBean> {
         val apps = java.util.ArrayList<ApplicationBean>()
         var `in`: BufferedReader? = null
         try {
