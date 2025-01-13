@@ -2,13 +2,16 @@ package mobi.meddle.wehe.fragment
 
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import mobi.meddle.wehe.R
+import mobi.meddle.wehe.activity.MainActivity
 
 /**
  * How it Works item in navigation bar (menu.drawer_view.xml)
@@ -35,6 +38,26 @@ class FunctionalityFragment : Fragment() {
 
     companion object {
         const val TAG: String = "FunctionalityFragment"
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as? AppCompatActivity)?.supportActionBar?.title = "How it Works"
+
+        // Update navigation drawer selection
+        (activity as? MainActivity)?.let { mainActivity ->
+            mainActivity.findViewById<NavigationView>(R.id.nav_view)?.let { navigationView ->
+                // Clear all selections
+                for (i in 0 until navigationView.menu.size()) {
+                    navigationView.menu.getItem(i).isChecked = navigationView.menu.getItem(i).title == "How it Works"
+                }
+            }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("FunctionalityFragment", "onStop called")
     }
 }
 

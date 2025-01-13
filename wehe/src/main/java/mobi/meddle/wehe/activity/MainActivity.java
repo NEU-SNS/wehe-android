@@ -85,7 +85,8 @@ public class MainActivity extends AppCompatActivity {
         fragment.setArguments(bundle);
         mFragmentManager.beginTransaction().add(fragment, SelectionFragment.TAG).commit();
         mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment)
-                .addToBackStack(null)
+                .setReorderingAllowed(true)
+                .addToBackStack(SelectionFragment.TAG)
                 .commit();
         setTitle(R.string.nav_run);
     }
@@ -212,19 +213,26 @@ public class MainActivity extends AppCompatActivity {
 
                 // Insert the fragment by replacing any existing fragment
                 // TODO tested this as mentioned above needs improvement
+                Fragment currentFragment = mFragmentManager.findFragmentById(R.id.content_frame);
                 assert fragment != null;
-                mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment)
-                        .addToBackStack(null)
-                        .commit();
+                assert currentFragment != null;
 
-                //unhighlight all items so that previous item isn't highlighted
-                for (int i = 0; i < mNavigationView.getMenu().size(); i++) {
-                    mNavigationView.getMenu().getItem(i).setChecked(false);
+                // Making sure that the same fragments are not added to the stack
+                if (!currentFragment.getClass().equals(fragment.getClass()) || fragment.getClass().equals(SelectionFragment.class)) {
+                    mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment)
+                            .setReorderingAllowed(true)
+                            .addToBackStack(null) // Darsh changed
+                            .commit();
                 }
-                // Highlight the selected item has been done by NavigationView
-                menuItem.setChecked(true);
+
+//                //unhighlight all items so that previous item isn't highlighted
+//                for (int i = 0; i < mNavigationView.getMenu().size(); i++) {
+//                    mNavigationView.getMenu().getItem(i).setChecked(false);
+//                }
+//                // Highlight the selected item has been done by NavigationView
+//                menuItem.setChecked(true);
                 // Set action bar title
-                setTitle(menuItem.getTitle());
+//                setTitle(menuItem.getTitle());
                 // Close the navigation drawer
                 // close drawer when item is tapped
                 mDrawer.closeDrawers();
@@ -246,6 +254,33 @@ public class MainActivity extends AppCompatActivity {
         // Pass any configuration change to the drawer toggles
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
+
+//    @Override  // Darsh changed: added back navigation functionality
+//    public void onBackPressed() {
+//        int backStackCount = mFragmentManager.getBackStackEntryCount();
+//
+//        if (backStackCount > 0) {
+//            // Get the fragment at the top of the back stack
+//            FragmentManager.BackStackEntry entry = mFragmentManager.getBackStackEntryAt(backStackCount - 1);
+//            String fragmentTag = entry.getName(); // Get the fragment tag
+//
+//            // find the fragment using its tag
+//            Fragment currentFragment = mFragmentManager.findFragmentByTag(fragmentTag);
+//
+//            if (currentFragment != null) {
+//                // You can perform additional actions depending on the fragment
+//                // For example, check if it's a specific fragment
+//                if (currentFragment instanceof AboutFragment) {
+//                    // Handle back press for this fragment
+//                    ((SomeFragment) currentFragment).onBackPressed();
+//                }
+//            }
+//
+//            super.onBackPressed();
+//        }
+//        else {
+//            super.onBackPressedDispatcher();
+//        }
 
     private ActionBarDrawerToggle setupDrawerToggle() {
         return new ActionBarDrawerToggle(this, mDrawer, mToolbar,

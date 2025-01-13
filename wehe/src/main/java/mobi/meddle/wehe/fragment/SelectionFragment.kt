@@ -13,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -58,6 +59,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
+import com.google.android.material.navigation.NavigationView
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.activity.ui.theme.WEHE_BLUE
 import mobi.meddle.wehe.activity.ui.theme.WEHE_GREY
@@ -74,7 +76,7 @@ import java.util.Locale
 
 class SelectionFragment : Fragment() {
     private var app_beans: ArrayList<ApplicationBean> = ArrayList<ApplicationBean>()//all the apps/ports to display on the page
-    val TAG: String = "SelectionFragment"
+//    val TAG: String = "SelectionFragment"
     private var context: Context? = null
     private var runPortTests = false
     private var carrierDisplay: String? = null //cell carrier or "Wi-Fi"
@@ -136,6 +138,26 @@ class SelectionFragment : Fragment() {
         val text: CharSequence = String.format(getString(R.string.wifiWarning), carrier)
         val toast = Toast.makeText(context, text, Toast.LENGTH_LONG)
         toast.show()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("SelectionFragment", "onDestroy called")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("SelectionFragment", "onPause called")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("SelectionFragment", "onStop called")
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        Log.d("SelectionFragment", "onDestroyView called")
     }
 
     override fun onCreateView(
@@ -484,4 +506,36 @@ class SelectionFragment : Fragment() {
     companion object {
         lateinit var TAG: String
     }
+
+    override fun onResume() {
+        super.onResume()
+        if (runPortTests) {
+            (activity as? AppCompatActivity)?.supportActionBar?.title = "Port Tests"
+
+            // Update navigation drawer selection
+            (activity as? MainActivity)?.let { mainActivity ->
+                mainActivity.findViewById<NavigationView>(R.id.nav_view)?.let { navigationView ->
+                    // Clear all selections
+                    for (i in 0 until navigationView.menu.size()) {
+                        navigationView.menu.getItem(i).isChecked = navigationView.menu.getItem(i).title == "Port Tests"
+                    }
+                }
+            }
+
+        }
+        else {
+            (activity as? AppCompatActivity)?.supportActionBar?.title = "Differentiation Tests"
+
+            // Update navigation drawer selection
+            (activity as? MainActivity)?.let { mainActivity ->
+                mainActivity.findViewById<NavigationView>(R.id.nav_view)?.let { navigationView ->
+                    // Clear all selections
+                    for (i in 0 until navigationView.menu.size()) {
+                        navigationView.menu.getItem(i).isChecked = navigationView.menu.getItem(i).title == "Differentiation Tests"
+                    }
+                }
+            }
+        }
+    }
+
 }

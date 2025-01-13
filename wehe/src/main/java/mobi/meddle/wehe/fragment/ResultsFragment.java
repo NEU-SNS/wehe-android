@@ -15,6 +15,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -30,8 +32,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Objects;
 
 import mobi.meddle.wehe.R;
+import mobi.meddle.wehe.activity.MainActivity;
 import mobi.meddle.wehe.activity.ReplayActivity;
 
 /**
@@ -258,4 +262,29 @@ public class ResultsFragment extends Fragment {
         boolean isTomography;
         String differentiationNetwork;
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (getActivity() instanceof AppCompatActivity) {
+            ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.setTitle("Previous Results");
+            }
+        }
+
+        // Update navigation drawer selection
+        if (getActivity() instanceof MainActivity) {
+            MainActivity mainActivity = (MainActivity) getActivity();
+            NavigationView navigationView = mainActivity.findViewById(R.id.nav_view);
+            if (navigationView != null) {
+                // Clear all selections
+                for (int i = 0; i < navigationView.getMenu().size(); i++) {
+                    MenuItem menuItem = navigationView.getMenu().getItem(i);
+                    menuItem.setChecked(Objects.requireNonNull(menuItem.getTitle()).toString().equals("Previous Results"));
+                }
+            }
+        }
+    }
+
 }

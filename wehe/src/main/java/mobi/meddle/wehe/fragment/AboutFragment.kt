@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +21,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import mobi.meddle.wehe.BuildConfig
 import mobi.meddle.wehe.R
+import mobi.meddle.wehe.activity.MainActivity
 
 /**
  * Why Wehe item in navigation bar (menu.drawer_view.xml)
@@ -56,5 +58,20 @@ class AboutFragment : Fragment() {
 
     companion object {
         const val TAG: String = "AboutFragment"
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as? AppCompatActivity)?.supportActionBar?.title = "About"
+
+        // Update navigation drawer selection
+        (activity as? MainActivity)?.let { mainActivity ->
+            mainActivity.findViewById<NavigationView>(R.id.nav_view)?.let { navigationView ->
+                // Clear all selections
+                for (i in 0 until navigationView.menu.size()) {
+                    navigationView.menu.getItem(i).isChecked = navigationView.menu.getItem(i).title == "Why Wehe"
+                }
+            }
+        }
     }
 }
