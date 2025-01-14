@@ -23,6 +23,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener;
 
 import mobi.meddle.wehe.R;
+import mobi.meddle.wehe.constant.Consts;
 import mobi.meddle.wehe.fragment.AboutFragment;
 import mobi.meddle.wehe.fragment.DashboardFragment;
 import mobi.meddle.wehe.fragment.FunctionalityFragment;
@@ -82,11 +83,12 @@ public class MainActivity extends AppCompatActivity {
         //  exist in the backstack
         Bundle bundle = new Bundle();
         bundle.putBoolean("runPortTest", false);
+        bundle.putString("TAG", Consts.TAG_DIFFERENTIATION_TESTS );
         fragment.setArguments(bundle);
-        mFragmentManager.beginTransaction().add(fragment, SelectionFragment.TAG).commit();
-        mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment)
+        mFragmentManager.beginTransaction().add(fragment, Consts.TAG_DIFFERENTIATION_TESTS).commit();
+        mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment, Consts.TAG_DIFFERENTIATION_TESTS)
                 .setReorderingAllowed(true)
-                .addToBackStack(SelectionFragment.TAG)
+                .addToBackStack(null)
                 .commit();
         setTitle(R.string.nav_run);
     }
@@ -160,20 +162,27 @@ public class MainActivity extends AppCompatActivity {
                 Fragment fragment = null;
 
                 if (id == R.id.nav_run) {
-                    fragment = new SelectionFragment();
+//                    fragment = new SelectionFragment();
+                    fragment = mFragmentManager.findFragmentByTag(Consts.TAG_DIFFERENTIATION_TESTS);
+                    assert fragment != null;
                     Bundle bundle = new Bundle();
                     bundle.putBoolean("runPortTest", false);
+                    bundle.putString("TAG", Consts.TAG_DIFFERENTIATION_TESTS);
                     fragment.setArguments(bundle);
-                    mFragmentManager.beginTransaction()
-                            .add(fragment, SelectionFragment.TAG).commit();
                 }
                 else if (id == R.id.nav_run_port) {
-                    fragment = new SelectionFragment();
+//                    fragment = new SelectionFragment();
                     Bundle bundle = new Bundle();
                     bundle.putBoolean("runPortTest", true);
+                    bundle.putString("TAG", Consts.TAG_PORT_TESTS);
+                    fragment = mFragmentManager.findFragmentByTag(Consts.TAG_PORT_TESTS);
+                    if (fragment == null) {
+                        fragment = new SelectionFragment();
+                        fragment.setArguments(bundle);
+                        mFragmentManager.beginTransaction()
+                                .add(fragment, Consts.TAG_PORT_TESTS).commit();
+                    }
                     fragment.setArguments(bundle);
-                    mFragmentManager.beginTransaction()
-                            .add(fragment, SelectionFragment.TAG).commit();
                 } else if (id == R.id.nav_results) {
                     fragment = mFragmentManager.findFragmentByTag(ResultsFragment.TAG);
                     if (fragment == null) {
@@ -215,11 +224,13 @@ public class MainActivity extends AppCompatActivity {
                 // TODO tested this as mentioned above needs improvement
                 Fragment currentFragment = mFragmentManager.findFragmentById(R.id.content_frame);
                 assert fragment != null;
+                assert fragment.getTag() != null;
                 assert currentFragment != null;
+                assert currentFragment.getTag() != null;
 
                 // Making sure that the same fragments are not added to the stack
-                if (!currentFragment.getClass().equals(fragment.getClass()) || fragment.getClass().equals(SelectionFragment.class)) {
-                    mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment)
+                if (!currentFragment.getTag().equals(fragment.getTag())) {
+                    mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment, fragment.getTag())
                             .setReorderingAllowed(true)
                             .addToBackStack(null) // Darsh changed
                             .commit();

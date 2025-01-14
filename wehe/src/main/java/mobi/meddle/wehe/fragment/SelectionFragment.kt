@@ -13,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -42,6 +43,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -84,7 +86,72 @@ class SelectionFragment : Fragment() {
     val currentLocale = Locale.getDefault()
     val countryCode = currentLocale.country
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.d("SelectionFragment", "onCreate called")
         super.onCreate(savedInstanceState)
+        val bundle = requireArguments()
+        TAG = bundle.getString("TAG") ?: Consts.TAG_DIFFERENTIATION_TESTS
+
+//        try {
+//            context = getContext()
+//
+//            //caller passes whether this fragment should show apps or ports
+//            val bundle = requireArguments()
+//            runPortTests = bundle.getBoolean("runPortTest")
+//
+//            // This method parses JSON file which contains details for different
+//            // Applications and returns HashMap of ApplicationBean type
+//            app_beans = parseAppJSON()
+//
+//            // Display a warning if the user is on wifi
+//            val connectivityManager = context
+//                ?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+//            val telephonyManager = requireContext()
+//                .getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+//
+//            if (connectivityManager == null) {
+//                return
+//            }
+//
+//            //TODO: Switch to non-deprecated library without increasing minSDK?
+//            val networkInfo = connectivityManager
+//                .getNetworkInfo(ConnectivityManager.TYPE_WIFI)
+//            val carrierName = if (telephonyManager != null) {
+//                telephonyManager.networkOperatorName
+//            } else {
+//                getString(R.string.your_carrier)
+//            }
+//
+//            if (networkInfo != null && networkInfo.state == NetworkInfo.State.CONNECTED) {
+//                carrierDisplay = "WiFi"
+//                showWifiToast(carrierName)
+//            } else {
+//                carrierDisplay = carrierName
+//            }
+//        } catch (e: Exception) {
+//            Log.e("selectionFragment", "Something went wrong creating selectionFragment", e)
+//        }
+    }
+
+    /**
+     * Display a warning if the user is on Wi-Fi.
+     * @param carrier the user's phone carrier
+     */
+    private fun showWifiToast(carrier: String) {
+        var carrier = carrier
+        if (carrier == "") {
+            carrier = getString(R.string.your_carrier).lowercase(Locale.getDefault())
+        }
+        val text: CharSequence = String.format(getString(R.string.wifiWarning), carrier)
+        val toast = Toast.makeText(context, text, Toast.LENGTH_LONG)
+        toast.show()
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        Log.d("SelectionFragment", "onCreateView called")
         try {
             context = getContext()
 
@@ -101,10 +168,6 @@ class SelectionFragment : Fragment() {
                 ?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val telephonyManager = requireContext()
                 .getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-
-            if (connectivityManager == null) {
-                return
-            }
 
             //TODO: Switch to non-deprecated library without increasing minSDK?
             val networkInfo = connectivityManager
@@ -124,47 +187,6 @@ class SelectionFragment : Fragment() {
         } catch (e: Exception) {
             Log.e("selectionFragment", "Something went wrong creating selectionFragment", e)
         }
-    }
-
-    /**
-     * Display a warning if the user is on Wi-Fi.
-     * @param carrier the user's phone carrier
-     */
-    private fun showWifiToast(carrier: String) {
-        var carrier = carrier
-        if (carrier == "") {
-            carrier = getString(R.string.your_carrier).lowercase(Locale.getDefault())
-        }
-        val text: CharSequence = String.format(getString(R.string.wifiWarning), carrier)
-        val toast = Toast.makeText(context, text, Toast.LENGTH_LONG)
-        toast.show()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("SelectionFragment", "onDestroy called")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d("SelectionFragment", "onPause called")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d("SelectionFragment", "onStop called")
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        Log.d("SelectionFragment", "onDestroyView called")
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
         return ComposeView(requireContext()).apply {
             setContent {
                 AppSelection()
@@ -173,6 +195,18 @@ class SelectionFragment : Fragment() {
     }
     @Composable
     fun AppSelection() {
+        val context = LocalContext.current
+
+        // Use LaunchedEffect for cleanup when the composable is removed
+        DisposableEffect(key1 = true) {
+            onDispose {
+                // Perform any cleanup here if needed
+                // For example, clear resources or stop any ongoing operations
+                // You can log or call any cleanup functions here if necessary
+                Toast.makeText(context, "AppSelection composable is being disposed", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -309,7 +343,7 @@ class SelectionFragment : Fragment() {
         ) {
             for (app in apps) {
                 if (app.isEnglishOnly) {
-                    if (countryCode != "US") {
+                    if ( countryCode != "US") {
                         continue
                     }
                 }
@@ -504,8 +538,55 @@ class SelectionFragment : Fragment() {
     }
 
     companion object {
-        lateinit var TAG: String
+        lateinit var TAG : String
+
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("SelectionFragment", "onDestroy called")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("SelectionFragment", "onPause called")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("SelectionFragment", "onStop called")
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        Log.d("SelectionFragment", "onDestroyView called")
+    }
+
+//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+//        super.onViewCreated(view, savedInstanceState)
+//
+//        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+//            override fun handleOnBackPressed() {
+//                if (shouldInterceptBackPress()) {
+//                    // Perform back navigation function
+//                    isEnabled = false
+//                    Toast.makeText(context, "Back pressed in Fragment", Toast.LENGTH_SHORT).show()
+//                    requireActivity().onBackPressed()
+//                } else {
+//                    // Allow default behavior
+//                    isEnabled = false
+//                    requireActivity().onBackPressed()
+//                }
+//            }
+//        })
+//    }
+//
+//    /**
+//     * Intercepts back press only if navigating to other fragments
+//     */
+//    private fun shouldInterceptBackPress(): Boolean {
+//        return true
+//    }
 
     override fun onResume() {
         super.onResume()
