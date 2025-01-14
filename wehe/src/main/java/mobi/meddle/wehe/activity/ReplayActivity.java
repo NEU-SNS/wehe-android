@@ -2164,8 +2164,8 @@ public class ReplayActivity extends AppCompatActivity {
                 }
 
                 // TODO uncomment following code when you want differentiation to occur
-                differentiation = true;
-                //inconclusive = true;
+//                differentiation = true;
+//                inconclusive = true;
 
                 /*
                  * Step 5: Save and display results to user. Rerun test if necessary.
