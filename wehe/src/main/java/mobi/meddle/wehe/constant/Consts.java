@@ -12,6 +12,8 @@ public class Consts {
 
     public static final String ARCEP_URL = "https://jalerte.arcep.fr/jalerte/?2";
 
+    public static final String FCC_URL = "https://www.fcc.gov/emergency-alert-system";
+
     public static final int A_THRESHOLD = 50; //percent
     public static final int KS2PVAL_THRESHOLD = 1; //percent
 

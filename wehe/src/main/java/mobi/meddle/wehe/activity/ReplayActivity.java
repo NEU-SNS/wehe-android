@@ -159,6 +159,7 @@ public class ReplayActivity extends AppCompatActivity {
             for (ApplicationBean app : selectedApps) {
                 app.setTomography(false);
                 app.setArcepNeedsAlerting(false);
+                app.setAlertFCC(false);
                 app.setStatus(getString(R.string.pending));
             }
             inconclusiveApps.clear();
@@ -226,6 +227,7 @@ public class ReplayActivity extends AppCompatActivity {
                             for (ApplicationBean app : selectedApps) {
                                 app.setTomography(true);
                                 app.setArcepNeedsAlerting(false);
+                                app.setAlertFCC(false);
                                 app.setStatus(getString(R.string.pending));
                             }
                             traceRunner = new TraceRunAsync();
@@ -705,6 +707,7 @@ public class ReplayActivity extends AppCompatActivity {
                 }
                 this.app = app; // Set the app to run test for
                 this.app.setArcepNeedsAlerting(false);
+                this.app.setAlertFCC(false);
 
                 if (isCancelled()) {
                     return null;
@@ -2161,7 +2164,7 @@ public class ReplayActivity extends AppCompatActivity {
                 }
 
                 // TODO uncomment following code when you want differentiation to occur
-                //differentiation = true;
+                differentiation = true;
                 //inconclusive = true;
 
                 /*
@@ -2210,6 +2213,8 @@ public class ReplayActivity extends AppCompatActivity {
                     String country = current.getCountry();
                     if (country.equals("FR")) { //show alert arcep button
                         app.setArcepNeedsAlerting(true);
+                    } else if (country.equals("US")) {
+                        app.setAlertFCC(true);
                     }
                     diffApps.add(app);
                 } else {

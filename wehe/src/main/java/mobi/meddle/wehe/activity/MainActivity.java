@@ -74,21 +74,27 @@ public class MainActivity extends AppCompatActivity {
      * Go to the screen to select apps/ports to test
      */
     private void goToAppSelection() {
-        Fragment fragment = new SelectionFragment();
+        Fragment fragment = getSelectionFragment(false);
         // We're adding fragments to the backstack as we navigate otherwise back button will
         // Land you out of the application
         // TODO find a better way to navigate using back button currently it keeps
         //  adding the fragments even though another instance of the same fragment might
         //  exist in the backstack
-        Bundle bundle = new Bundle();
-        bundle.putBoolean("runPortTest", false);
-        fragment.setArguments(bundle);
         mFragmentManager.beginTransaction().add(fragment, SelectionFragment.TAG).commit();
         mFragmentManager.beginTransaction().replace(R.id.content_frame, fragment)
                 .setReorderingAllowed(true)
                 .addToBackStack(SelectionFragment.TAG)
                 .commit();
-        setTitle(R.string.nav_run);
+//        setTitle(R.string.nav_run);
+    }
+
+    @NonNull
+    private static Fragment getSelectionFragment(boolean runPortTestValue) {
+        Fragment fragment = new SelectionFragment();
+        Bundle bundle = new Bundle();
+        bundle.putBoolean("runPortTest", runPortTestValue);
+        fragment.setArguments(bundle);
+        return fragment;
     }
 
     /**
@@ -160,18 +166,12 @@ public class MainActivity extends AppCompatActivity {
                 Fragment fragment = null;
 
                 if (id == R.id.nav_run) {
-                    fragment = new SelectionFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putBoolean("runPortTest", false);
-                    fragment.setArguments(bundle);
+                    fragment = getSelectionFragment(false);
                     mFragmentManager.beginTransaction()
                             .add(fragment, SelectionFragment.TAG).commit();
                 }
                 else if (id == R.id.nav_run_port) {
-                    fragment = new SelectionFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putBoolean("runPortTest", true);
-                    fragment.setArguments(bundle);
+                    fragment = getSelectionFragment(true);
                     mFragmentManager.beginTransaction()
                             .add(fragment, SelectionFragment.TAG).commit();
                 } else if (id == R.id.nav_results) {
