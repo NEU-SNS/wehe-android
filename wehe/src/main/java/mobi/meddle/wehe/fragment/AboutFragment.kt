@@ -58,7 +58,7 @@ class AboutFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        (activity as? AppCompatActivity)?.supportActionBar?.title = "About"
+        (activity as? AppCompatActivity)?.supportActionBar?.title = "Why Wehe"
 
         // Update navigation drawer selection
         (activity as? MainActivity)?.let { mainActivity ->

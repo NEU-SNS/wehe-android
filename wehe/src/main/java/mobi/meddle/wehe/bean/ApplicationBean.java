@@ -6,6 +6,9 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Data structure to hold info about an app/port
  */
@@ -49,6 +52,7 @@ public class ApplicationBean implements Parcelable {
     private Category cat; //category that the app belongs in
     private boolean isTomography = false;
     private String differentiationNetwork = ""; //network that caused differentiation
+    private boolean alertFCC = false;
 
     public ApplicationBean() {
 
@@ -69,6 +73,15 @@ public class ApplicationBean implements Parcelable {
         originalThroughput = in.readDouble();
         randomThroughput = in.readDouble();
     }
+
+    public boolean isAlertFCC() {
+        return alertFCC;
+    }
+
+    public void setAlertFCC(boolean alertFCC) {
+        this.alertFCC = alertFCC;
+    }
+
 
     public int getTime() {
         return time;

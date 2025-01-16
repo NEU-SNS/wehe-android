@@ -11,6 +11,8 @@ public class Consts {
     public static final int NUM_TOMOGRAPHY_TESTS = 3;
     public static final String ARCEP_URL = "https://jalerte.arcep.fr/jalerte/?2";
 
+    public static final String FCC_URL = "https://consumercomplaints.fcc.gov/hc/en-us";
+
     public static final int A_THRESHOLD = 50; //percent
     public static final int KS2PVAL_THRESHOLD = 1; //percent
     public static final boolean TIMEOUT_ENABLED = true;

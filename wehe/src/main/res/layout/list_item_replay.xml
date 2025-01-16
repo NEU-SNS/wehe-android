@@ -139,6 +139,19 @@
                 android:text="@string/alert_arcep"
                 android:visibility="gone" />
 
+            <Button
+                android:id="@+id/alertFcc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/xputTestValue"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="135dp"
+                android:layout_marginTop="@dimen/margin_medium"
+                android:layout_marginEnd="135dp"
+                android:text="@string/fcc_alert"
+                android:visibility="gone" />
+
         </RelativeLayout>
 
     </androidx.cardview.widget.CardView>
