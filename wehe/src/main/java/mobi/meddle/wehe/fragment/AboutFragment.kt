@@ -1,6 +1,7 @@
 package mobi.meddle.wehe.fragment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,6 +34,7 @@ class AboutFragment : Fragment() {
         inflater: LayoutInflater, parent: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Log.d("AboutFragment", "onCreateView called")
       return ComposeView(requireContext()).apply {
           setContent {
               AboutScreen()
@@ -45,6 +47,7 @@ class AboutFragment : Fragment() {
 //        val about = requireActivity().findViewById<TextView>(R.id.aboutView)
 //        about.text = String.format(getString(R.string.about_text), BuildConfig.VERSION_NAME)
 //    }
+
     @Composable
     fun AboutScreen() {
         Column(
@@ -74,4 +77,26 @@ class AboutFragment : Fragment() {
             }
         }
     }
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.d("AboutFragment", "onCreate called")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("AboutFragment", "onStop called")
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        Log.d("AboutFragment", "onDestroyView called")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("AboutFragment", "onDestroy called")
+    }
+    
 }

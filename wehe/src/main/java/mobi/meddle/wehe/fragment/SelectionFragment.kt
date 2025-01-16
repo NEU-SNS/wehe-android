@@ -196,17 +196,6 @@ class SelectionFragment : Fragment() {
     @Composable
     fun AppSelection() {
         val context = LocalContext.current
-
-        // Use LaunchedEffect for cleanup when the composable is removed
-        DisposableEffect(key1 = true) {
-            onDispose {
-                // Perform any cleanup here if needed
-                // For example, clear resources or stop any ongoing operations
-                // You can log or call any cleanup functions here if necessary
-                Toast.makeText(context, "AppSelection composable is being disposed", Toast.LENGTH_SHORT).show()
-            }
-        }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -561,6 +550,7 @@ class SelectionFragment : Fragment() {
         super.onDestroyView()
         Log.d("SelectionFragment", "onDestroyView called")
     }
+
 
 //    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 //        super.onViewCreated(view, savedInstanceState)

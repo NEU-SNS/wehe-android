@@ -13,17 +13,20 @@
         android:orientation="vertical">
 
         <!-- The ActionBar displayed at the top -->
-        <include
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/main_app_bar"
-            layout="@layout/app_bar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            android:theme="@style/ThemeOverlay.AppCompat.ActionBar" />
 
-        <!-- Layout to contain contents of main body of screen (drawer will slide over this) -->
-        <FrameLayout
-            android:id="@+id/content_frame"
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/nav_host_fragment"
+            android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            app:defaultNavHost="true"
+            app:navGraph="@navigation/nav_graph" />
 
     </LinearLayout>
 
