@@ -28,6 +28,7 @@ import mobi.meddle.wehe.fragment.AboutFragment;
 import mobi.meddle.wehe.fragment.DashboardFragment;
 import mobi.meddle.wehe.fragment.FunctionalityFragment;
 import mobi.meddle.wehe.fragment.ResultsFragment;
+import mobi.meddle.wehe.fragment.SelectionFragment;
 import mobi.meddle.wehe.fragment.SettingsFragment;
 
 /**
