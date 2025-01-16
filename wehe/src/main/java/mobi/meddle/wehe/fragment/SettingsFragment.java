@@ -223,24 +223,4 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             }
         }
     }
-
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Log.d("SettingsFragment", "onCreate called");
-    }
-
-    public void onStop() {
-        super.onStop();
-        Log.d("SettingsFragment", "onStop called");
-    }
-
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.d("SettingsFragment", "onDestroyView called");
-    }
-
-    public void onDestroy() {
-        super.onDestroy();
-        Log.d("SettingsFragment", "onDestroy called");
-    }
 }

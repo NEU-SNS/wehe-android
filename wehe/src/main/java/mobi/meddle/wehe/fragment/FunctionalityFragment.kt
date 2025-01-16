@@ -22,7 +22,6 @@ class FunctionalityFragment : Fragment() {
         inflater: LayoutInflater, parent: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        Log.d("FunctionalityFragment", "onCreateView called")
         val navigationView = requireActivity().findViewById<NavigationView>(R.id.nav_view)
         val menuItem = navigationView.menu.findItem(R.id.nav_functionality)
         if (!menuItem.isChecked) {
@@ -56,26 +55,5 @@ class FunctionalityFragment : Fragment() {
             }
         }
     }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d("FunctionalityFragment", "onCreate called")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d("FunctionalityFragment", "onStop called")
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        Log.d("FunctionalityFragment", "onDestroyView called")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("FunctionalityFragment", "onDestroy called")
-    }
-
 }
 

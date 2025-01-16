@@ -34,19 +34,12 @@ class AboutFragment : Fragment() {
         inflater: LayoutInflater, parent: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        Log.d("AboutFragment", "onCreateView called")
       return ComposeView(requireContext()).apply {
           setContent {
               AboutScreen()
           }
       }
     }
-
-//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        //set version number
-//        val about = requireActivity().findViewById<TextView>(R.id.aboutView)
-//        about.text = String.format(getString(R.string.about_text), BuildConfig.VERSION_NAME)
-//    }
 
     @Composable
     fun AboutScreen() {
@@ -77,26 +70,4 @@ class AboutFragment : Fragment() {
             }
         }
     }
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        Log.d("AboutFragment", "onCreate called")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d("AboutFragment", "onStop called")
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        Log.d("AboutFragment", "onDestroyView called")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("AboutFragment", "onDestroy called")
-    }
-    
 }

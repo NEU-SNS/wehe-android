@@ -78,7 +78,6 @@ import java.util.Locale
 
 class SelectionFragment : Fragment() {
     private var app_beans: ArrayList<ApplicationBean> = ArrayList<ApplicationBean>()//all the apps/ports to display on the page
-//    val TAG: String = "SelectionFragment"
     private var context: Context? = null
     private var runPortTests = false
     private var carrierDisplay: String? = null //cell carrier or "Wi-Fi"
@@ -86,50 +85,9 @@ class SelectionFragment : Fragment() {
     val currentLocale = Locale.getDefault()
     val countryCode = currentLocale.country
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d("SelectionFragment", "onCreate called")
         super.onCreate(savedInstanceState)
         val bundle = requireArguments()
         TAG = bundle.getString("TAG") ?: Consts.TAG_DIFFERENTIATION_TESTS
-
-//        try {
-//            context = getContext()
-//
-//            //caller passes whether this fragment should show apps or ports
-//            val bundle = requireArguments()
-//            runPortTests = bundle.getBoolean("runPortTest")
-//
-//            // This method parses JSON file which contains details for different
-//            // Applications and returns HashMap of ApplicationBean type
-//            app_beans = parseAppJSON()
-//
-//            // Display a warning if the user is on wifi
-//            val connectivityManager = context
-//                ?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-//            val telephonyManager = requireContext()
-//                .getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-//
-//            if (connectivityManager == null) {
-//                return
-//            }
-//
-//            //TODO: Switch to non-deprecated library without increasing minSDK?
-//            val networkInfo = connectivityManager
-//                .getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-//            val carrierName = if (telephonyManager != null) {
-//                telephonyManager.networkOperatorName
-//            } else {
-//                getString(R.string.your_carrier)
-//            }
-//
-//            if (networkInfo != null && networkInfo.state == NetworkInfo.State.CONNECTED) {
-//                carrierDisplay = "WiFi"
-//                showWifiToast(carrierName)
-//            } else {
-//                carrierDisplay = carrierName
-//            }
-//        } catch (e: Exception) {
-//            Log.e("selectionFragment", "Something went wrong creating selectionFragment", e)
-//        }
     }
 
     /**
@@ -151,7 +109,6 @@ class SelectionFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        Log.d("SelectionFragment", "onCreateView called")
         try {
             context = getContext()
 
@@ -531,53 +488,6 @@ class SelectionFragment : Fragment() {
 
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d("SelectionFragment", "onDestroy called")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d("SelectionFragment", "onPause called")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d("SelectionFragment", "onStop called")
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        Log.d("SelectionFragment", "onDestroyView called")
-    }
-
-
-//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        super.onViewCreated(view, savedInstanceState)
-//
-//        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-//            override fun handleOnBackPressed() {
-//                if (shouldInterceptBackPress()) {
-//                    // Perform back navigation function
-//                    isEnabled = false
-//                    Toast.makeText(context, "Back pressed in Fragment", Toast.LENGTH_SHORT).show()
-//                    requireActivity().onBackPressed()
-//                } else {
-//                    // Allow default behavior
-//                    isEnabled = false
-//                    requireActivity().onBackPressed()
-//                }
-//            }
-//        })
-//    }
-//
-//    /**
-//     * Intercepts back press only if navigating to other fragments
-//     */
-//    private fun shouldInterceptBackPress(): Boolean {
-//        return true
-//    }
-
     override fun onResume() {
         super.onResume()
         if (runPortTests) {
@@ -592,7 +502,6 @@ class SelectionFragment : Fragment() {
                     }
                 }
             }
-
         }
         else {
             (activity as? AppCompatActivity)?.supportActionBar?.title = "Differentiation Tests"
@@ -608,5 +517,4 @@ class SelectionFragment : Fragment() {
             }
         }
     }
-
 }
