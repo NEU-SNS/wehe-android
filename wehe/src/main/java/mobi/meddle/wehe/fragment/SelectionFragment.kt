@@ -48,6 +48,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +61,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
+import kotlinx.coroutines.launch
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.activity.MainActivity
 import mobi.meddle.wehe.activity.ReplayActivity
@@ -179,6 +181,7 @@ class SelectionFragment : Fragment() {
                                 getString(R.string.select_at_least_one),
                                 Toast.LENGTH_LONG
                             ).show()
+                            return@Button
                         }
                         val intent = Intent(context, ReplayActivity::class.java)
                         intent.putParcelableArrayListExtra(
@@ -303,6 +306,95 @@ class SelectionFragment : Fragment() {
         }
     }
 
+//    @Composable
+//    fun HomeView(apps: List<ApplicationBean>) {
+//        var payloadSize by remember { mutableStateOf(0) }
+//        val updatePayloadSize = { newSize: Int -> payloadSize += newSize }
+//        val tabItems: List<TabItem>
+//        val appToggleStates = remember { mutableStateMapOf<ApplicationBean, Boolean>() }
+//
+//        LaunchedEffect(apps) {
+//            apps.forEach { app ->
+//                appToggleStates[app] = false
+//            }
+//        }
+//
+//        if (runPortTests) {
+//            tabItems = listOf(
+//                TabItem(
+//                    title = "10 MB files",
+//                ),
+//                TabItem(
+//                    title = "50 MB files"
+//                ),
+//            )
+//        } else {
+//           tabItems = listOf(
+//                TabItem(
+//                    title = "Video",
+//                ),
+//                TabItem(
+//                    title = "Music"
+//                ),
+//                TabItem(
+//                    title = "Conferencing"
+//                ),
+//            )
+//        }
+//
+//        var selectedTabIndex by remember { mutableStateOf(0) }
+//        val pagerState = rememberPagerState {
+//            tabItems.size
+//        }
+//        LaunchedEffect(selectedTabIndex) {
+//            pagerState.animateScrollToPage(selectedTabIndex)
+//        }
+//        LaunchedEffect(pagerState.currentPage) {
+//            selectedTabIndex = pagerState.currentPage
+//        }
+//        Column(
+//            modifier = Modifier
+//                .fillMaxSize()
+//        ) {
+//            HorizontalPager(
+//                state = pagerState,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .weight(1f),
+//                verticalAlignment = Alignment.Top,
+//            ) { index ->
+//                if (runPortTests) {
+//                    if (index == 0) {
+//                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.SMALL_PORT }, updatePayloadSize, appToggleStates)
+//                    } else if (index == 1) {
+//                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.LARGE_PORT }, updatePayloadSize, appToggleStates)
+//                    }
+//
+//                } else {
+//                    if (index == 0) {
+//                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.VIDEO }, updatePayloadSize, appToggleStates)
+//                    } else if (index == 1) {
+//                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.MUSIC }, updatePayloadSize, appToggleStates)
+//                    } else if (index == 2) {
+//                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.CONFERENCING }, updatePayloadSize, appToggleStates)
+//                    }
+//                }
+//            }
+//            Row (Modifier.background(color = Color.LightGray).fillMaxWidth()) {
+//               Text(text = "Payload size: ${payloadSize} MB")
+//            }
+//            TabRow(selectedTabIndex = selectedTabIndex) {
+//                tabItems.forEachIndexed { index, item ->
+//                    Tab(
+//                        selected = index == selectedTabIndex,
+//                        onClick = { selectedTabIndex = index },
+//                        text = { Text(item.title) },
+//                    )
+//                }
+//            }
+//        }
+//    }
+
     @Composable
     fun HomeView(apps: List<ApplicationBean>) {
         var payloadSize by remember { mutableStateOf(0) }
@@ -318,79 +410,89 @@ class SelectionFragment : Fragment() {
 
         if (runPortTests) {
             tabItems = listOf(
-                TabItem(
-                    title = "10 MB files",
-                ),
-                TabItem(
-                    title = "50 MB files"
-                ),
+                TabItem(title = "10 MB files"),
+                TabItem(title = "50 MB files")
             )
         } else {
-           tabItems = listOf(
-                TabItem(
-                    title = "Video",
-                ),
-                TabItem(
-                    title = "Music"
-                ),
-                TabItem(
-                    title = "Conferencing"
-                ),
+            tabItems = listOf(
+                TabItem(title = "Video"),
+                TabItem(title = "Music"),
+                TabItem(title = "Conferencing")
             )
         }
 
-        var selectedTabIndex by remember { mutableStateOf(0) }
-        val pagerState = rememberPagerState {
-            tabItems.size
-        }
-        LaunchedEffect(selectedTabIndex) {
-            pagerState.animateScrollToPage(selectedTabIndex)
-        }
-        LaunchedEffect(pagerState.currentPage) {
-            selectedTabIndex = pagerState.currentPage
-        }
+        val pagerState = rememberPagerState(
+            initialPage = 0,
+            pageCount = { tabItems.size }
+        )
+
+        val scope = rememberCoroutineScope()
+
         Column(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
+
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                verticalAlignment = Alignment.Top,
+                verticalAlignment = Alignment.Top
             ) { index ->
                 if (runPortTests) {
-                    if (index == 0) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.SMALL_PORT }, updatePayloadSize, appToggleStates)
-                    } else if (index == 1) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.LARGE_PORT }, updatePayloadSize, appToggleStates)
+                    when (index) {
+                        0 -> AppsListComponent(
+                            apps.filter { it.category == ApplicationBean.Category.SMALL_PORT },
+                            updatePayloadSize,
+                            appToggleStates
+                        )
+                        1 -> AppsListComponent(
+                            apps.filter { it.category == ApplicationBean.Category.LARGE_PORT },
+                            updatePayloadSize,
+                            appToggleStates
+                        )
                     }
-
                 } else {
-                    if (index == 0) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.VIDEO }, updatePayloadSize, appToggleStates)
-                    } else if (index == 1) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.MUSIC }, updatePayloadSize, appToggleStates)
-                    } else if (index == 2) {
-                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.CONFERENCING }, updatePayloadSize, appToggleStates)
+                    when (index) {
+                        0 -> AppsListComponent(
+                            apps.filter { it.category == ApplicationBean.Category.VIDEO },
+                            updatePayloadSize,
+                            appToggleStates
+                        )
+                        1 -> AppsListComponent(
+                            apps.filter { it.category == ApplicationBean.Category.MUSIC },
+                            updatePayloadSize,
+                            appToggleStates
+                        )
+                        2 -> AppsListComponent(
+                            apps.filter { it.category == ApplicationBean.Category.CONFERENCING },
+                            updatePayloadSize,
+                            appToggleStates
+                        )
                     }
                 }
             }
-            Row (Modifier.background(color = Color.LightGray).fillMaxWidth()) {
-               Text(text = "Payload size: ${payloadSize} MB")
+
+            Row(Modifier.background(color = Color.LightGray).fillMaxWidth()) {
+                Text(text = "Payload size: ${payloadSize} MB")
             }
-            TabRow(selectedTabIndex = selectedTabIndex) {
+
+            TabRow(
+                selectedTabIndex = pagerState.currentPage
+            ) {
                 tabItems.forEachIndexed { index, item ->
                     Tab(
-                        selected = index == selectedTabIndex,
-                        onClick = { selectedTabIndex = index },
-                        text = { Text(item.title) },
+                        selected = pagerState.currentPage == index,
+                        onClick = {
+                            scope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        },
+                        text = { Text(item.title) }
                     )
                 }
             }
         }
-
     }
 
     data class TabItem(val title: String)
