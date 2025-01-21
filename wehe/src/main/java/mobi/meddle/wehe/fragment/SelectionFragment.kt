@@ -79,13 +79,13 @@ import java.io.InputStreamReader
 import java.util.Locale
 
 class SelectionFragment : Fragment() {
-    private var app_beans: ArrayList<ApplicationBean> = ArrayList<ApplicationBean>()//all the apps/ports to display on the page
+    private var app_beans: ArrayList<ApplicationBean> = ArrayList()//all the apps/ports to display on the page
     private var context: Context? = null
     private var runPortTests = false
     private var carrierDisplay: String? = null //cell carrier or "Wi-Fi"
-    private val selectedApps: java.util.ArrayList<ApplicationBean> = ArrayList<ApplicationBean>()
-    val currentLocale = Locale.getDefault()
-    val countryCode = currentLocale.country
+    private val selectedApps: java.util.ArrayList<ApplicationBean> = ArrayList()
+    private val currentLocale: Locale = Locale.getDefault()
+    private val countryCode: String = currentLocale.country
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val bundle = requireArguments()
@@ -305,95 +305,6 @@ class SelectionFragment : Fragment() {
             }
         }
     }
-
-//    @Composable
-//    fun HomeView(apps: List<ApplicationBean>) {
-//        var payloadSize by remember { mutableStateOf(0) }
-//        val updatePayloadSize = { newSize: Int -> payloadSize += newSize }
-//        val tabItems: List<TabItem>
-//        val appToggleStates = remember { mutableStateMapOf<ApplicationBean, Boolean>() }
-//
-//        LaunchedEffect(apps) {
-//            apps.forEach { app ->
-//                appToggleStates[app] = false
-//            }
-//        }
-//
-//        if (runPortTests) {
-//            tabItems = listOf(
-//                TabItem(
-//                    title = "10 MB files",
-//                ),
-//                TabItem(
-//                    title = "50 MB files"
-//                ),
-//            )
-//        } else {
-//           tabItems = listOf(
-//                TabItem(
-//                    title = "Video",
-//                ),
-//                TabItem(
-//                    title = "Music"
-//                ),
-//                TabItem(
-//                    title = "Conferencing"
-//                ),
-//            )
-//        }
-//
-//        var selectedTabIndex by remember { mutableStateOf(0) }
-//        val pagerState = rememberPagerState {
-//            tabItems.size
-//        }
-//        LaunchedEffect(selectedTabIndex) {
-//            pagerState.animateScrollToPage(selectedTabIndex)
-//        }
-//        LaunchedEffect(pagerState.currentPage) {
-//            selectedTabIndex = pagerState.currentPage
-//        }
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//        ) {
-//            HorizontalPager(
-//                state = pagerState,
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .weight(1f),
-//                verticalAlignment = Alignment.Top,
-//            ) { index ->
-//                if (runPortTests) {
-//                    if (index == 0) {
-//                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.SMALL_PORT }, updatePayloadSize, appToggleStates)
-//                    } else if (index == 1) {
-//                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.LARGE_PORT }, updatePayloadSize, appToggleStates)
-//                    }
-//
-//                } else {
-//                    if (index == 0) {
-//                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.VIDEO }, updatePayloadSize, appToggleStates)
-//                    } else if (index == 1) {
-//                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.MUSIC }, updatePayloadSize, appToggleStates)
-//                    } else if (index == 2) {
-//                        AppsListComponent(apps.filter { it.category == ApplicationBean.Category.CONFERENCING }, updatePayloadSize, appToggleStates)
-//                    }
-//                }
-//            }
-//            Row (Modifier.background(color = Color.LightGray).fillMaxWidth()) {
-//               Text(text = "Payload size: ${payloadSize} MB")
-//            }
-//            TabRow(selectedTabIndex = selectedTabIndex) {
-//                tabItems.forEachIndexed { index, item ->
-//                    Tab(
-//                        selected = index == selectedTabIndex,
-//                        onClick = { selectedTabIndex = index },
-//                        text = { Text(item.title) },
-//                    )
-//                }
-//            }
-//        }
-//    }
 
     @Composable
     fun HomeView(apps: List<ApplicationBean>) {
