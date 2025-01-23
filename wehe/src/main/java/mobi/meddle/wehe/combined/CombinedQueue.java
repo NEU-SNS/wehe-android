@@ -165,7 +165,6 @@ public class CombinedQueue {
                     } catch (InterruptedException e) {
                         Log.e("Replay", "Error sending packet", e);
                     }
-
                 }
             }
         };

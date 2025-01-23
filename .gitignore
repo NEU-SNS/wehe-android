@@ -7,4 +7,4 @@ build
 captures
 .externalNativeBuild
 wehe/release/
-wehe/src/main/assets/app_list.json
+wehe/src/main/assets/apps_list.json
