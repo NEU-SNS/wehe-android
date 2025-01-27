@@ -66,15 +66,6 @@
       "category": "VIDEO"
     },
     {
-      "name": "Facebook Video",
-      "size": 28,
-      "time": 42,
-      "image": "facebookvideo",
-      "datafile": "FacebookVideo_06052024.pcap_client_all.json",
-      "randomdatafile": "FacebookVideoRandom_06052024.pcap_client_all.json",
-      "category": "VIDEO"
-    },
-    {
       "name": "Google Meet",
       "size": 7,
       "time": 26,
