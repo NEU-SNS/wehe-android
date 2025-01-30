@@ -19,7 +19,6 @@ import java.util.Objects;
 
 import mobi.meddle.wehe.R;
 import mobi.meddle.wehe.activity.MainActivity;
-import lombok.Getter;
 
 /**
  * View Online Dashboard item in navigation bar (menu.drawer_view.xml)
@@ -27,7 +26,6 @@ import lombok.Getter;
  */
 public class DashboardFragment extends Fragment {
 
-    @Getter
     public static final String TAG = "DashboardFragment";
 
     @Override

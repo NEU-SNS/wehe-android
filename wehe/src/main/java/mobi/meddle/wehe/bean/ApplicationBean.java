@@ -6,9 +6,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import lombok.Getter;
-import lombok.Setter;
-
 /**
  * Data structure to hold info about an app/port
  */
