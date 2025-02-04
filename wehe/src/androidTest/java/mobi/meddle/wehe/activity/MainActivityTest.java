@@ -39,8 +39,6 @@ import java.lang.annotation.Target;
 @LargeTest
 public class MainActivityTest {
 
-    private UiDevice device;
-
     private boolean skipSetup = false;
 
     @Rule
@@ -67,7 +65,7 @@ public class MainActivityTest {
             // Click "OK" on the second AlertDialog
             onView(withText("OK")).perform(click());
 
-            device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+            UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
 
             // Handle system location permission dialog
             UiObject allowWhileUsingApp = device.findObject(new UiSelector().text("While using the app"));

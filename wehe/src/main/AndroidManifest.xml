@@ -35,14 +35,6 @@
             android:name=".activity.ReplayActivity"
             android:label="Replay"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.DPIActivity"
-            android:label="DPI analysis"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.CrashActivity"
-            android:label="Crash"
-            android:screenOrientation="portrait" />
     </application>
 
 </manifest>
