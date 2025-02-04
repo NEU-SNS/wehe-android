@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -352,16 +354,44 @@ public class ReplayActivity extends AppCompatActivity {
      *
      * @return true if network is available, false otherwise
      */
+//    private boolean isNetworkUnavailable() {
+//        ConnectivityManager connectivityManager =
+//                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+//        //NetworkInfo deprecated in AndroidX - can use a different library, but that would mean
+//        //having to increase the minimum Android version this app can support
+//        //TODO: Switch to non-deprecated library without increasing minSDK?
+//        NetworkInfo activeNetworkInfo =
+//                connectivityManager != null ? connectivityManager.getActiveNetworkInfo() : null;
+//        return activeNetworkInfo == null || !activeNetworkInfo.isConnected();
+//    }
+
     private boolean isNetworkUnavailable() {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        //NetworkInfo deprecated in AndroidX - can use a different library, but that would mean
-        //having to increase the minimum Android version this app can support
-        //TODO: Switch to non-deprecated library without increasing minSDK?
-        NetworkInfo activeNetworkInfo =
-                connectivityManager != null ? connectivityManager.getActiveNetworkInfo() : null;
-        return activeNetworkInfo == null || !activeNetworkInfo.isConnected();
+
+        // Check if connectivityManager is not null
+        if (connectivityManager != null) {
+            // Get the active network
+            Network activeNetwork = connectivityManager.getActiveNetwork();
+
+            // If there is no active network, the network is unavailable
+            if (activeNetwork == null) {
+                return true;
+            }
+
+            // Get network capabilities and check for connectivity
+            NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork);
+
+            // Check if the network is connected to Wi-Fi or mobile data
+            if (networkCapabilities != null) {
+                // Return true if the network is connected to the internet (either Wi-Fi or mobile data)
+                return !networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+            }
+        }
+        // If the connectivityManager is null, consider the network unavailable
+        return true;
     }
+
 
     /**
      * Display this popup message if there is no network
