@@ -205,8 +205,8 @@ class SelectionFragment : Fragment() {
                         disabledContentColor = Color.White,
                     )
                 ) {
-                    if (runPortTests) Text("Port Tests") else
-                    Text("Differentiation Tests")
+                    if (runPortTests) Text("Run Port Tests") else
+                    Text("Run Differentiation Tests")
                 }
             }
         }
