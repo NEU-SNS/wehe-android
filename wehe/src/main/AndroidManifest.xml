@@ -22,7 +22,7 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".ui.main.MainActivity"
             android:exported="true"
             android:label="Wehe"
             android:screenOrientation="portrait">
@@ -32,7 +32,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.ReplayActivity"
+            android:name=".ui.replay.ReplayActivity"
             android:label="Replay"
             android:screenOrientation="portrait" />
     </application>

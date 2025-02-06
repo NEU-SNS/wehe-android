@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.activity.ui.theme
+package mobi.meddle.wehe.ui.theme
 
 import android.app.Activity
 import android.os.Build

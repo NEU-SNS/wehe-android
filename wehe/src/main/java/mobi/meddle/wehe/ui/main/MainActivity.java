@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.activity;
+package mobi.meddle.wehe.ui.main;
 
 import android.Manifest;
 import android.content.SharedPreferences;

@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.fragment;
+package mobi.meddle.wehe.ui.main.fragments;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
@@ -18,7 +18,7 @@ import com.google.android.material.navigation.NavigationView;
 import java.util.Objects;
 
 import mobi.meddle.wehe.R;
-import mobi.meddle.wehe.activity.MainActivity;
+import mobi.meddle.wehe.ui.main.MainActivity;
 
 /**
  * View Online Dashboard item in navigation bar (menu.drawer_view.xml)

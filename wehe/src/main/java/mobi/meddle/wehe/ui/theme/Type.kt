@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.activity.ui.theme
+package mobi.meddle.wehe.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

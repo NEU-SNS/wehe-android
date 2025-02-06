@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#0099cc"
-    tools:context="mobi.meddle.wehe.fragment.DashboardFragment">
+    tools:context="mobi.meddle.wehe.ui.main.fragments.DashboardFragment">
 
     <WebView
         android:id="@+id/dashboardView"

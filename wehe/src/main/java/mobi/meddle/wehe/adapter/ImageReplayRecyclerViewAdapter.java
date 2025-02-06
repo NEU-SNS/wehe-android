@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Locale;
 
 import mobi.meddle.wehe.R;
-import mobi.meddle.wehe.activity.ReplayActivity;
+import mobi.meddle.wehe.ui.replay.ReplayActivity;
 import mobi.meddle.wehe.bean.ApplicationBean;
 import mobi.meddle.wehe.constant.Consts;
 

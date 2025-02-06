@@ -1,12 +1,8 @@
-package mobi.meddle.wehe.fragment;
+package mobi.meddle.wehe.ui.main.fragments;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -26,7 +22,7 @@ import com.google.android.material.navigation.NavigationView;
 import java.util.Objects;
 
 import mobi.meddle.wehe.R;
-import mobi.meddle.wehe.activity.MainActivity;
+import mobi.meddle.wehe.ui.main.MainActivity;
 import mobi.meddle.wehe.constant.Consts;
 
 /**

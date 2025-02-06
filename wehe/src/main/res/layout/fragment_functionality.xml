@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF"
-    tools:context="mobi.meddle.wehe.fragment.FunctionalityFragment">
+    tools:context="mobi.meddle.wehe.ui.main.fragments.FunctionalityFragment">
 
     <TextView
         android:id="@+id/functionalityView"

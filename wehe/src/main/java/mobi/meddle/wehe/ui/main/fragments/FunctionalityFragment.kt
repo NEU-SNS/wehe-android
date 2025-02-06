@@ -1,8 +1,7 @@
-package mobi.meddle.wehe.fragment
+package mobi.meddle.wehe.ui.main.fragments
 
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import mobi.meddle.wehe.R
-import mobi.meddle.wehe.activity.MainActivity
+import mobi.meddle.wehe.ui.main.MainActivity
 
 /**
  * How it Works item in navigation bar (menu.drawer_view.xml)

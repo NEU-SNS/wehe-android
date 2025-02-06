@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalFoundationApi::class)
 
-package mobi.meddle.wehe.fragment
+package mobi.meddle.wehe.ui.main.fragments
 
 import android.content.Context
 import android.content.Intent
@@ -42,7 +42,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -63,11 +62,11 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 import mobi.meddle.wehe.R
-import mobi.meddle.wehe.activity.MainActivity
-import mobi.meddle.wehe.activity.ReplayActivity
-import mobi.meddle.wehe.activity.ui.theme.WEHE_BLUE
-import mobi.meddle.wehe.activity.ui.theme.WEHE_GREY
-import mobi.meddle.wehe.activity.ui.theme.WeheandroidTheme
+import mobi.meddle.wehe.ui.main.MainActivity
+import mobi.meddle.wehe.ui.replay.ReplayActivity
+import mobi.meddle.wehe.ui.theme.WEHE_BLUE
+import mobi.meddle.wehe.ui.theme.WEHE_GREY
+import mobi.meddle.wehe.ui.theme.WeheandroidTheme
 import mobi.meddle.wehe.bean.ApplicationBean
 import mobi.meddle.wehe.constant.Consts
 import org.json.JSONException

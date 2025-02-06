@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.fragment;
+package mobi.meddle.wehe.ui.main.fragments;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -35,8 +35,8 @@ import java.util.Locale;
 import java.util.Objects;
 
 import mobi.meddle.wehe.R;
-import mobi.meddle.wehe.activity.MainActivity;
-import mobi.meddle.wehe.activity.ReplayActivity;
+import mobi.meddle.wehe.ui.main.MainActivity;
+import mobi.meddle.wehe.ui.replay.ReplayActivity;
 
 /**
  * Fragment to show the results page.
