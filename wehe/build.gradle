@@ -9,9 +9,9 @@ android {
     defaultConfig {
         applicationId "mobi.meddle.wehe"
         compileSdk 34
-        minSdkVersion 24
+        minSdkVersion 21
         targetSdkVersion 34
-//        multiDexEnabled true
+        multiDexEnabled true
         versionCode 50
         versionName "3.8.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -21,7 +21,6 @@ android {
         release {
             shrinkResources false
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
             debuggable true
