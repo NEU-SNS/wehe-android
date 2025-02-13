@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalFoundationApi::class)
 
-package mobi.meddle.wehe.ui.main.fragments
+package mobi.meddle.wehe.fragment
 
 import android.content.Context
 import android.content.Intent
@@ -42,6 +42,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
@@ -62,13 +63,13 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import kotlinx.coroutines.launch
 import mobi.meddle.wehe.R
+import mobi.meddle.wehe.constant.Consts
+import mobi.meddle.wehe.data.bean.ApplicationBean
 import mobi.meddle.wehe.ui.main.MainActivity
 import mobi.meddle.wehe.ui.replay.ReplayActivity
 import mobi.meddle.wehe.ui.theme.WEHE_BLUE
 import mobi.meddle.wehe.ui.theme.WEHE_GREY
 import mobi.meddle.wehe.ui.theme.WeheandroidTheme
-import mobi.meddle.wehe.bean.ApplicationBean
-import mobi.meddle.wehe.constant.Consts
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -130,11 +131,7 @@ class SelectionFragment : Fragment() {
             //TODO: Switch to non-deprecated library without increasing minSDK?
             val networkInfo = connectivityManager
                 .getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-            val carrierName = if (telephonyManager != null) {
-                telephonyManager.networkOperatorName
-            } else {
-                getString(R.string.your_carrier)
-            }
+            val carrierName = telephonyManager.networkOperatorName
 
             if (networkInfo != null && networkInfo.state == NetworkInfo.State.CONNECTED) {
                 carrierDisplay = "WiFi"
@@ -185,7 +182,7 @@ class SelectionFragment : Fragment() {
                         val intent = Intent(context, ReplayActivity::class.java)
                         intent.putParcelableArrayListExtra(
                             "selectedApps",
-                           selectedApps
+                            selectedApps
                         )
                         intent.putExtra("runPortTests", runPortTests)
                         intent.putExtra("carrier", carrierDisplay)
@@ -205,7 +202,7 @@ class SelectionFragment : Fragment() {
                     )
                 ) {
                     if (runPortTests) Text("Run Port Tests") else
-                    Text("Run Differentiation Tests")
+                        Text("Run Differentiation Tests")
                 }
             }
         }
@@ -275,7 +272,7 @@ class SelectionFragment : Fragment() {
                             selectedApps.remove(app)
                             updatePayloadSize(-app.size)
                         }
-                        },
+                    },
                     checked = toggleState,
                     colors = SwitchDefaults.colors(uncheckedTrackColor = WEHE_GREY)
                 )

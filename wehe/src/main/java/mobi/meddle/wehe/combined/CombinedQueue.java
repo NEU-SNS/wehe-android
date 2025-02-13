@@ -13,11 +13,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 
-import mobi.meddle.wehe.bean.JitterBean;
-import mobi.meddle.wehe.bean.RequestSet;
-import mobi.meddle.wehe.bean.ServerInstance;
-import mobi.meddle.wehe.bean.UDPReplayInfoBean;
-import mobi.meddle.wehe.bean.UpdateUIBean;
+import mobi.meddle.wehe.data.bean.JitterBean;
+import mobi.meddle.wehe.data.bean.RequestSet;
+import mobi.meddle.wehe.data.bean.ServerInstance;
+import mobi.meddle.wehe.data.bean.UDPReplayInfoBean;
+import mobi.meddle.wehe.data.bean.UpdateUIBean;
 import mobi.meddle.wehe.constant.Consts;
 
 /**

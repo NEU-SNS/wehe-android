@@ -10,7 +10,7 @@ import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Semaphore;
 
-import mobi.meddle.wehe.bean.RequestSet;
+import mobi.meddle.wehe.data.bean.RequestSet;
 import mobi.meddle.wehe.util.Config;
 
 // @@@ Adrian add this

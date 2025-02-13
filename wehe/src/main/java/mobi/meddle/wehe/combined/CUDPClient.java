@@ -12,7 +12,7 @@ import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 
-import mobi.meddle.wehe.bean.ServerInstance;
+import mobi.meddle.wehe.data.bean.ServerInstance;
 
 /**
  * A UDP connection for a replay to send UDP packets.

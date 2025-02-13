@@ -21,25 +21,25 @@
     <fragment
         android:id="@+id/resultsFragment"
         android:name="mobi.meddle.wehe.ui.main.fragments.ResultsFragment"
-        android:label="Results Fragment" />
+        android:label="Previous Results" />
 
     <fragment
         android:id="@+id/aboutFragment"
         android:name="mobi.meddle.wehe.ui.main.fragments.AboutFragment"
-        android:label="About Fragment" />
+        android:label="Why Wehe" />
 
     <fragment
         android:id="@+id/functionalityFragment"
         android:name="mobi.meddle.wehe.ui.main.fragments.FunctionalityFragment"
-        android:label="Functionality Fragment" />
+        android:label="How it Works" />
 
     <fragment
         android:id="@+id/dashboardFragment"
         android:name="mobi.meddle.wehe.ui.main.fragments.DashboardFragment"
-        android:label="Dashboard Fragment" />
+        android:label="Online Dashboard" />
 
     <fragment
         android:id="@+id/settingsFragment"
         android:name="mobi.meddle.wehe.ui.main.fragments.SettingsFragment"
-        android:label="Settings Fragment" />
+        android:label="Settings" />
 </navigation>

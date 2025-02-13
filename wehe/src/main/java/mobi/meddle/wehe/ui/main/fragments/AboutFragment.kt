@@ -17,41 +17,39 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.google.android.material.navigation.NavigationView
-import mobi.meddle.wehe.BuildConfig
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.ui.main.MainActivity
+import mobi.meddle.wehe.ui.main.viewmodels.AboutViewModel
 
 /**
  * Why Wehe item in navigation bar (menu.drawer_view.xml)
  * XML layout: fragment_about.xml
  */
 class AboutFragment : Fragment() {
-    val TAG: String = "AboutFragment"
+
+    private val viewModel: AboutViewModel by viewModels { AboutViewModel.Factory()}
     override fun onCreateView(
         inflater: LayoutInflater, parent: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
       return ComposeView(requireContext()).apply {
           setContent {
-              AboutScreen()
+              AboutScreen(viewModel)
           }
       }
     }
 
     @Composable
-    fun AboutScreen() {
+    fun AboutScreen(viewModel: AboutViewModel) {
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(text = String.format(getString(R.string.about_text), BuildConfig.VERSION_NAME), style= MaterialTheme.typography.bodyLarge)
+            Text(text = String.format(getString(R.string.about_text), viewModel.versionName), style= MaterialTheme.typography.bodyLarge)
         }
-    }
-
-    companion object {
-        const val TAG: String = "AboutFragment"
     }
 
     override fun onResume() {
@@ -67,5 +65,9 @@ class AboutFragment : Fragment() {
                 }
             }
         }
+    }
+
+    companion object {
+        const val TAG: String = "AboutFragment"
     }
 }

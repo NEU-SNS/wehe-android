@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.bean;
+package mobi.meddle.wehe.data.bean;
 
 import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
 import static androidx.core.app.ActivityCompat.requestPermissions;

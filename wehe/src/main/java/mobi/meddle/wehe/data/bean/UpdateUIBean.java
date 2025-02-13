@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.bean;
+package mobi.meddle.wehe.data.bean;
 
 /**
  * Helps keeps progress bar updated. Packets are sent in CombinedQueue.java. As packets are being

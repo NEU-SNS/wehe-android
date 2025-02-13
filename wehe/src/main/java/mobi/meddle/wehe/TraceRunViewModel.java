@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import mobi.meddle.wehe.bean.ApplicationBean;
+import mobi.meddle.wehe.data.bean.ApplicationBean;
 
 public class TraceRunViewModel extends ViewModel {
     private final MutableLiveData<TraceRunUiState> uiState = new MutableLiveData<>();
