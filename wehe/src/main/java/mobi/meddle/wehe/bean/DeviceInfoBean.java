@@ -115,9 +115,21 @@ public class DeviceInfoBean {
         } else {
             int typeIndex = 0;
             // We only have the permission for devices that are old enough
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                typeIndex = telephonyManager.getDataNetworkType();
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                typeIndex = telephonyManager.getNetworkType();
             }
+            else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    typeIndex = telephonyManager.getDataNetworkType();
+                } else {
+                    typeIndex = TelephonyManager.NETWORK_TYPE_UNKNOWN;
+                }
+            }
+            else {
+                typeIndex = telephonyManager.getNetworkType();
+            }
+
             if (typeIndex < NETWORK_TYPES.length) {
                 this.networkType = NETWORK_TYPES[typeIndex];
             } else {
