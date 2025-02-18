@@ -479,7 +479,7 @@ public class ReplayActivity extends AppCompatActivity {
         // TODO switch to better data structure, beans are not suitable for android
         private CombinedAppJSONInfoBean appData;
         private ApplicationBean app;
-        private final ArrayList<String> servers = new ArrayList<>(); //servers to run the replays to
+        private ArrayList<String> servers = new ArrayList<>(); //servers to run the replays to
         private String metadataServer;
         private final ArrayList<WebSocketConnection> wsConns = new ArrayList<>();
         private UpdateUIBean updateUIBean;
@@ -938,6 +938,13 @@ public class ReplayActivity extends AppCompatActivity {
                 } catch (JSONException | NullPointerException e) {
                     Log.e("WebSocket", "Can't retrieve M-Lab servers", e);
                 }
+            }
+
+//            // test the server crash error
+//            servers = new ArrayList<>();
+
+            while (servers.size() < numTests) {
+                servers.add("");
             }
 
             for (int i = 0; i < numTests; i++) {

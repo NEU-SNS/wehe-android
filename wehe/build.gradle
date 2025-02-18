@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId "mobi.meddle.wehe"
         compileSdk 34
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 34
         multiDexEnabled true
         versionCode 52
