@@ -16,6 +16,6 @@
         android:scrollbars="vertical"
         android:text="@string/about_text"
         android:textColor="@color/black"
-        android:textSize="@dimen/text_xlarge" />
+        android:textSize="@dimen/text_large" />
 
 </RelativeLayout>

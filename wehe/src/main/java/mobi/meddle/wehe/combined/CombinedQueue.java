@@ -63,6 +63,14 @@ public class CombinedQueue {
         this.timeout = isUDP ? timeout - 5 : timeout;
     }
 
+    public boolean isUDP(){
+        return isUDP;
+    }
+
+    public void setAbort() {
+        ABORT = true;
+    }
+
     /**
      * This method is where the packets begin sending to the servers (throughputs can finally now
      * be collected).
@@ -165,7 +173,6 @@ public class CombinedQueue {
                     } catch (InterruptedException e) {
                         Log.e("Replay", "Error sending packet", e);
                     }
-
                 }
             }
         };

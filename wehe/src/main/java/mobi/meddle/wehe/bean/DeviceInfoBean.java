@@ -1,11 +1,5 @@
 package mobi.meddle.wehe.bean;
-
-import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
-import static androidx.core.app.ActivityCompat.requestPermissions;
-
 import android.Manifest;
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
@@ -16,11 +10,7 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 /**
@@ -125,9 +115,21 @@ public class DeviceInfoBean {
         } else {
             int typeIndex = 0;
             // We only have the permission for devices that are old enough
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                typeIndex = telephonyManager.getDataNetworkType();
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                typeIndex = telephonyManager.getNetworkType();
             }
+            else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE)
+                        == PackageManager.PERMISSION_GRANTED) {
+                    typeIndex = telephonyManager.getDataNetworkType();
+                } else {
+                    typeIndex = TelephonyManager.NETWORK_TYPE_UNKNOWN;
+                }
+            }
+            else {
+                typeIndex = telephonyManager.getNetworkType();
+            }
+
             if (typeIndex < NETWORK_TYPES.length) {
                 this.networkType = NETWORK_TYPES[typeIndex];
             } else {

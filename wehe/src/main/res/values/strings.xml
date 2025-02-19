@@ -131,6 +131,7 @@
     <string name="no_diff">No differentiation</string>
     <string name="has_diff">Differentiation detected</string>
     <string name="inconclusive">Results inconclusive, try running the test again</string>
+    <string name="fcc_alert">Alert the FCC</string>
     <string name="tomo_failed">Localizing differentiation failed</string>
     <string name="tomo_succ">Localizing differentiation succeeded</string>
     <string name="waiting">Waiting for server result</string>
@@ -296,35 +297,16 @@
     <string name="rerun_test_descr">Would you like to rerun the tests?</string>
     <string name="rerun_diff_opt">Rerun Tests with Detected Differentiation</string>
     <string name="rerun_incon_opt">Rerun Inconclusive Tests</string>
-    <string name="rerun_tomography_descr">
-        Differentiation has been detected on certain tests. Would you like to determine which
-        network is causing the differentiation? todo - put something ab data consumption
-    </string>
-    <string name="tomography_not_supported">Tomography tests are not supported on your device.</string>
     <string name="tomo_failed_desc">The network causing differentiation cannot be determined.</string>
     <string name="tomo_succ_desc">The network causing differentiation is %s.</string>
     <string name="alert_arcep">Alert Arcep!</string>
-    <string name="normal_app_desc">
-        For each test, Wehe servers send network traffic to this app. We do this in two parts.
-        \n\nFirst we send real app traffic that we prerecorded. During this test, your Internet
-        provider sees traffic that looks like the traffic from the app being tested (e.g., Netflix,
-        YouTube).\n\nSecond, we send similar traffic, but we scramble the data so it does not look
-        like the traffic of any app.\n\nIf your Internet provider slows down or speeds up one of
-        these tests, then it may be singling out certain app\'s traffic. Wehe detects these cases
-        and reports them to you. See the \"How it Works\" page for more details.
-    </string>
-    <string name="normal_port_desc">
-        For each port, network traffic is sent from a Wehe server through the selected port and
-        through port 443. By comparing the speeds between these two ports, Wehe detects if your
-        Internet provider is throttling (slowing down) or prioritizing (speeding up) traffic
-        traveling through the selected port compared to port 443. See the \"How it Works\" page for
-        more details.
-    </string>
-    <string name="tomo_test_desc">
-        For tests where differentiation was detected, Wehe might be able to determine which network
-        or ISP is causing such differentiation to occur by running several duplicate tests at the
-        same time to different Wehe servers and comparing the results. See the \"How it Works\" page
-        for more details.
-    </string>
+    <string name="normal_app_desc">"         For each test, Wehe servers send network traffic to this app. We do this in two parts.           First we send real app traffic that we prerecorded. During this test, your Internet         provider sees traffic that looks like the traffic from the app being tested (e.g., Netflix,         YouTube).  Second, we send similar traffic, but we scramble the data so it does not look         like the traffic of any app.  If your Internet provider slows down or speeds up one of         these tests, then it may be singling out certain app's traffic. Wehe detects these cases         and reports them to you. See the \"How it Works\" page for more details.     "</string>
+    <string name="normal_port_desc">"         For each port, network traffic is sent from a Wehe server through the selected port and         through port 443. By comparing the speeds between these two ports, Wehe detects if your         Internet provider is throttling (slowing down) or prioritizing (speeding up) traffic         traveling through the selected port compared to port 443. See the \"How it Works\" page for         more details.     "</string>
+    <string name="tag_port_tests" translatable="false">PortTests</string>
+    <string name="tag_differentiation_tests" translatable="false">DifferentiationTests</string>
+    <string name="title_activity_main2" translatable="false">MainActivity2</string>
+    <string name="rerun_tomography_descr">Differentiation has been detected on certain tests. Would you like to determine which         network is causing the differentiation? todo - put something ab data consumption</string>
+    <string name="tomography_not_supported">Tomography tests are not supported on your device.</string>
+    <string name="tomo_test_desc">For tests where differentiation was detected, Wehe might be able to determine which network         or ISP is causing such differentiation to occur by running several duplicate tests at the         same time to different Wehe servers and comparing the results. See the \\\"How it Works\\\" page         for more details.</string>
 
 </resources>

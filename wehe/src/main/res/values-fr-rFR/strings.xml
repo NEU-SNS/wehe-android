@@ -10,6 +10,7 @@
     <string name="back_button">Retour</string>
     <string name="selected_apps">Applications ciblés</string>
     <string name="ip_type">Protocole IP</string>
+    <string name="tomography_page_title">Localiser la différenciation</string>
     <string name="replay">Cliquez ici pour continuer</string>
     <string name="title_activity_replay">Chargement…</string>
     <string name="title_activity_crash">Rapport des crashs</string>
@@ -51,8 +52,10 @@
     <string name="timing_label">Activer la synchronisation inter-paquets?</string>
     <string name="timing_Yes">Vrai</string>
     <string name="timing_No">Faux</string>
+    <string name="no">Non</string>
     <string name="server_label">Choix du serveur</string>
     <string name="cust_server">Choix du serveur</string>
+    <string name="inval_server">Nom de serveur invalide</string>
     <string name="select_iteration">Sélectionnez un nombre de tests</string>
     <string name="select_metric">Sélectionnez la métrique à utiliser</string>
     <string name="select_a_threshhold">Sélectionnez un seuil en pourcentage pour le test en différence d\'aire</string>
@@ -103,6 +106,9 @@
     <string name="no_diff">Pas de différenciation</string>
     <string name="has_diff">Différenciation détectée</string>
     <string name="inconclusive">Résultats non concluants, essayez de relancer un test</string>
+    <string name="fcc_alert">Alertez la FCC</string>
+    <string name="tomo_failed">La différenciation de localisation a échoué</string>
+    <string name="tomo_succ">La différenciation localisée a réussi</string>
     <string name="waiting">En attente des résultats du test</string>
     <string name="confirmation_replay">Resultats non concluants, le test a été relancé.</string>
     <string name="history_button">Historique des résultats</string>
@@ -271,9 +277,19 @@
     </string>
     <string name="test_results">Résultats de test</string>
     <string name="rerun">Relancer</string>
+    <string name="localize_diff">Qui est en faute ?</string>
     <string name="rerun_test_title">Relancer les tests ?</string>
     <string name="rerun_test_descr">Voulez-vous relancer les tests?</string>
     <string name="rerun_diff_opt">Relancer tous les tests ayant détecté une différenciation</string>
     <string name="rerun_incon_opt">Relancer tous les tests non concluants</string>
+    <string name="tomo_succ_desc">Le réseau provoquant la différenciation est %s.</string>
     <string name="alert_arcep">J\'alerte l\'Arcep !</string>
+    <string name="yes">Oui</string>
+    <string name="inval_percent">Doit être un entier compris entre 0 et 100</string>
+    <string name="rerun_tomography_descr">Une différenciation a été détectée sur certains tests. Souhaitez-vous déterminer quel réseau est à l’origine de la différenciation ? todo - mettre quelque chose sur la consommation de données</string>
+    <string name="tomo_failed_desc">Le réseau à l’origine de la différenciation ne peut être déterminé.</string>
+    <string name="normal_app_desc">Pour chaque test, les serveurs Wehe envoient du trafic réseau vers cette application. Nous faisons cela en deux parties.           Nous envoyons d’abord du trafic d’application réel que nous avons préenregistré. Lors de ce test, votre fournisseur d\'accès Internet détecte un trafic qui ressemble à celui de l\'application testée (par exemple Netflix, YouTube).  Deuxièmement, nous envoyons un trafic similaire, mais nous brouillons les données afin qu\'elles ne ressemblent pas au trafic d\'une application.  Si votre fournisseur d\'accès Internet ralentit ou accélère l\'un de ces tests, il se peut qu\'il cible le trafic de certaines applications. Wehe détecte ces cas et vous les signale. Voir la page « Comment ça marche » pour plus de détails.</string>
+    <string name="normal_port_desc">Pour chaque port, le trafic réseau est envoyé depuis un serveur Wehe via le port sélectionné et via le port 443. En comparant les vitesses entre ces deux ports, Wehe détecte si votre fournisseur Internet limite (ralentit) ou donne la priorité (accélère) le trafic circulant. via le port sélectionné par rapport au port 443. Voir la page « Comment ça marche » pour plus de détails.</string>
+    <string name="tomography_not_supported">Les tests de tomographie ne sont pas pris en charge sur votre appareil.</string>
+    <string name="tomo_test_desc">Pour les tests où une différenciation a été détectée, Wehe pourrait être en mesure de déterminer quel réseau         ou le FAI provoque une telle différenciation en exécutant plusieurs tests en double au niveau du         en même temps sur différents serveurs Wehe et en comparant les résultats. Voir la page \\\"Comment ça marche\\\"         pour plus de détails.</string>
 </resources>

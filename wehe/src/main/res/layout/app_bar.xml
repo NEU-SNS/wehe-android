@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/weheBlue"
+    android:background="@color/wehe_blue"
     app:elevation="4dp"
     app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
     android:theme="@style/MyCustomToolBarTheme1">

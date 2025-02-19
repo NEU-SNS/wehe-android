@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
 
     <uses-feature android:name="android.hardware.location.network" />
 
@@ -23,9 +24,9 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".activity.MainActivity"
+            android:exported="true"
             android:label="Wehe"
-            android:screenOrientation="portrait"
-            android:exported="true">
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -34,14 +35,6 @@
         <activity
             android:name=".activity.ReplayActivity"
             android:label="Replay"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.DPIActivity"
-            android:label="DPI analysis"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".activity.CrashActivity"
-            android:label="Crash"
             android:screenOrientation="portrait" />
     </application>
 

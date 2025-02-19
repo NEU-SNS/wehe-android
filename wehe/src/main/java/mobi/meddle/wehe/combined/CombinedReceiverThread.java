@@ -19,7 +19,6 @@ public final class CombinedReceiverThread implements Runnable {
     // changes of Arash
     public volatile boolean keepRunning = true;
     private final UDPReplayInfoBean udpReplayInfoBean;
-
     private final JitterBean jitterBean; // adrian: for jitter
     private final CombinedAnalyzerTask analyzerTask;
 

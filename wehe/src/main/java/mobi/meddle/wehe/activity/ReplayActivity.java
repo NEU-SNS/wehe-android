@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -159,6 +161,7 @@ public class ReplayActivity extends AppCompatActivity {
             for (ApplicationBean app : selectedApps) {
                 app.setTomography(false);
                 app.setArcepNeedsAlerting(false);
+                app.setAlertFCC(false);
                 app.setStatus(getString(R.string.pending));
             }
             inconclusiveApps.clear();
@@ -226,6 +229,7 @@ public class ReplayActivity extends AppCompatActivity {
                             for (ApplicationBean app : selectedApps) {
                                 app.setTomography(true);
                                 app.setArcepNeedsAlerting(false);
+                                app.setAlertFCC(false);
                                 app.setStatus(getString(R.string.pending));
                             }
                             traceRunner = new TraceRunAsync();
@@ -350,16 +354,44 @@ public class ReplayActivity extends AppCompatActivity {
      *
      * @return true if network is available, false otherwise
      */
+//    private boolean isNetworkUnavailable() {
+//        ConnectivityManager connectivityManager =
+//                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+//        //NetworkInfo deprecated in AndroidX - can use a different library, but that would mean
+//        //having to increase the minimum Android version this app can support
+//        //TODO: Switch to non-deprecated library without increasing minSDK?
+//        NetworkInfo activeNetworkInfo =
+//                connectivityManager != null ? connectivityManager.getActiveNetworkInfo() : null;
+//        return activeNetworkInfo == null || !activeNetworkInfo.isConnected();
+//    }
+
     private boolean isNetworkUnavailable() {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        //NetworkInfo deprecated in AndroidX - can use a different library, but that would mean
-        //having to increase the minimum Android version this app can support
-        //TODO: Switch to non-deprecated library without increasing minSDK?
-        NetworkInfo activeNetworkInfo =
-                connectivityManager != null ? connectivityManager.getActiveNetworkInfo() : null;
-        return activeNetworkInfo == null || !activeNetworkInfo.isConnected();
+
+        // Check if connectivityManager is not null
+        if (connectivityManager != null) {
+            // Get the active network
+            Network activeNetwork = connectivityManager.getActiveNetwork();
+
+            // If there is no active network, the network is unavailable
+            if (activeNetwork == null) {
+                return true;
+            }
+
+            // Get network capabilities and check for connectivity
+            NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork);
+
+            // Check if the network is connected to Wi-Fi or mobile data
+            if (networkCapabilities != null) {
+                // Return true if the network is connected to the internet (either Wi-Fi or mobile data)
+                return !networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+            }
+        }
+        // If the connectivityManager is null, consider the network unavailable
+        return true;
     }
+
 
     /**
      * Display this popup message if there is no network
@@ -447,7 +479,7 @@ public class ReplayActivity extends AppCompatActivity {
         // TODO switch to better data structure, beans are not suitable for android
         private CombinedAppJSONInfoBean appData;
         private ApplicationBean app;
-        private final ArrayList<String> servers = new ArrayList<>(); //servers to run the replays to
+        private ArrayList<String> servers = new ArrayList<>(); //servers to run the replays to
         private String metadataServer;
         private final ArrayList<WebSocketConnection> wsConns = new ArrayList<>();
         private UpdateUIBean updateUIBean;
@@ -705,6 +737,7 @@ public class ReplayActivity extends AppCompatActivity {
                 }
                 this.app = app; // Set the app to run test for
                 this.app.setArcepNeedsAlerting(false);
+                this.app.setAlertFCC(false);
 
                 if (isCancelled()) {
                     return null;
@@ -905,6 +938,13 @@ public class ReplayActivity extends AppCompatActivity {
                 } catch (JSONException | NullPointerException e) {
                     Log.e("WebSocket", "Can't retrieve M-Lab servers", e);
                 }
+            }
+
+//            // test the server crash error
+//            servers = new ArrayList<>();
+
+            while (servers.size() < numTests) {
+                servers.add("");
             }
 
             for (int i = 0; i < numTests; i++) {
@@ -2161,8 +2201,8 @@ public class ReplayActivity extends AppCompatActivity {
                 }
 
                 // TODO uncomment following code when you want differentiation to occur
-                //differentiation = true;
-                //inconclusive = true;
+//                differentiation = true;
+//                inconclusive = true;
 
                 /*
                  * Step 5: Save and display results to user. Rerun test if necessary.
@@ -2210,6 +2250,8 @@ public class ReplayActivity extends AppCompatActivity {
                     String country = current.getCountry();
                     if (country.equals("FR")) { //show alert arcep button
                         app.setArcepNeedsAlerting(true);
+                    } else if (country.equals("US")) {
+                        app.setAlertFCC(true);
                     }
                     diffApps.add(app);
                 } else {

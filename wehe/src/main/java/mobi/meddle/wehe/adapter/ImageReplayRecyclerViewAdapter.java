@@ -70,6 +70,7 @@ public class ImageReplayRecyclerViewAdapter extends
         holder.xputTestValueTextView.setVisibility(View.GONE);
         holder.arcepLogo.setVisibility(View.GONE);
         holder.alertArcep.setVisibility(View.GONE);
+        holder.alertFCC.setVisibility(View.GONE);
         holder.imageButton.setVisibility(View.GONE);
 
         if (position == 0) {
@@ -136,6 +137,21 @@ public class ImageReplayRecyclerViewAdapter extends
                     //open arcep site in browser; tests will continue running in background
                     Intent i = new Intent(Intent.ACTION_VIEW);
                     i.setData(Uri.parse(Consts.ARCEP_URL));
+                    replayAct.startActivity(i);
+                }
+            });
+        }
+        else if (app.isAlertFCC()) {
+            holder.alertFCC.setVisibility(View.VISIBLE);
+            holder.alertFCC.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    app.setAlertFCC(false);
+                    holder.alertFCC.setVisibility(View.GONE);
+
+                    //open arcep site in browser; tests will continue running in background
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse(Consts.FCC_URL));
                     replayAct.startActivity(i);
                 }
             });
@@ -264,6 +280,7 @@ public class ImageReplayRecyclerViewAdapter extends
         final ImageButton imageButton;
         final ImageView arcepLogo;
         final Button alertArcep;
+        final Button alertFCC;
 
         ViewHolder(View view) {
             super(view);
@@ -281,6 +298,7 @@ public class ImageReplayRecyclerViewAdapter extends
 
             arcepLogo = view.findViewById(R.id.arcepLogoImageView);
             alertArcep = view.findViewById(R.id.reportToArcep);
+            alertFCC = view.findViewById(R.id.alertFcc);
         }
     }
 }
