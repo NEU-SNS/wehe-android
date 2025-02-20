@@ -943,8 +943,12 @@ public class ReplayActivity extends AppCompatActivity {
 //            // test the server crash error
 //            servers = new ArrayList<>();
 
+            // to deal with empty servers array list because of some issue
             while (servers.size() < numTests) {
                 servers.add("");
+                while (servers.size() > wsConns.size()) {
+                    wsConns.add(null);
+                }
             }
 
             for (int i = 0; i < numTests; i++) {
