@@ -12,9 +12,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,10 +22,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -39,6 +39,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,8 +53,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.SavedStateViewModelFactory
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
@@ -69,7 +69,6 @@ import mobi.meddle.wehe.ui.theme.WEHE_GREY
 import mobi.meddle.wehe.ui.theme.WeheandroidTheme
 import java.util.Locale
 
-@OptIn(ExperimentalFoundationApi::class)
 @AndroidEntryPoint
 class SelectionFragment : Fragment() {
     private val viewModel: SelectionViewModel by activityViewModels()
@@ -83,12 +82,14 @@ class SelectionFragment : Fragment() {
             TAG = bundle?.getString("TAG") ?: Consts.TAG_DIFFERENTIATION_TESTS
             runPortTests = bundle?.getBoolean("runPortTest") ?: false
             viewModel.setTestType(runPortTests)
+            viewModel.setCurrentTabIndex(0)
         } catch (e: Exception) {
             Log.e("SelectionFragment", "Error in onCreate", e)
             // Set default values if bundle is null
             TAG = Consts.TAG_DIFFERENTIATION_TESTS
             runPortTests = false
             viewModel.setTestType(false)
+            viewModel.setCurrentTabIndex(0)
         }
     }
 
@@ -212,6 +213,11 @@ class SelectionFragment : Fragment() {
         val scope = rememberCoroutineScope()
         val payloadSize by viewModel.payloadSize.collectAsState()
 
+        // Track page changes and update ViewModel
+        LaunchedEffect(pagerState.currentPage) {
+            viewModel.setCurrentTabIndex(pagerState.currentPage)
+        }
+
         Column(modifier = Modifier.fillMaxSize()) {
             HorizontalPager(
                 state = pagerState,
@@ -246,18 +252,21 @@ class SelectionFragment : Fragment() {
         }
     }
 
-    @Composable
-    fun AppsListComponent(apps: List<ApplicationBean>) {
-        Column(
-            modifier = Modifier.verticalScroll(rememberScrollState())
-        ) {
-            apps.forEach { app ->
-                if (shouldShowApp(app)) {
-                    AppCard(app)
-                }
-            }
+@Composable
+fun AppsListComponent(apps: List<ApplicationBean>) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Top
+    ) {
+        val visibleApps = apps.filter { shouldShowApp(it) }
+        items(
+            items = visibleApps,
+            key = { it.name }
+        ) { app ->
+            AppCard(app = app)
         }
     }
+}
 
     @Composable
     fun AppCard(app: ApplicationBean) {
@@ -318,9 +327,11 @@ class SelectionFragment : Fragment() {
     @Composable
     fun RunTestsButton() {
         val context = LocalContext.current
+        val currentTabIndex by viewModel.currentTabIndex.collectAsState()
+
         Button(
             onClick = {
-                // Get filtered apps based on test type
+                // Get filtered apps based on test type AND current tab
                 val filteredApps = viewModel.getFilteredSelectedApps()
 
                 if (filteredApps.isEmpty()) {
@@ -414,6 +425,7 @@ class SelectionFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         updateActionBarAndNavigation()
+        updateViewModelValues()
     }
 
     private fun updateActionBarAndNavigation() {
@@ -428,21 +440,19 @@ class SelectionFragment : Fragment() {
         }
     }
 
-    companion object {
-        /**
-         * Creates a new instance of SelectionFragment with the specified parameters
-         *
-         * @param tag The tag for the fragment
-         * @param runPortTest Whether to run port tests
-         * @return A new instance of SelectionFragment
-         */
-        fun newInstance(tag: String, runPortTest: Boolean): SelectionFragment {
-            val fragment = SelectionFragment()
-            val args = Bundle()
-            args.putString("TAG", tag)
-            args.putBoolean("runPortTest", runPortTest)
-            fragment.arguments = args
-            return fragment
+    private fun updateViewModelValues() {
+        // Reset the ViewModel to match current test type
+        viewModel.setTestType(runPortTests)
+        // Reset to the first tab
+        viewModel.setCurrentTabIndex(0)
+        // Make sure UI is refreshed with the correct data for this test type
+        lifecycleScope.launch {
+            try {
+                // This will reload app data filtered by the current test type
+                viewModel.loadInitialData(requireContext())
+            } catch (e: Exception) {
+                Log.e("SelectionFragment", "Error reloading data", e)
+            }
         }
     }
 }

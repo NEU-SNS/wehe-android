@@ -42,6 +42,9 @@ class SelectionViewModel @Inject constructor(
     private val _isPortTest = MutableStateFlow(false)
     val isPortTest: StateFlow<Boolean> = _isPortTest.asStateFlow()
 
+    private val _currentTabIndex = MutableStateFlow(0)
+    val currentTabIndex: StateFlow<Int> = _currentTabIndex.asStateFlow()
+
     init {
         // Restore saved state if it exists
         savedStateHandle.get<List<ApplicationBean>>(KEY_SELECTED_APPS)?.let { apps ->
@@ -62,6 +65,11 @@ class SelectionViewModel @Inject constructor(
         }
     }
 
+    fun setCurrentTabIndex(index: Int) {
+        _currentTabIndex.value = index
+        recalculatePayloadSize()
+    }
+
     // Add function to set test type
     fun setTestType(isPortTest: Boolean) {
         _isPortTest.value = isPortTest
@@ -76,13 +84,37 @@ class SelectionViewModel @Inject constructor(
 
     // Function to get filtered selected apps based on test type
     fun getFilteredSelectedApps(): List<ApplicationBean> {
-        return if (_isPortTest.value) {
-            _selectedApps.filter { it.category == ApplicationBean.Category.SMALL_PORT ||
-                    it.category == ApplicationBean.Category.LARGE_PORT }
+        // First filter by test type (port vs differentiation)
+        val testTypeFiltered = if (_isPortTest.value) {
+            _selectedApps.filter {
+                it.category == ApplicationBean.Category.SMALL_PORT ||
+                        it.category == ApplicationBean.Category.LARGE_PORT
+            }
         } else {
-            _selectedApps.filter { it.category == ApplicationBean.Category.VIDEO ||
-                    it.category == ApplicationBean.Category.MUSIC ||
-                    it.category == ApplicationBean.Category.CONFERENCING }
+            _selectedApps.filter {
+                it.category == ApplicationBean.Category.VIDEO ||
+                        it.category == ApplicationBean.Category.MUSIC ||
+                        it.category == ApplicationBean.Category.CONFERENCING
+            }
+        }
+
+        // Then filter by current tab
+        return when {
+            _isPortTest.value -> {
+                when (_currentTabIndex.value) {
+                    0 -> testTypeFiltered.filter { it.category == ApplicationBean.Category.SMALL_PORT }
+                    1 -> testTypeFiltered.filter { it.category == ApplicationBean.Category.LARGE_PORT }
+                    else -> testTypeFiltered
+                }
+            }
+            else -> {
+                when (_currentTabIndex.value) {
+                    0 -> testTypeFiltered.filter { it.category == ApplicationBean.Category.VIDEO }
+                    1 -> testTypeFiltered.filter { it.category == ApplicationBean.Category.MUSIC }
+                    2 -> testTypeFiltered.filter { it.category == ApplicationBean.Category.CONFERENCING }
+                    else -> testTypeFiltered
+                }
+            }
         }
     }
 
