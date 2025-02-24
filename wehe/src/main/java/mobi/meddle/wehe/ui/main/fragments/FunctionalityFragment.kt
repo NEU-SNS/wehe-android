@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
+import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.ui.main.MainActivity
 
@@ -16,6 +17,7 @@ import mobi.meddle.wehe.ui.main.MainActivity
  * How it Works item in navigation bar (menu.drawer_view.xml)
  * XML layout: fragment_functionality.xml
  */
+@AndroidEntryPoint
 class FunctionalityFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, parent: ViewGroup?,

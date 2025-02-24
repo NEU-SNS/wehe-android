@@ -17,6 +17,7 @@ import com.google.android.material.navigation.NavigationView;
 
 import java.util.Objects;
 
+import dagger.hilt.android.AndroidEntryPoint;
 import mobi.meddle.wehe.R;
 import mobi.meddle.wehe.ui.main.MainActivity;
 
@@ -24,6 +25,7 @@ import mobi.meddle.wehe.ui.main.MainActivity;
  * View Online Dashboard item in navigation bar (menu.drawer_view.xml)
  * XML layout: fragment_dashboard.xml
  */
+@AndroidEntryPoint
 public class DashboardFragment extends Fragment {
 
     public static final String TAG = "DashboardFragment";

@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -22,10 +23,14 @@ import androidx.preference.PreferenceManager;
 
 import com.google.android.material.navigation.NavigationView;
 
+import dagger.hilt.android.AndroidEntryPoint;
 import mobi.meddle.wehe.R;
 import mobi.meddle.wehe.constant.Consts;
+import mobi.meddle.wehe.ui.main.viewmodels.SelectionViewModel;
 
+@AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
+    private SelectionViewModel viewModel;
     private final int locationRequestCode = 1093;
     private DrawerLayout mDrawer;
     private Toolbar mToolbar;
@@ -37,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        viewModel = new ViewModelProvider(this).get(SelectionViewModel.class);
         setContentView(R.layout.activity_main);
         setupViews();
         setupNavigation();

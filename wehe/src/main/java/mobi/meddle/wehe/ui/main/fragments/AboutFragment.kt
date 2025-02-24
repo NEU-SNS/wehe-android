@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.android.material.navigation.NavigationView
+import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.ui.main.MainActivity
 import mobi.meddle.wehe.ui.main.viewmodels.AboutViewModel
@@ -27,6 +28,7 @@ import mobi.meddle.wehe.ui.main.viewmodels.AboutViewModel
  * Why Wehe item in navigation bar (menu.drawer_view.xml)
  * XML layout: fragment_about.xml
  */
+@AndroidEntryPoint
 class AboutFragment : Fragment() {
 
     private val viewModel: AboutViewModel by viewModels { AboutViewModel.Factory()}

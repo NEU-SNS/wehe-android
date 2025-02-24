@@ -21,6 +21,7 @@ import com.google.android.material.navigation.NavigationView;
 
 import java.util.Objects;
 
+import dagger.hilt.android.AndroidEntryPoint;
 import mobi.meddle.wehe.R;
 import mobi.meddle.wehe.ui.main.MainActivity;
 import mobi.meddle.wehe.constant.Consts;
@@ -32,6 +33,7 @@ import mobi.meddle.wehe.constant.Consts;
  * Settings item in navigation bar (menu.drawer_view.xml)
  * XML layout: xml.preferences.xml
  */
+@AndroidEntryPoint
 public class SettingsFragment extends PreferenceFragmentCompat {
     public static final String TAG = "SettingsFragment";
 

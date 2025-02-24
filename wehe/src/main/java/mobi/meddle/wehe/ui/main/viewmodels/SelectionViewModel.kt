@@ -1,30 +1,34 @@
 package mobi.meddle.wehe.ui.main.viewmodels
 
 import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkInfo
-import android.telephony.TelephonyManager
+import android.util.Log
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import mobi.meddle.wehe.R
-import mobi.meddle.wehe.data.bean.ApplicationBean
 import mobi.meddle.wehe.constant.Consts
+import mobi.meddle.wehe.data.bean.ApplicationBean
 import org.json.JSONObject
 import java.io.BufferedReader
+import java.io.InputStream
 import java.io.InputStreamReader
-import java.util.Locale
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.lifecycle.SavedStateHandle
+import mobi.meddle.wehe.ui.main.fragments.SelectionUiState
+import javax.inject.Inject
 
-class SelectionViewModel : ViewModel() {
-    private val _appBeans = MutableStateFlow<List<ApplicationBean>>(emptyList())
-    val appBeans: StateFlow<List<ApplicationBean>> = _appBeans.asStateFlow()
+class SelectionViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(SelectionUiState())
+    val uiState: StateFlow<SelectionUiState> = _uiState.asStateFlow()
 
-    private val _selectedApps = MutableStateFlow<ArrayList<ApplicationBean>>(ArrayList())
-    val selectedApps: StateFlow<ArrayList<ApplicationBean>> = _selectedApps.asStateFlow()
+    private val _selectedApps = mutableStateListOf<ApplicationBean>()
+    val selectedApps: List<ApplicationBean> = _selectedApps
 
     private val _payloadSize = MutableStateFlow(0)
     val payloadSize: StateFlow<Int> = _payloadSize.asStateFlow()
@@ -32,70 +36,134 @@ class SelectionViewModel : ViewModel() {
     private val _carrierDisplay = MutableStateFlow<String?>(null)
     val carrierDisplay: StateFlow<String?> = _carrierDisplay.asStateFlow()
 
-    private val _appToggleStates = MutableStateFlow<Map<ApplicationBean, Boolean>>(emptyMap())
-    val appToggleStates: StateFlow<Map<ApplicationBean, Boolean>> = _appToggleStates.asStateFlow()
+    private val _appToggleStates = mutableStateMapOf<ApplicationBean, Boolean>()
+    val appToggleStates: Map<ApplicationBean, Boolean> = _appToggleStates
 
-    fun initializeApps(context: Context) {
-        viewModelScope.launch {
-            _appBeans.value = parseAppJSON(context)
-            setupCarrierInfo(context)
-            initializeToggleStates()
+    private val _isPortTest = MutableStateFlow(false)
+    val isPortTest: StateFlow<Boolean> = _isPortTest.asStateFlow()
+
+    init {
+        // Restore saved state if it exists
+        savedStateHandle.get<List<ApplicationBean>>(KEY_SELECTED_APPS)?.let { apps ->
+            _selectedApps.addAll(apps)
+        }
+        savedStateHandle.get<String>(KEY_CARRIER_DISPLAY)?.let { carrier ->
+            _carrierDisplay.value = carrier
+        }
+        savedStateHandle.get<Map<String, Boolean>>(KEY_APP_TOGGLE_STATES)?.let { states ->
+            // We need to reconstruct the map with ApplicationBean objects
+            viewModelScope.launch {
+                uiState.value.apps.forEach { app ->
+                    states[app.name]?.let { isSelected ->
+                        _appToggleStates[app] = isSelected
+                    }
+                }
+            }
         }
     }
 
-    private fun initializeToggleStates() {
-        val newToggleStates = _appBeans.value.associateWith { false }.toMutableMap()
-        _appToggleStates.value = newToggleStates
+    // Add function to set test type
+    fun setTestType(isPortTest: Boolean) {
+        _isPortTest.value = isPortTest
+        recalculatePayloadSize()
     }
 
-    fun updateAppSelection(app: ApplicationBean, isSelected: Boolean) {
-        val currentToggleStates = _appToggleStates.value.toMutableMap()
-        currentToggleStates[app] = isSelected
-        _appToggleStates.value = currentToggleStates
+    private fun recalculatePayloadSize() {
+        val filteredApps = getFilteredSelectedApps()
+        _payloadSize.value = filteredApps.sumOf { it.size }
+        savedStateHandle[KEY_PAYLOAD_SIZE] = _payloadSize.value
+    }
 
-        val currentSelectedApps = _selectedApps.value
+    // Function to get filtered selected apps based on test type
+    fun getFilteredSelectedApps(): List<ApplicationBean> {
+        return if (_isPortTest.value) {
+            _selectedApps.filter { it.category == ApplicationBean.Category.SMALL_PORT ||
+                    it.category == ApplicationBean.Category.LARGE_PORT }
+        } else {
+            _selectedApps.filter { it.category == ApplicationBean.Category.VIDEO ||
+                    it.category == ApplicationBean.Category.MUSIC ||
+                    it.category == ApplicationBean.Category.CONFERENCING }
+        }
+    }
+
+
+    fun loadInitialData(context: Context) {
+        if (uiState.value.apps.isEmpty()) {
+            viewModelScope.launch {
+                try {
+                    val apps = parseAppJSON(context)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        apps = apps
+                    )
+                    // Restore toggle states after loading apps
+                    restoreToggleStates()
+                } catch (e: Exception) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = e.message
+                    )
+                }
+            }
+        }
+    }
+
+    private fun restoreToggleStates() {
+        savedStateHandle.get<Map<String, Boolean>>(KEY_APP_TOGGLE_STATES)?.let { states ->
+            uiState.value.apps.forEach { app ->
+                states[app.name]?.let { isSelected ->
+                    _appToggleStates[app] = isSelected
+                    if (isSelected) {
+                        _selectedApps.add(app)
+                        updatePayloadSize(app.size)
+                    }
+                }
+            }
+            recalculatePayloadSize()
+        }
+    }
+
+    fun setCarrierDisplay(carrier: String) {
+        _carrierDisplay.value = carrier
+        savedStateHandle[KEY_CARRIER_DISPLAY] = carrier
+    }
+
+    fun toggleApp(app: ApplicationBean, isSelected: Boolean) {
+        _appToggleStates[app] = isSelected
         if (isSelected) {
-            currentSelectedApps.add(app)
+            _selectedApps.add(app)
             updatePayloadSize(app.size)
         } else {
-            currentSelectedApps.remove(app)
+            _selectedApps.remove(app)
             updatePayloadSize(-app.size)
         }
-        _selectedApps.value = currentSelectedApps
+
+        recalculatePayloadSize()
+
+        // Save current state
+        savedStateHandle[KEY_SELECTED_APPS] = _selectedApps.toMutableList()
+        savedStateHandle[KEY_APP_TOGGLE_STATES] = _appToggleStates.mapKeys { it.key.name }
     }
 
     private fun updatePayloadSize(size: Int) {
         _payloadSize.value += size
-    }
-
-    fun setupCarrierInfo(context: Context): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-
-        val networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-        val carrierName = telephonyManager.networkOperatorName ?: context.getString(R.string.your_carrier)
-
-        val isWifiConnected = networkInfo?.state == NetworkInfo.State.CONNECTED
-        if (isWifiConnected) {
-            _carrierDisplay.value = "WiFi"
-        } else {
-            _carrierDisplay.value = carrierName
-        }
-        return isWifiConnected
+        savedStateHandle[KEY_PAYLOAD_SIZE] = _payloadSize.value
     }
 
     private fun parseAppJSON(context: Context): ArrayList<ApplicationBean> {
         val apps = ArrayList<ApplicationBean>()
+        var `in`: BufferedReader? = null
         try {
             val buf = StringBuilder()
             val assets = context.assets
-            val json = assets.open(Consts.APPS_FILENAME)
-            BufferedReader(InputStreamReader(json)).use { reader ->
-                var str: String?
-                while (reader.readLine().also { str = it } != null) {
-                    buf.append(str)
-                }
+            val json: InputStream = assets.open(Consts.APPS_FILENAME)
+            `in` = BufferedReader(InputStreamReader(json))
+            var str: String?
+
+            while ((`in`.readLine().also { str = it }) != null) {
+                buf.append(str)
             }
+            `in`.close()
 
             val jObject = JSONObject(buf.toString())
             val jArray = jObject.getJSONArray("apps")
@@ -111,35 +179,36 @@ class SelectionViewModel : ViewModel() {
                     image = appObj.getString("image")
                     isEnglishOnly = appObj.optBoolean("englishOnly", false)
                     isFrenchOnly = appObj.optBoolean("frenchOnly", false)
-                    category = ApplicationBean.Category.valueOf(appObj.getString("category"))
 
+                    category = ApplicationBean.Category.valueOf(appObj.getString("category"))
                     randomDataFile = when (category) {
                         ApplicationBean.Category.SMALL_PORT -> port443SmallFile
                         ApplicationBean.Category.LARGE_PORT -> port443LargeFile
                         else -> appObj.getString("randomdatafile")
                     }
 
-                    name = if (category in listOf(ApplicationBean.Category.SMALL_PORT, ApplicationBean.Category.LARGE_PORT)) {
-                        String.format(context.getString(R.string.port_name), appObj.getString("name"))
+                    name = if (category == ApplicationBean.Category.SMALL_PORT ||
+                        category == ApplicationBean.Category.LARGE_PORT) {
+                        context.getString(R.string.port_name, appObj.getString("name"))
                     } else {
                         appObj.getString("name")
                     }
                 }
                 apps.add(bean)
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (ex: Exception) {
+            Log.e("SelectionViewModel", "Error parsing JSON", ex)
+            throw ex
+        } finally {
+            `in`?.close()
         }
         return apps
     }
 
-    class Factory : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            if (modelClass.isAssignableFrom(SelectionViewModel::class.java)) {
-                return SelectionViewModel() as T
-            }
-            throw IllegalArgumentException("Unknown ViewModel class")
-        }
+    companion object {
+        private const val KEY_SELECTED_APPS = "selected_apps"
+        private const val KEY_PAYLOAD_SIZE = "payload_size"
+        private const val KEY_CARRIER_DISPLAY = "carrier_display"
+        private const val KEY_APP_TOGGLE_STATES = "app_toggle_states"
     }
 }

@@ -9,11 +9,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.navigation.NavigationView
+import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.adapter.ResultsAdapter
 import mobi.meddle.wehe.ui.main.MainActivity
 import mobi.meddle.wehe.ui.main.viewmodels.ResultsViewModel
-
+@AndroidEntryPoint
 class ResultsFragment : Fragment() {
     private lateinit var viewModel: ResultsViewModel
     private lateinit var resultsAdapter: ResultsAdapter
