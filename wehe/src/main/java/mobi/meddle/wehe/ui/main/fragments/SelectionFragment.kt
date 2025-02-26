@@ -443,8 +443,6 @@ fun AppsListComponent(apps: List<ApplicationBean>) {
     private fun updateViewModelValues() {
         // Reset the ViewModel to match current test type
         viewModel.setTestType(runPortTests)
-        // Reset to the first tab
-        viewModel.setCurrentTabIndex(0)
         // Make sure UI is refreshed with the correct data for this test type
         lifecycleScope.launch {
             try {
