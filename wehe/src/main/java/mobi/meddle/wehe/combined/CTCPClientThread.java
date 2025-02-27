@@ -192,32 +192,33 @@ class CTCPClientThread implements Runnable {
             Log.w("TCPClientThread", "Socket time out! Nothing has been sent or received"
                     + " for 30 seconds", e);
             synchronized (queue) {
-                queue.ABORT = true;
+                queue.setABORT(true);
                 // make sure that this is not caused by other issues
-                if (queue.abort_reason == null) {
-                    queue.abort_reason = "Replay Aborted: replay socket error";
+                if (queue.getAbort_reason() == null) {
+                    queue.setAbort_reason("Replay Aborted: replay socket error");
                 }
             }
         } catch (SocketException e) {
             Log.w("TCPClientThread", "The maximum time to run a replay may have been"
                     + " reached. However, other reasons exist.", e);
             synchronized (queue) {
-                queue.ABORT = true;
-                if (queue.abort_reason == null) {
-                    queue.abort_reason = "error_proxy";
+                queue.setABORT(true);
+                if (queue.getAbort_reason() == null) {
+                    queue.setAbort_reason("error_proxy");
                 }
             }
         } catch (Exception e) {
             Log.e("TCPClientThread", "something bad happened!", e);
             // abort replay if bad things happened!
             synchronized (queue) {
-                queue.ABORT = true;
-                queue.abort_reason = "Replay Aborted: replay socket error";
+                queue.setABORT(true);
+                queue.setAbort_reason("Replay Aborted: replay socket error");
             }
         } finally {
             recvSema.release();
             synchronized (queue) {
-                --queue.threads;
+                int currentThreads = queue.getThreads();  // Get the current number of threads
+                queue.setThreads(currentThreads - 1);
             }
         }
     }

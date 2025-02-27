@@ -305,7 +305,7 @@
     <string name="tag_port_tests" translatable="false">PortTests</string>
     <string name="tag_differentiation_tests" translatable="false">DifferentiationTests</string>
     <string name="title_activity_main2" translatable="false">MainActivity2</string>
-    <string name="rerun_tomography_descr">Differentiation has been detected on certain tests. Would you like to determine which         network is causing the differentiation? todo - put something ab data consumption</string>
+    <string name="rerun_tomography_descr">Differentiation has been detected on certain tests. Would you like to determine which         network is causing the differentiation?</string>
     <string name="tomography_not_supported">Tomography tests are not supported on your device.</string>
     <string name="tomo_test_desc">For tests where differentiation was detected, Wehe might be able to determine which network         or ISP is causing such differentiation to occur by running several duplicate tests at the         same time to different Wehe servers and comparing the results. See the \\\"How it Works\\\" page         for more details.</string>
     <string name="unknown_carrier">Unknown Carrier</string>
