@@ -136,9 +136,8 @@ class TraceRunAsync(private val activity: ReplayActivity) {
 
     // Flag to track if replay is ongoing
     private var isReplayOngoing = false
-
-
     private val uiUpdateJobs = ArrayList<Job>()
+    private var serverRequest : ServerRequest = ServerRequest()
 
     /**
      * Start the trace run in a coroutine
@@ -531,7 +530,7 @@ class TraceRunAsync(private val activity: ReplayActivity) {
      * @param metadataServer the hostname of the metadata server to connect to
      * @return true if everything properly sets up; false otherwise
      */
-    private fun setupServersAndCertificates(server: String, metadataServer: String?): Boolean {
+    private suspend fun setupServersAndCertificates(server: String, metadataServer: String?): Boolean {
         var server = server
         val activity = activityRef.get()
         // We first resolve the IP of the server and then communicate with the server
@@ -583,7 +582,8 @@ class TraceRunAsync(private val activity: ReplayActivity) {
             try {
                 var numTries = 0 //tracks num tries before successful MLab connection
                 var wsID: Int //WebSocket id
-                val mLabResp = sendRequest(Consts.MLAB_SERVERS, "GET", false, null, null)
+                val mLabResp =
+                    serverRequest.sendRequest(Consts.MLAB_SERVERS, "GET", false, null, null)
                 //TODO: make sure this outer try really necessary; check what happens if below line fails; will it exit gracefully?
                 val mLabServers = mLabResp!!["results"] as JSONArray //get MLab servers list
                 var i = 0
@@ -692,10 +692,6 @@ class TraceRunAsync(private val activity: ReplayActivity) {
         return true
     }
 
-    private fun updateProgress(s: String, string: String, string1: String, s1: String) {
-        
-    }
-
     /**
      * Does a DNS lookup on a hostname.
      *
@@ -766,6 +762,7 @@ class TraceRunAsync(private val activity: ReplayActivity) {
                 sslSocketFactory = context.socketFactory
                 hostnameVerifier =
                     HostnameVerifier() { hostname: String?, session: SSLSession? -> true }
+                serverRequest = ServerRequest(hostnameVerifier, sslSocketFactory)
             }
         } catch (e: CertificateException) {
             Log.e("Certificates", "Error generating certificates", e)
@@ -869,7 +866,7 @@ class TraceRunAsync(private val activity: ReplayActivity) {
         pairs["historyCount"] = historyCount.toString()
         pairs["testID"] = "1"
 
-        return sendRequest(url, "POST", true, null, pairs)
+        return serverRequest.sendRequest(url, "POST", true, null, pairs)
     }
 
     /**
@@ -892,192 +889,7 @@ class TraceRunAsync(private val activity: ReplayActivity) {
         data.add("historyCount=$historyCount")
         data.add("testID=1")
 
-        return sendRequest(url, "GET", true, data, null)
-    }
-
-    /**
-     * Send a GET or POST request to the server.
-     *
-     * @param url    URL to the server
-     * @param method either GET or POST
-     * @param main   true if request is to main server; false otherwise
-     * @param data   data to send to server in a GET request, null if a POST request or if no
-     * data to send to server
-     * @param pairs  data to send to server in a POST request, null if a GET request
-     * @return a response from the server in the form of a JSONObject, null if error
-     */
-    private fun sendRequest(
-        url: String, method: String, main: Boolean,
-        data: ArrayList<String>?, pairs: HashMap<String, String?>?
-    ): JSONObject? {
-        val json = arrayOf<JSONObject?>(null)
-        val conn = arrayOfNulls<HttpsURLConnection>(1)
-        val readyToReturn = booleanArrayOf(false)
-        val serverComm = Thread {
-            var url_string = url
-            if (method.equals("GET", ignoreCase = true)) {
-                if (data != null) {
-                    val dataURL = URLEncoder(data)
-                    url_string += "?$dataURL"
-                }
-                Log.d("Send GET Request", url_string)
-
-                for (i in 0..2) {
-                    try {
-                        //connect to server
-                        val u = URL(url_string)
-                        //send data to server
-                        conn[0] = u.openConnection() as HttpsURLConnection
-                        if (main && hostnameVerifier != null && sslSocketFactory != null) {
-                            conn[0]!!.hostnameVerifier = hostnameVerifier
-                            conn[0]!!.sslSocketFactory = sslSocketFactory
-                        }
-                        conn[0]!!.connectTimeout = 8000
-                        conn[0]!!.readTimeout = 8000
-                        val `in` = BufferedReader(
-                            InputStreamReader(
-                                conn[0]!!.inputStream
-                            )
-                        )
-                        val buffer = StringBuilder()
-                        var input: String?
-
-                        // parse BufferReader rd to StringBuilder res
-                        while ((`in`.readLine()
-                                .also { input = it }) != null
-                        ) { //read response from server
-                            buffer.append(input)
-                        }
-
-                        `in`.close()
-                        conn[0]!!.disconnect()
-                        json[0] = JSONObject(buffer.toString()) // parse String to json file
-                        break
-                    } catch (e: IOException) {
-                        Log.e("Send Request", "sendRequest GET failed", e)
-                    } catch (e: JSONException) {
-                        Log.e("Send Request", "JSON Parse failed", e)
-                    }
-                }
-            } else if (method.equals("POST", ignoreCase = true)) {
-                Log.d("Send POST Request", url_string)
-
-                try {
-                    //connect to server
-                    val u = URL(url_string)
-                    conn[0] = u.openConnection() as HttpsURLConnection
-                    conn[0]!!.hostnameVerifier = hostnameVerifier
-                    conn[0]!!.sslSocketFactory = sslSocketFactory
-                    conn[0]!!.connectTimeout = 5000
-                    conn[0]!!.readTimeout = 5000
-                    conn[0]!!.requestMethod = "POST"
-                    conn[0]!!.doInput = true
-                    conn[0]!!.doOutput = true
-
-                    val os = conn[0]!!.outputStream
-                    val writer = BufferedWriter(
-                        OutputStreamWriter(os, StandardCharsets.UTF_8)
-                    )
-                    writer.write(pairs?.let { paramsToPostData(it) }) //send data to server
-
-                    writer.flush()
-                    writer.close()
-                    os.close()
-
-                    val `in` = BufferedReader(
-                        InputStreamReader(
-                            conn[0]!!.inputStream
-                        )
-                    )
-                    val buffer = StringBuilder()
-                    var input: String?
-
-                    // parse BufferReader rd to StringBuilder res
-                    while ((`in`.readLine()
-                            .also { input = it }) != null
-                    ) { //read response from server
-                        buffer.append(input)
-                    }
-                    `in`.close()
-                    conn[0]!!.disconnect()
-                    json[0] = JSONObject(buffer.toString()) // parse String to json file.
-                } catch (e: JSONException) {
-                    Log.e("Send Request", "convert string to json failed", e)
-                    json[0] = null
-                } catch (e: IOException) {
-                    Log.e("Send Request", "sendRequest POST failed", e)
-                    json[0] = null
-                }
-            }
-            readyToReturn[0] = true
-        }
-        serverComm.start()
-        val t = Timer()
-        timers.add(t)
-        //timeout server after 8 sec; server timeout field times out only when nothing is sent;
-        //if stuff sends too slowly, it could take forever, so this external timer prevents that
-        t.schedule(object : TimerTask() {
-            override fun run() { //set timer to timeout the thread if max time has been reached for replay
-                if (conn[0] != null) {
-                    conn[0]!!.disconnect()
-                }
-                readyToReturn[0] = true
-            }
-        }, 8000)
-        //wait until ready to move on (i.e. when result retrieved or timeout), as threads don't
-        //block execution
-        while (!readyToReturn[0]) {
-            try {
-                Thread.sleep(500)
-            } catch (e: InterruptedException) {
-                Log.w("Send Request", "Interrupted", e)
-            }
-        }
-        return json[0]
-    }
-
-    /**
-     * Overload URLEncoder to encode map to a url for a GET request.
-     *
-     * @param map data to be converted into a string to send to the server
-     * @return encoded string containing data to send to server
-     */
-    private fun URLEncoder(map: ArrayList<String>): String {
-        val data = StringBuilder()
-        for (s in map) {
-            if (data.length > 0) {
-                data.append("&")
-            }
-            data.append(s)
-        }
-        return data.toString()
-    }
-
-    /**
-     * Encodes data into a string to send POST request to server.
-     *
-     * @param params data to convert into string to send to server
-     * @return an encoded string to send to the server
-     */
-    private fun paramsToPostData(params: HashMap<String, String?>): String {
-        val result = StringBuilder()
-        var first = true
-        for ((key, value) in params) {
-            if (first) {
-                first = false
-            } else {
-                result.append("&")
-            }
-
-            try {
-                result.append(java.net.URLEncoder.encode(key, "UTF-8"))
-                result.append("=")
-                result.append(java.net.URLEncoder.encode(value, "UTF-8"))
-            } catch (e: UnsupportedEncodingException) {
-                Log.e("paramsToPostData", "Encoding error", e)
-            }
-        }
-        return result.toString()
+        return serverRequest.sendRequest(url, "GET", true, data, null)
     }
 
     /**
@@ -1108,7 +920,7 @@ class TraceRunAsync(private val activity: ReplayActivity) {
             for (i in 0 until qArray.length()) {
                 val tempRS = RequestSet()
                 val dictionary = qArray.getJSONObject(i)
-                tempRS.setc_s_pair(dictionary["c_s_pair"] as String) //client-server pair
+                tempRS.cSPair = dictionary["c_s_pair"] as String //client-server pair
                 tempRS.payload = UtilsManager.hexStringToByteArray(
                     dictionary["payload"] as String
                 )
@@ -1116,10 +928,10 @@ class TraceRunAsync(private val activity: ReplayActivity) {
 
                 //for tcp
                 if (dictionary.has("response_len")) { //expected length of response
-                    tempRS.response_len = dictionary["response_len"] as Int
+                    tempRS.responseLen = dictionary["response_len"] as Int
                 }
                 if (dictionary.has("response_hash")) {
-                    tempRS.response_hash = dictionary["response_hash"].toString()
+                    tempRS.responseHash = dictionary["response_hash"].toString()
                 }
                 //for udp
                 if (dictionary.has("end")) tempRS.end = dictionary["end"] as Boolean
@@ -1494,7 +1306,8 @@ class TraceRunAsync(private val activity: ReplayActivity) {
                             return false
                         }
                         if (instance.server.trim { it <= ' ' } == "")  // TODO: Use a setter instead probably
-                            instance.server = servers[sc.id] // serverPortsMap.get(destPort);
+                            instance.server =
+                                servers[sc.id].toString() // serverPortsMap.get(destPort);
 
 
                         //create the client

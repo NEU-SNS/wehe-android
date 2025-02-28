@@ -153,7 +153,7 @@ class SelectionFragment : Fragment() {
     private fun showWifiToast(carrier: String) {
         try {
             context?.let {
-                val carrierDisplay = carrier.ifEmpty {
+                val carrierDisplay = carrier.ifEmpty{
                     getString(R.string.your_carrier).lowercase(Locale.getDefault())
                 }
                 val text = String.format(getString(R.string.wifiWarning), carrierDisplay)

@@ -58,7 +58,7 @@ class CombinedQueue(//packets to send to server
         this.jitterBeans = jitterBeans
         this.sendSema = Semaphore(1)
         this.analyzerTasks = analyzerTasks
-        this.isUDP = q.size > 0 && q[0].isUDP
+        this.isUDP = q.size > 0 && q[0].isUDP()
         this.timeout = if (isUDP) timeout - 5 else timeout
     }
 
@@ -160,7 +160,7 @@ class CombinedQueue(//packets to send to server
                                 timeLeft = 1
                             }
                         }
-                        val recvSema = getRecvSemaLock(CSPairMappings[id][RS.getc_s_pair()])
+                        val recvSema = getRecvSemaLock(CSPairMappings[id][RS.cSPair])
                         recvSema.acquire()
 
                         Log.i(
@@ -172,7 +172,7 @@ class CombinedQueue(//packets to send to server
                         // adrian: every time when calling next we create and start a new thread
                         // adrian: here we start different thread according to the type of RS
                         nextTCP(
-                            CSPairMappings[id][RS.getc_s_pair()], RS, timing,
+                            CSPairMappings[id][RS.cSPair], RS, timing,
                             sendSema, recvSema, timeLeft, analyzerTasks[id]
                         )
 
@@ -340,14 +340,14 @@ class CombinedQueue(//packets to send to server
         timing: Boolean, server: String?
     ) {
         //get the client/server IP and port info from the cs pair
-        val c_s_pair = rs.getc_s_pair()
-        val client_ip_port = c_s_pair.split("-".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()[0]
-        val server_ip_port = c_s_pair.split("-".toRegex()).dropLastWhile { it.isEmpty() }
-            .toTypedArray()[1]
-        val clientPort = client_ip_port.substring(client_ip_port.lastIndexOf(".") + 1)
-        val dstPort = server_ip_port.substring(server_ip_port.lastIndexOf(".") + 1)
-        val dstIP = server_ip_port.substring(0, server_ip_port.lastIndexOf("."))
+        val c_s_pair = rs.cSPair
+        val client_ip_port = c_s_pair?.split("-".toRegex())?.dropLastWhile { it.isEmpty() }
+            ?.toTypedArray()?.get(0)
+        val server_ip_port = c_s_pair?.split("-".toRegex())?.dropLastWhile { it.isEmpty() }
+            ?.toTypedArray()?.get(1)
+        val clientPort = client_ip_port?.substring(client_ip_port.lastIndexOf(".") + 1)
+        val dstPort = server_ip_port?.substring(server_ip_port.lastIndexOf(".") + 1)
+        val dstIP = server_ip_port?.substring(0, server_ip_port.lastIndexOf("."))
         Log.d("nextUDP", "dstIP: $dstIP dstPort: $dstPort")
         //get the server
         val destAddr = checkNotNull(
@@ -357,7 +357,9 @@ class CombinedQueue(//packets to send to server
         )
 
         if (destAddr.server.trim { it <= ' ' } == "") {
-            destAddr.server = server
+            if (server != null) {
+                destAddr.server = server
+            }
         }
 
         //get the correct connection to the server

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
 import mobi.meddle.wehe.data.bean.RequestSet;
@@ -94,7 +95,7 @@ class CTCPClientThread implements Runnable {
                     byte[] newPayload;
 
                     // check the length of the payload
-                    if (RS.getPayload().length > customInfoByte.length) {
+                    if (Objects.requireNonNull(RS.getPayload()).length > customInfoByte.length) {
                         newPayload = new byte[RS.getPayload().length];
                         Log.i("Sending", "adding header for random replay");
                         System.arraycopy(customInfoByte, 0, newPayload, 0,
@@ -115,7 +116,7 @@ class CTCPClientThread implements Runnable {
                     String customInfo = String.format("\r\nX-rr: %s;%s;%s\r\n",
                             client.publicIP, Config.get(client.replayName), client.CSPair);
 
-                    if (tmp.getBytes().length != RS.getPayload().length) {
+                    if (tmp.getBytes().length != Objects.requireNonNull(RS.getPayload()).length) {
                         Log.e("Sending", "length of new byte array: " + tmp.getBytes().length
                                 + " length of original payload: " + RS.getPayload().length);
                     }
@@ -140,12 +141,12 @@ class CTCPClientThread implements Runnable {
             sendSema.release();
 
             // Notify waiting Queue thread to start processing next packet and receive response
-            if (RS.getResponse_len() > 0) {
+            if (RS.getResponseLen() > 0) {
                 DataInputStream dataInStream = new DataInputStream(client.socket.getInputStream());
 
                 int totalRead = 0;
 
-                byte[] buffer = new byte[RS.getResponse_len()];
+                byte[] buffer = new byte[RS.getResponseLen()];
                 while (totalRead < buffer.length) {
                     // @@@ offset is wrong?
                     int bufSize = 4096;
@@ -184,7 +185,7 @@ class CTCPClientThread implements Runnable {
                 }
 
                 // adrian: manually free buffer
-                Log.d("Finished", "receiving " + RS.getResponse_len() + " bytes " + System.nanoTime());
+                Log.d("Finished", "receiving " + RS.getResponseLen() + " bytes " + System.nanoTime());
             } else {
                 Log.d("Receiving", "skipped " + System.nanoTime());
             }
