@@ -1,6 +1,8 @@
 package mobi.meddle.wehe.ui.replay
 
+import android.content.Context
 import android.util.Log
+import mobi.meddle.wehe.R
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -9,31 +11,90 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.io.UnsupportedEncodingException
+import java.net.HttpURLConnection
+import java.net.Inet4Address
+import java.net.Inet6Address
+import java.net.InetAddress
 import java.net.URL
+import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
+import java.security.KeyManagementException
+import java.security.KeyStore
+import java.security.KeyStoreException
+import java.security.NoSuchAlgorithmException
+import java.security.cert.Certificate
+import java.security.cert.CertificateException
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
 import java.util.Timer
 import java.util.TimerTask
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSession
 import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.TrustManagerFactory
 
-class ServerRequest {
+class ServerRepository// Generate the certificate for main server on initialization
+    (context: Context) {
     // Class properties
     private var hostnameVerifier: HostnameVerifier? = null
-    private var sslSocketFactory: SSLSocketFactory? = null
+    var sslSocketFactory: SSLSocketFactory? = null
     private val timers = ArrayList<Timer>()
+    private var servers = ArrayList<String?>() //servers to run the replays to
+    private var isIPv6 = false
+    private var activity : Context = context
 
-    // Constructor to initialize with SSL configuration if needed
-    constructor(hostnameVerifier: HostnameVerifier?, sslSocketFactory: SSLSocketFactory?) {
-        this.hostnameVerifier = hostnameVerifier
-        this.sslSocketFactory = sslSocketFactory
+
+    init {
+        generateServerCertificate(true)
     }
 
-    // Default constructor
-    constructor() {
-        // Initialize without SSL configuration
-        this.hostnameVerifier = null
-        this.sslSocketFactory = null
+    /**
+     * Gets the certificates for the servers
+     *
+     * @param main true if main server; false if metadata server
+     */
+    fun generateServerCertificate(main: Boolean) {
+        try {
+            val server = if (main) "main" else "metadata"
+            val cf = CertificateFactory.getInstance("X.509")
+            var ca: Certificate
+            activity.resources.openRawResource(if (main) R.raw.main else R.raw.metadata)
+                .use { caInput ->
+                    ca = cf.generateCertificate(caInput)
+                    Log.d("Certificate", server + "=" + (ca as X509Certificate).issuerDN)
+                }
+            // Create a KeyStore containing our trusted CAs
+            val keyStoreType = KeyStore.getDefaultType()
+            val keyStore = KeyStore.getInstance(keyStoreType)
+            keyStore.load(null, null)
+            keyStore.setCertificateEntry(server, ca)
+
+            // Create a TrustManager that trusts the CAs in our KeyStore
+            val tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm()
+            val tmf = TrustManagerFactory.getInstance(tmfAlgorithm)
+            tmf.init(keyStore)
+
+            // Create an SSLContext that uses our TrustManager
+            val context = SSLContext.getInstance("TLS")
+            context.init(null, tmf.trustManagers, null)
+            if (main) {
+                sslSocketFactory = context.socketFactory
+                hostnameVerifier =
+                    HostnameVerifier() { hostname: String?, session: SSLSession? -> true }
+            }
+        } catch (e: CertificateException) {
+            Log.e("Certificates", "Error generating certificates", e)
+        } catch (e: NoSuchAlgorithmException) {
+            Log.e("Certificates", "Error generating certificates", e)
+        } catch (e: KeyStoreException) {
+            Log.e("Certificates", "Error generating certificates", e)
+        } catch (e: KeyManagementException) {
+            Log.e("Certificates", "Error generating certificates", e)
+        } catch (e: IOException) {
+            Log.e("Certificates", "Error generating certificates", e)
+        }
     }
 
     /**
@@ -218,6 +279,115 @@ class ServerRequest {
             }
         }
         return result.toString()
+    }
+
+    /**
+     * Does a DNS lookup on a hostname.
+     *
+     * @param server the hostname to be resolved
+     * @return the IP of the host; empty string if there is an error doing so.
+     */
+    fun getServerIP(server: String): String? {
+        var server = server
+        Log.d("getServerIP", "Server hostname: $server")
+        var address: InetAddress?
+        for (i in 0..4) { //5 attempts to lookup the IP
+            try {
+                server = InetAddress.getByName(server).hostAddress //DNS lookup
+                address = InetAddress.getByName(server)
+                if (address is Inet4Address) {
+                    return server
+                }
+                if (address is Inet6Address) {
+                    return "[$server]"
+                }
+            } catch (e: UnknownHostException) {
+                if (i == 4) {
+                    Log.e("getServerIP", "Failed to get IP of server", e)
+                } else {
+                    Log.w("getServerIP", "Failed to get IP of server, trying again")
+                }
+                try {
+                    Thread.sleep(1000)
+                } catch (ex: InterruptedException) {
+                    Log.w("getServerIP", "Sleep interrupted", ex)
+                }
+            }
+        }
+        return ""
+    }
+
+    /**
+     * Get IP of user's device.
+     *
+     * @param port port to run replays
+     * @return user's public IP or -1 if cannot connect to the server
+     */
+    fun getPublicIP(port: String): String {
+        var publicIP = "127.0.0.1"
+
+        if (servers.size != 0 && servers[0] != "127.0.0.1") {
+            val url = "http://" + servers[0] + ":" + port + "/WHATSMYIPMAN"
+            Log.d("getPublicIP", "url: $url")
+
+            var numFails = 0
+            while (publicIP == "127.0.0.1") {
+                try {
+                    val u = URL(url)
+                    //go to server
+                    val conn = u.openConnection() as HttpURLConnection
+                    conn.connectTimeout = 3000
+                    conn.readTimeout = 5000
+                    val `in` = BufferedReader(
+                        InputStreamReader(
+                            conn.inputStream
+                        )
+                    )
+                    val buffer = StringBuilder()
+                    var input: String?
+
+                    while ((`in`.readLine().also { input = it }) != null) { //read IP address
+                        buffer.append(input)
+                    }
+                    `in`.close()
+                    conn.disconnect()
+                    publicIP = buffer.toString()
+                    val address = InetAddress.getByName(publicIP)
+                    if (address !is Inet4Address && address !is Inet6Address) {
+                        Log.e("getPublicIP", "wrong format of public IP: $publicIP")
+                        throw UnknownHostException()
+                    }
+                    isIPv6 = address is Inet6Address
+                    if (publicIP == "") {
+                        publicIP = "-1"
+                    }
+                    Log.d("getPublicIP", "public IP: $publicIP")
+                } catch (e: UnknownHostException) {
+                    Log.w("getPublicIP", "failed to get public IP!", e)
+                    publicIP = "127.0.0.1"
+                    break
+                } catch (e: IOException) {
+                    Log.w("getPublicIP", "Can't connect to server")
+                    try {
+                        Thread.sleep(1000)
+                    } catch (e1: InterruptedException) {
+                        Log.w("getPublicIP", "Sleep interrupted", e1)
+                    }
+                    if (++numFails == 5) { //Cannot connect to server after 5 tries
+                        Log.w("getPublicIP", "Returning -1", e)
+                        publicIP = "-1"
+                        break
+                    }
+                }
+            }
+        } else {
+            Log.w("getPublicIP", "server ip is not available: " + servers[0])
+        }
+        return publicIP
+    }
+
+    fun setServers(servers : ArrayList<String?>) {
+        this.servers = servers
     }
 
     /**
