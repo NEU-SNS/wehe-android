@@ -1679,7 +1679,7 @@ public class ReplayActivity extends AppCompatActivity {
                      * Step 4: Send device info.
                      */
                     for (CombinedSideChannel sc : sideChannels) {
-                        sc.sendMobileStats(Config.get("sendMobileStats"), getApplicationContext());
+                        sc.sendMobileStats(Config.get("sendMobileStats"),ReplayActivity.this);
                     }
 
                     /*

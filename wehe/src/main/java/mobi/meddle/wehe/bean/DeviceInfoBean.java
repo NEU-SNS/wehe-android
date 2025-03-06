@@ -113,27 +113,24 @@ public class DeviceInfoBean {
         if (networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTED) {
             this.networkType = "WIFI";
         } else {
-            int typeIndex = 0;
-            // We only have the permission for devices that are old enough
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                typeIndex = telephonyManager.getNetworkType();
-            }
-            else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE)
+            try {
+                int typeIndex = 0; // default to unknown
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_BASIC_PHONE_STATE)
                         == PackageManager.PERMISSION_GRANTED) {
-                    typeIndex = telephonyManager.getDataNetworkType();
-                } else {
-                    typeIndex = TelephonyManager.NETWORK_TYPE_UNKNOWN;
+                    // We only have the permission for getDataNetworkType in API 24 and above
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                        typeIndex = telephonyManager.getDataNetworkType();
+                    }
                 }
-            }
-            else {
-                typeIndex = telephonyManager.getNetworkType();
-            }
-
-            if (typeIndex < NETWORK_TYPES.length) {
-                this.networkType = NETWORK_TYPES[typeIndex];
-            } else {
-                this.networkType = "Unrecognized: " + typeIndex;
+                if (typeIndex < NETWORK_TYPES.length) {
+                    this.networkType = NETWORK_TYPES[typeIndex];
+                } else {
+                    this.networkType = "Unrecognized: " + typeIndex;
+                }
+                Log.d("GetNetworkType", "obtained network type : " + this.networkType);
+            } catch (SecurityException e) {
+                Log.e("GetNetworkType", "Cannot obtain network type", e);
+                this.networkType = "UNKNOWN";
             }
         }
 
