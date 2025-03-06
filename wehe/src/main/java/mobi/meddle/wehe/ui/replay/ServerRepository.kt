@@ -1,8 +1,7 @@
 package mobi.meddle.wehe.ui.replay
 
-import android.content.Context
 import android.util.Log
-import mobi.meddle.wehe.R
+import kotlinx.coroutines.withContext
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -18,84 +17,23 @@ import java.net.InetAddress
 import java.net.URL
 import java.net.UnknownHostException
 import java.nio.charset.StandardCharsets
-import java.security.KeyManagementException
-import java.security.KeyStore
-import java.security.KeyStoreException
-import java.security.NoSuchAlgorithmException
-import java.security.cert.Certificate
-import java.security.cert.CertificateException
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
 import java.util.Timer
 import java.util.TimerTask
+import javax.inject.Singleton
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLContext
-import javax.net.ssl.SSLSession
 import javax.net.ssl.SSLSocketFactory
-import javax.net.ssl.TrustManagerFactory
+import kotlinx.coroutines.Dispatchers
 
-class ServerRepository// Generate the certificate for main server on initialization
-    (context: Context) {
+@Singleton
+class ServerRepository// Generate the certificate for main server on initialization of the class
+{
     // Class properties
-    private var hostnameVerifier: HostnameVerifier? = null
+    var hostnameVerifier: HostnameVerifier? = null
     var sslSocketFactory: SSLSocketFactory? = null
     private val timers = ArrayList<Timer>()
     private var servers = ArrayList<String?>() //servers to run the replays to
     private var isIPv6 = false
-    private var activity : Context = context
-
-
-    init {
-        generateServerCertificate(true)
-    }
-
-    /**
-     * Gets the certificates for the servers
-     *
-     * @param main true if main server; false if metadata server
-     */
-    fun generateServerCertificate(main: Boolean) {
-        try {
-            val server = if (main) "main" else "metadata"
-            val cf = CertificateFactory.getInstance("X.509")
-            var ca: Certificate
-            activity.resources.openRawResource(if (main) R.raw.main else R.raw.metadata)
-                .use { caInput ->
-                    ca = cf.generateCertificate(caInput)
-                    Log.d("Certificate", server + "=" + (ca as X509Certificate).issuerDN)
-                }
-            // Create a KeyStore containing our trusted CAs
-            val keyStoreType = KeyStore.getDefaultType()
-            val keyStore = KeyStore.getInstance(keyStoreType)
-            keyStore.load(null, null)
-            keyStore.setCertificateEntry(server, ca)
-
-            // Create a TrustManager that trusts the CAs in our KeyStore
-            val tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm()
-            val tmf = TrustManagerFactory.getInstance(tmfAlgorithm)
-            tmf.init(keyStore)
-
-            // Create an SSLContext that uses our TrustManager
-            val context = SSLContext.getInstance("TLS")
-            context.init(null, tmf.trustManagers, null)
-            if (main) {
-                sslSocketFactory = context.socketFactory
-                hostnameVerifier =
-                    HostnameVerifier() { hostname: String?, session: SSLSession? -> true }
-            }
-        } catch (e: CertificateException) {
-            Log.e("Certificates", "Error generating certificates", e)
-        } catch (e: NoSuchAlgorithmException) {
-            Log.e("Certificates", "Error generating certificates", e)
-        } catch (e: KeyStoreException) {
-            Log.e("Certificates", "Error generating certificates", e)
-        } catch (e: KeyManagementException) {
-            Log.e("Certificates", "Error generating certificates", e)
-        } catch (e: IOException) {
-            Log.e("Certificates", "Error generating certificates", e)
-        }
-    }
 
     /**
      * Send a GET or POST request to the server.
@@ -287,7 +225,7 @@ class ServerRepository// Generate the certificate for main server on initializat
      * @param server the hostname to be resolved
      * @return the IP of the host; empty string if there is an error doing so.
      */
-    fun getServerIP(server: String): String? {
+    suspend fun getServerIP(server: String): String? = withContext(Dispatchers.IO) {
         var server = server
         Log.d("getServerIP", "Server hostname: $server")
         var address: InetAddress?
@@ -296,10 +234,10 @@ class ServerRepository// Generate the certificate for main server on initializat
                 server = InetAddress.getByName(server).hostAddress //DNS lookup
                 address = InetAddress.getByName(server)
                 if (address is Inet4Address) {
-                    return server
+                    return@withContext server
                 }
                 if (address is Inet6Address) {
-                    return "[$server]"
+                    return@withContext "[$server]"
                 }
             } catch (e: UnknownHostException) {
                 if (i == 4) {
@@ -314,7 +252,7 @@ class ServerRepository// Generate the certificate for main server on initializat
                 }
             }
         }
-        return ""
+        return@withContext ""
     }
 
     /**
@@ -323,7 +261,7 @@ class ServerRepository// Generate the certificate for main server on initializat
      * @param port port to run replays
      * @return user's public IP or -1 if cannot connect to the server
      */
-    fun getPublicIP(port: String): String {
+    suspend fun getPublicIP(port: String): String = withContext(Dispatchers.IO) {
         var publicIP = "127.0.0.1"
 
         if (servers.size != 0 && servers[0] != "127.0.0.1") {
@@ -383,7 +321,7 @@ class ServerRepository// Generate the certificate for main server on initializat
         } else {
             Log.w("getPublicIP", "server ip is not available: " + servers[0])
         }
-        return publicIP
+        return@withContext publicIP
     }
 
     fun setServers(servers : ArrayList<String?>) {
