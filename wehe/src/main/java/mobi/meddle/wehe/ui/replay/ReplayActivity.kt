@@ -13,18 +13,20 @@ import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.Toast
 import android.app.AlertDialog
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.adapter.ImageReplayRecyclerViewAdapter
 import mobi.meddle.wehe.data.bean.ApplicationBean
 
-
+@AndroidEntryPoint
 class ReplayActivity : AppCompatActivity() {
-    private lateinit var viewModel: ReplayViewModel
+
+    private val viewModel: ReplayViewModel by viewModels()
     private lateinit var progressBar: ProgressBar
     private lateinit var adapter: ImageReplayRecyclerViewAdapter
 
@@ -33,9 +35,6 @@ class ReplayActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_replay)
-
-        // Initialize ViewModel
-        viewModel = ViewModelProvider(this)[ReplayViewModel::class.java]
 
         // Setup toolbar
         val mToolbar = findViewById<Toolbar>(R.id.replay_bar)

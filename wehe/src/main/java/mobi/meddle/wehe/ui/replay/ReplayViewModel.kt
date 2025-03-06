@@ -3,7 +3,6 @@ package mobi.meddle.wehe.ui.replay
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.res.AssetManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.provider.ContactsContract.ProviderStatus.STATUS
@@ -13,6 +12,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -67,14 +67,11 @@ import java.util.Locale
 import java.util.Objects
 import java.util.Random
 import java.util.Timer
-import javax.net.ssl.HostnameVerifier
-import javax.net.ssl.SSLContext
-import javax.net.ssl.SSLSession
-import javax.net.ssl.SSLSocketFactory
-import javax.net.ssl.TrustManagerFactory
+import javax.inject.Inject
 import kotlin.coroutines.coroutineContext
 
-class ReplayViewModel(application : Application) : AndroidViewModel(application) {
+@HiltViewModel
+class ReplayViewModel @Inject constructor(application : Application, private val repository: ReplayRepository) : AndroidViewModel(application) {
     // Methods for managing replayOngoing state
     private val _isReplayOngoing = MutableLiveData<Boolean>(false)
     val isReplayOngoing: LiveData<Boolean> = _isReplayOngoing
@@ -112,12 +109,9 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
     // Data for the app being tested
     private var appData: CombinedAppJSONInfoBean? = null
     private var app: ApplicationBean? = null
-    private val servers = ArrayList<String?>() // Servers to run the replays to
     private var metadataServer: String? = null
-    private val wsConns = ArrayList<WebSocketConnection>()
     private var updateUIBean: UpdateUIBean? = null
     private var doTest = false // Add a tail for testing data if true
-    private val analyzerServerUrls = ArrayList<String>()
 
     // Test configuration
     private var confirmationReplays = false
@@ -133,14 +127,9 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
     private var results: JSONArray? = null // Results containing apps or the port arrays
     private val timers = ArrayList<Timer>() // For stopping sendRequest timers
     private val numMLab = ArrayList<Int>() // Number of tries before successful MLab connection
-    private var mlabServerUsed = false
+    private var mlabServerUsed = repository.isMlabServerUsed()
     private var serverDisplay: String? = null
     private var isIPv6 = false
-
-    // Server repository
-    var serverRepository: ServerRepository = ServerRepository()
-    private var hostnameVerifier: HostnameVerifier? = null
-    var sslSocketFactory: SSLSocketFactory? = null
 
     /**
      * Start the trace run in a coroutine
@@ -193,7 +182,7 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
 
         selectedApps?.let {
             for (app in it) {
-                app.status = context?.getString(R.string.pending) ?: "Pending"
+                app.status = context?.getString(R.string.pending) ?: "Waiting to start"
             }
         }
     }
@@ -358,7 +347,7 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
         // Set each app's status to "Waiting"
         selectedApps?.let {
             for (app in it) {
-                app.status = applicationContext?.resources?.getString(R.string.pending) ?: "Pending"
+                app.status = applicationContext?.resources?.getString(R.string.pending) ?: "Waiting to start"
                 updateAppStatus(app.name, app.status)
             }
         }
@@ -448,9 +437,9 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
         // Timing allows replays to be run with the same timing as when they were recorded
         // Port tests try to run as fast as possible, so there is no timing for them
         Config.set("timing", if (runPortTests) "false" else "true")
-        val serversStr = servers.toString()
+        val serversStr = repository.servers.toString()
         Config.set("server", serversStr.substring(1, serversStr.length - 1))
-        val publicIP = serverRepository?.getPublicIP("80") // Get user's IP address
+        val publicIP = repository.serverRepository?.getPublicIP("80") // Get user's IP address
         Config.set("publicIP", publicIP)
         Log.d("Replay", "public IP: $publicIP")
 
@@ -511,10 +500,11 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
                     runTest(true)
                 }
 
-                // Clean up
-                for (ws in wsConns) {
-                    ws?.close()
-                }
+//                // Clean up
+//                for (ws in repository.wsConns) {
+//                    ws.close()
+//                }
+//                repository.closeConnections()
 
                 for (t in timers) {
                     t.cancel()
@@ -533,6 +523,7 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
                     return@let
                 }
             }
+            repository.closeConnections()
         }
 
         /*
@@ -540,7 +531,7 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
          */
         if (results?.length() ?: 0 > 0) {
             Log.i("Result Channel", "Storing results")
-            saveResults()
+            repository.saveResults(results, sharedPrefs)
         }
         if (!isActive) {
             return
@@ -561,43 +552,6 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
     }
 
     /**
-     * Save results of the current tests to SharedPreference
-     */
-    private fun saveResults() {
-        val dateFormat: DateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US)
-        val strDate = dateFormat.format(Date())
-
-        // Get current results, if not exist, create a json object with date as the key
-        var resultsWithDate = try {
-            JSONObject(settings?.getString("lastResult", "{}"))
-        } catch (e: JSONException) {
-            JSONObject()
-        }
-
-        // Remove one history result if there are too many
-        if (resultsWithDate.length() >= 10) {
-            val it = resultsWithDate.keys()
-            if (it.hasNext()) {
-                resultsWithDate.remove(it.next())
-            } else {
-                Log.w("Result Channel", "iterator doesn't have next but length is not 0")
-            }
-        }
-
-        try {
-            resultsWithDate.put(strDate, results)
-        } catch (e: JSONException) {
-            Log.e("saveResults", "Error saving results, $e")
-            return
-        }
-
-        settings?.edit()?.apply {
-            putString("lastResult", resultsWithDate.toString())
-            apply()
-        }
-    }
-
-    /**
      * Gets IPs of server and metadata server
      *
      * @param server The hostname of the server to connect to
@@ -605,299 +559,13 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
      * @return true if everything properly sets up; false otherwise
      */
     private suspend fun setupServersAndCertificates(server: String, metadataServer: String?): Boolean {
-        var serverName = server
-
-        // We first resolve the IP of the server and then communicate with the server
-        // Version code 40 = version name 3.46
-        if (BuildConfig.VERSION_CODE >= 40 && serverName == "wehe3.meddle.mobi") {
-            serverName = "wehe4.meddle.mobi"
+        val numTests = if (isTomography) Consts.NUM_TOMOGRAPHY_TESTS else 1
+        if (repository.isNetworkUnavailable(applicationContext!!)) {
+            showNoNetworkDialog()
+            return false
         }
-
-        servers.clear()
-        // Extreme hack to temporarily get around French DNS look up issue
-        if (serverName == "wehe4.meddle.mobi") {
-            servers.add("10.0.0.0")
-            Log.d("Serverhack", "hacking wehe4")
-        } else {
-            servers.add(serverRepository?.getServerIP(serverName))
-            if (servers[servers.size - 1] == "") {
-                showDialog(
-                    applicationContext?.getString(R.string.simple_error) ?: "Error",
-                    applicationContext?.getString(R.string.error_unknown_host) ?: "Unknown host",
-                    true
-                )
-                return false
-            }
-        }
-
-        // A hacky way to check server IP version
-        var serverIPisV6 = false
-        if (servers[0]!!.contains(":")) {
-            serverIPisV6 = true
-        }
-        Log.d("ServerIPVersion", servers[0] + (if (serverIPisV6) "IPV6" else "IPV4"))
-
-        // Connect to an MLab server if needed
-        var numTests = if (isTomography) Consts.NUM_TOMOGRAPHY_TESTS else 1
-        mlabServerUsed = false
-        if (servers[0] == "10.0.0.0" || serverIPisV6) {
-            mlabServerUsed = true
-            servers.removeAt(0)
-            wsConns.clear()
-
-            try {
-                var numTries = 0 // Tracks num tries before successful MLab connection
-                var wsID: Int // WebSocket id
-                val mLabResp =
-                    serverRepository?.sendRequest(Consts.MLAB_SERVERS, "GET", false, null, null)
-
-                val mLabServers = mLabResp!!["results"] as JSONArray // Get MLab servers list
-                var i = 0
-                while (wsConns.size < numTests && i < mLabServers.length()) {
-                    // Try the 4 servers before going to wehe2
-                    try {
-                        i++
-                        wsID = wsConns.size
-                        numTries++
-                        val serverObj = mLabServers[i] as JSONObject // Get first MLab server
-                        serverName = "wehe-" + serverObj.getString("machine") // SideChannel URL
-                        val mLabURL = (serverObj["urls"] as JSONObject)
-                            .getString(Consts.MLAB_WEB_SOCKET_SERVER_KEY) // Authentication URL
-
-                        Log.d(
-                            "WebSocket", ("Attempting to connect to server " + i
-                                    + ": " + serverName)
-                        )
-                        wsConns.add(WebSocketConnection(wsID, URI(mLabURL))) // Connect to WebSocket
-
-                        // Code below runs only if successful connection to WebSocket
-                        Log.d(
-                            "WebSocket", ("New WebSocket (id: " + wsID + ") connectivity check: "
-                                    + (if (wsConns[wsID].isOpen) "CONNECTED" else "CLOSED") + " TO " + serverName)
-                        )
-                        servers.add(serverRepository?.getServerIP(serverName))
-                        numMLab.add(numTries)
-                        numTries = 0
-                    } catch (e: Exception) {
-                        // Failed to connect to WebSocket, try next one
-                        Log.w("WebSocket", "Failed to connect to WebSocket", e)
-                    }
-                    i++
-                }
-
-                if (wsConns.size != numTests) {
-                    // If can't connect to mlab, try an amazon server using wehe2.meddle.mobi
-                    Log.i("GetReplayServerIP", "Can't get MLab server, trying Amazon")
-                    servers.clear()
-                    for (ws in wsConns) { // Close opened WebSockets
-                        if (ws.isOpen) {
-                            ws.close()
-                        }
-                    }
-                    wsConns.clear()
-                    if (isTomography) {
-                        // User can't run tomography tests if can't connect to MLab servers
-                        showDialog(
-                            applicationContext?.getString(R.string.simple_error) ?: "Error",
-                            applicationContext?.getString(R.string.tomography_not_supported)
-                                ?: "Tomography not supported",
-                            true
-                        )
-                        return false
-                    }
-                    numTests = 1
-                    servers.add(serverRepository?.getServerIP("wehe2.meddle.mobi"))
-                }
-            } catch (e: Exception) {
-                Log.e("WebSocket", "Can't retrieve M-Lab servers", e)
-            }
-        }
-
-        for (i in 0 until numTests) {
-            if (servers[i] == "") { // Check to make sure IP was returned by getServerIP
-                showDialog(
-                    applicationContext?.getString(R.string.simple_error) ?: "Error",
-                    applicationContext?.getString(R.string.error_unknown_host) ?: "Unknown host",
-                    true
-                )
-                if (wsConns.isNotEmpty() && i < wsConns.size && wsConns[i].isOpen) {
-                    wsConns[i].close()
-                }
-                return false
-            }
-        }
-        Log.d("GetReplayServerIP", "Server IP: $servers")
-        generateServerCertificate(true)
-
-        // Get URL(s) for analysis and results
-        val port = Config.get("result_port").toInt() // Get port to send tests through
-        analyzerServerUrls.clear()
-        for (srvr in servers) {
-            analyzerServerUrls.add("https://$srvr:$port/Results")
-            Log.d("Result Channel", "path: $srvr port: $port")
-        }
-
-        if (metadataServer != null) {
-            this.metadataServer = serverRepository?.getServerIP(metadataServer)
-            if (this.metadataServer == "") { // Get IP and certificates for metadata server
-                showDialog(
-                    applicationContext?.getString(R.string.simple_error) ?: "Error",
-                    applicationContext?.getString(R.string.error_unknown_meta_host) ?: "Unknown metadata host",
-                    true
-                )
-                return false
-            }
-            generateServerCertificate(false)
-        }
-        serverRepository?.setServers(servers)
+        repository.setupServersAndCertificates(server, metadataServer, numTests, isTomography)
         return true
-    }
-
-    /**
-     * Gets the certificates for the servers
-     *
-     * @param main true if main server; false if metadata server
-     */
-    private fun generateServerCertificate(main: Boolean) {
-        try {
-            val server = if (main) "main" else "metadata"
-            val cf = CertificateFactory.getInstance("X.509")
-            var ca: Certificate
-            applicationContext?.resources?.openRawResource(if (main) R.raw.main else R.raw.metadata)
-                .use { caInput ->
-                    ca = cf.generateCertificate(caInput)
-                    Log.d("Certificate", server + "=" + (ca as X509Certificate).issuerDN)
-                }
-            // Create a KeyStore containing our trusted CAs
-            val keyStoreType = KeyStore.getDefaultType()
-            val keyStore = KeyStore.getInstance(keyStoreType)
-            keyStore.load(null, null)
-            keyStore.setCertificateEntry(server, ca)
-
-            // Create a TrustManager that trusts the CAs in our KeyStore
-            val tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm()
-            val tmf = TrustManagerFactory.getInstance(tmfAlgorithm)
-            tmf.init(keyStore)
-
-            // Create an SSLContext that uses our TrustManager
-            val context = SSLContext.getInstance("TLS")
-            context.init(null, tmf.trustManagers, null)
-            if (main) {
-                sslSocketFactory = context.socketFactory
-                hostnameVerifier =
-                    HostnameVerifier() { hostname: String?, session: SSLSession? -> true }
-                serverRepository?.sslSocketFactory = sslSocketFactory
-                serverRepository?.hostnameVerifier = hostnameVerifier
-            }
-        } catch (e: CertificateException) {
-            Log.e("Certificates", "Error generating certificates", e)
-        } catch (e: NoSuchAlgorithmException) {
-            Log.e("Certificates", "Error generating certificates", e)
-        } catch (e: KeyStoreException) {
-            Log.e("Certificates", "Error generating certificates", e)
-        } catch (e: KeyManagementException) {
-            Log.e("Certificates", "Error generating certificates", e)
-        } catch (e: IOException) {
-            Log.e("Certificates", "Error generating certificates", e)
-        }
-    }
-
-    /**
-     * Asks the server for analysis of a replay
-     */
-    private fun ask4analysis(url: String, id: String?, historyCount: Int): JSONObject? {
-        val pairs = HashMap<String, String?>()
-
-        pairs["command"] = "analyze"
-        pairs["userID"] = id
-        pairs["historyCount"] = historyCount.toString()
-        pairs["testID"] = "1"
-
-        return serverRepository?.sendRequest(url, "POST", true, null, pairs)
-    }
-
-    /**
-     * Retrieves a replay result from the server
-     */
-    private fun getSingleResult(url: String, id: String?, historyCount: Int): JSONObject? {
-        val data = ArrayList<String>()
-
-        data.add("userID=$id")
-        data.add("command=" + "singleResult")
-        data.add("historyCount=$historyCount")
-        data.add("testID=1")
-
-        return serverRepository?.sendRequest(url, "GET", true, data, null)
-    }
-
-    /**
-     * Reads the replay files and loads them into memory as a bean
-     */
-    private fun unpickleJSON(filename: String, context: Context): CombinedAppJSONInfoBean {
-        val assetManager: AssetManager
-        val inputStream: InputStream
-        val appData = CombinedAppJSONInfoBean() // Info about replay
-        val Q = ArrayList<RequestSet>() // List of packets for replay
-
-        try {
-            assetManager = context.assets
-            inputStream = assetManager.open(filename) // Open replay file
-            val size = inputStream.available()
-            val buffer = ByteArray(size)
-            inputStream.read(buffer)
-            inputStream.close()
-
-            // Convert file contents to JSONArray object
-            val jsonStr = String(buffer, StandardCharsets.UTF_8)
-            val json = JSONArray(jsonStr)
-
-            val qArray = json[0] as JSONArray // The packets in a replay file
-            for (i in 0 until qArray.length()) {
-                val tempRS = RequestSet()
-                val dictionary = qArray.getJSONObject(i)
-                tempRS.cSPair = dictionary["c_s_pair"] as String // Client-server pair
-                tempRS.payload = UtilsManager.hexStringToByteArray(
-                    dictionary["payload"] as String
-                )
-                tempRS.timestamp = dictionary["timestamp"] as Double
-
-                // For tcp
-                if (dictionary.has("response_len")) { // Expected length of response
-                    tempRS.responseLen = dictionary["response_len"] as Int
-                }
-                if (dictionary.has("response_hash")) {
-                    tempRS.responseHash = dictionary["response_hash"].toString()
-                }
-                // For udp
-                if (dictionary.has("end")) tempRS.end = dictionary["end"] as Boolean
-
-                Q.add(tempRS)
-            }
-
-            appData.q = Q
-
-            // Udp
-            val portArray = json[1] as JSONArray // Udp client ports
-            val portStrArray = ArrayList<String>()
-            for (i in 0 until portArray.length()) {
-                portStrArray.add(portArray.getString(i))
-            }
-            appData.udpClientPorts = portStrArray
-
-            // For tcp
-            val csArray = json[2] as JSONArray // c_s_pairs
-            val csStrArray = ArrayList<String>()
-            for (i in 0 until csArray.length()) {
-                csStrArray.add(csArray[i] as String)
-            }
-            appData.tcpCSPs = csStrArray
-            appData.replayName = json[3] as String // Name of replay
-        } catch (e: JSONException) {
-            Log.e("UnpickleJSON", "Error reading test files", e)
-        } catch (e: IOException) {
-            Log.e("UnpickleJSON", "Error reading test files", e)
-        }
-        return appData
     }
 
     /**
@@ -912,7 +580,6 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
             updateAppStatus(it.name, applicationContext?.getString(R.string.inconclusive) ?: "Inconclusive")
         }
     }
-
 
     /**
      * Run test. This method is called for every app/port the user selects. It is also called if
@@ -969,14 +636,12 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
         var iteration = 1
         var portBlocked = false
         for (channel in types) {
-            for (ws in wsConns) {
-                if (ws != null) { //if using MLab, check that still connected
-                    Log.d(
-                        "WebSocket", ("Before running test WebSocket (id: "
-                                + ws.id + ") connectivity check: "
-                                + (if (ws.isOpen) "CONNECTED" else "CLOSED"))
-                    )
-                }
+            for (ws in repository.wsConns) {
+                Log.d(
+                    "WebSocket", ("Before running test WebSocket (id: "
+                            + ws.id + ") connectivity check: "
+                            + (if (ws.isOpen) "CONNECTED" else "CLOSED"))
+                )
             }
 
             if (!isActive) { //user cancels running tests
@@ -992,9 +657,9 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
              */
             // Based on the type selected load open or random trace of given application
             if (channel.equals("open", ignoreCase = true)) {
-                this.appData = applicationContext?.let { unpickleJSON(app!!.dataFile, it) }
+                this.appData = repository.loadAppData(app!!.dataFile)
             } else if (channel.equals("random", ignoreCase = true)) {
-                this.appData = applicationContext?.let { unpickleJSON(app!!.randomDataFile, it) }
+                this.appData = repository.loadAppData(app!!.randomDataFile)
             } else {
                 Log.wtf("replayIndex", "replay name error: $channel")
             }
@@ -1008,7 +673,7 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
 //                )
                 val sideChannelPort = Config.get("combined_sidechannel_port").toInt()
 
-                Log.d("Servers", "$servers metadata $metadataServer")
+                Log.d("Servers", "$repository.servers metadata $metadataServer")
                 //The Side Channel communicates, in bytes mode, with the server to set up the
                 //tests, start them, end them, and let the server know what exactly is going on.
                 //The tests themselves are conducted over 2 other channels with the server -
@@ -1024,10 +689,10 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
                 //so the variables for each test are stored in ArrayLists. Normal tests will only
                 //need 1 test, so 1 element in the ArrayLists, but tomography tests will have more
                 var id = 0
-                for (server in servers) {
+                for (server in repository.servers) {
                     sideChannels.add(
                         CombinedSideChannel(
-                            id, serverRepository.sslSocketFactory!!,
+                            id, repository.sslSocketFactory!!,
                             server, sideChannelPort, appData!!.isTCP
                         )
                     )
@@ -1073,7 +738,7 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
                     for (csp in appData!!.tcpCSPs) {
                         replayPort = csp.substring(csp.lastIndexOf('.') + 1)
                     }
-                    ipThroughProxy = serverRepository?.getPublicIP(replayPort).toString()
+                    ipThroughProxy = repository.serverRepository.getPublicIP(replayPort)
                     if (ipThroughProxy == "-1") { //port is blocked; move on to next replay
                         //TODO: check if ui needed here
                         portBlocked = true
@@ -1238,7 +903,7 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
                         }
                         if (instance.server.trim { it <= ' ' } == "")  // TODO: Use a setter instead probably
                             instance.server =
-                                servers[sc.id].toString() // serverPortsMap.get(destPort);
+                                repository.servers[sc.id].toString() // serverPortsMap.get(destPort);
 
 
                         //create the client
@@ -1381,7 +1046,7 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
                     queue.run(
                         it, types.size, CSPairMappings,
                         udpPortMappings, udpReplayInfoBeans, udpServerMappings,
-                        Config.get("timing").toBoolean(), servers, coroutineContext
+                        Config.get("timing").toBoolean(), repository.servers, coroutineContext
                     )
                 }
 
@@ -1536,7 +1201,7 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
             }
 
             var id = 0
-            for (w in wsConns) { //check websockets still connected if using MLab
+            for (w in repository.wsConns) { //check websockets still connected if using MLab
                 Log.d(
                     "WebSocket", ("WebSocket (id: " + id + ") connectivity check: "
                             + (if (w.isOpen) "CONNECTED" else "CLOSED"))
@@ -1550,9 +1215,9 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
                  * Step 1: Ask server to analyze a test.
                  */
                 var resp: JSONObject?
-                for (server in analyzerServerUrls) {
+                for (server in repository.getAnalyzerServerUrls()) {
                     for (ask4analysisRetry in 3 downTo 1) {
-                        resp = ask4analysis(server, randomID, app!!.historyCount) //request analysis
+                        resp = repository.ask4analysis(server, randomID, app!!.historyCount) //request analysis
                         if (resp == null) {
                             Log.e(
                                 "Result Channel",
@@ -1565,7 +1230,7 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
                     }
                 }
 
-                if (analysisResults.size != analyzerServerUrls.size) {
+                if (analysisResults.size != repository.getAnalyzerServerUrls().size) {
                     applicationContext?.getString(R.string.error_analysis_fail)
                         ?.let { setInconclusive(it) }
                     return false
@@ -1604,11 +1269,11 @@ class ReplayViewModel(application : Application) : AndroidViewModel(application)
                  * Step 2: Get results of analysis from server.
                  */
                 analysisResults.clear()
-                for (url in analyzerServerUrls) {
+                for (url in repository.getAnalyzerServerUrls()) {
                     var i = 0
                     while (true) {
                         //3 attempts to get analysis from sever
-                        resp = getSingleResult(url, randomID, app!!.historyCount) //get results
+                        resp = repository.getSingleResult(url, randomID, app!!.historyCount) //get results
 
                         if (resp == null) {
                             Log.e(
