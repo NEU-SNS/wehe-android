@@ -7,12 +7,22 @@ import javax.net.ssl.SSLSocketFactory
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
+import kotlinx.coroutines.delay
 import mobi.meddle.wehe.BuildConfig
 import mobi.meddle.wehe.R
+import mobi.meddle.wehe.combined.CTCPClient
+import mobi.meddle.wehe.combined.CUDPClient
+import mobi.meddle.wehe.combined.CombinedAnalyzerTask
+import mobi.meddle.wehe.combined.CombinedQueue
+import mobi.meddle.wehe.combined.CombinedSideChannel
 import mobi.meddle.wehe.combined.WebSocketConnection
 import mobi.meddle.wehe.constant.Consts
+import mobi.meddle.wehe.data.bean.ApplicationBean
 import mobi.meddle.wehe.data.bean.CombinedAppJSONInfoBean
 import mobi.meddle.wehe.data.bean.RequestSet
+import mobi.meddle.wehe.data.bean.ServerInstance
+import mobi.meddle.wehe.data.bean.UDPReplayInfoBean
+import mobi.meddle.wehe.data.bean.UpdateUIBean
 import mobi.meddle.wehe.util.Config
 import mobi.meddle.wehe.util.UtilsManager
 import org.json.JSONArray
@@ -32,6 +42,8 @@ import javax.inject.Inject
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSession
 import javax.net.ssl.TrustManagerFactory
+import kotlin.coroutines.CoroutineContext
+import kotlin.math.abs
 
 class ReplayRepository @Inject constructor(private val context: Context) {
     // Server and certificate management
@@ -128,14 +140,18 @@ class ReplayRepository @Inject constructor(private val context: Context) {
     /**
      * Connect to MLAB servers
      */
-    private suspend fun connectToMLabServers(numTests: Int, isTomography: Boolean): Result<Boolean> {
+    private suspend fun connectToMLabServers(
+        numTests: Int,
+        isTomography: Boolean
+    ): Result<Boolean> {
         servers.removeAt(0)
         wsConns.clear()
 
         try {
             var numTries = 0
             var wsID: Int
-            val mLabResp = serverRepository.sendRequest(Consts.MLAB_SERVERS, "GET", false, null, null)
+            val mLabResp =
+                serverRepository.sendRequest(Consts.MLAB_SERVERS, "GET", false, null, null)
 
             val mLabServers = mLabResp!!["results"] as JSONArray
             var i = 0
@@ -368,6 +384,586 @@ class ReplayRepository @Inject constructor(private val context: Context) {
             apply()
         }
     }
+
+    /**
+     * Loads application data based on replay type
+     *
+     * @param app The application to test
+     * @param channel The replay type ("open" or "random")
+     * @return The loaded app data
+     */
+    fun loadAppDataForReplay(app: ApplicationBean, channel: String): CombinedAppJSONInfoBean {
+        return if (channel.equals("open", ignoreCase = true)) {
+            loadAppData(app.dataFile)
+        } else if (channel.equals("random", ignoreCase = true)) {
+            loadAppData(app.randomDataFile)
+        } else {
+            Log.wtf("replayIndex", "replay name error: $channel")
+            CombinedAppJSONInfoBean() // Return empty bean for error
+        }
+    }
+
+    /**
+     * Sets up side channels for communication with server
+     *
+     * @param appData The app data for the test
+     * @return List of created side channels
+     */
+    fun setupSideChannels(appData: CombinedAppJSONInfoBean): ArrayList<CombinedSideChannel> {
+        val sideChannelPort = Config.get("combined_sidechannel_port").toInt()
+        val sideChannels = ArrayList<CombinedSideChannel>()
+
+        var id = 0
+        for (server in servers) {
+            sideChannels.add(
+                CombinedSideChannel(
+                    id, sslSocketFactory!!,
+                    server, sideChannelPort, appData.isTCP
+                )
+            )
+            id++
+        }
+
+        return sideChannels
+    }
+
+    /**
+     * Gets port mapping from server
+     *
+     * @param sideChannels The established side channels
+     * @return Pair of server ports maps and UDP replay info
+     */
+    suspend fun getPortMappingFromServer(sideChannels: ArrayList<CombinedSideChannel>): Pair<
+            ArrayList<HashMap<String, HashMap<String, HashMap<String, ServerInstance>>>>,
+            ArrayList<UDPReplayInfoBean>
+            > {
+        val serverPortsMaps =
+            ArrayList<HashMap<String, HashMap<String, HashMap<String, ServerInstance>>>>()
+        val udpReplayInfoBeans = ArrayList<UDPReplayInfoBean>()
+
+        for (sc in sideChannels) {
+            serverPortsMaps.add(sc.receivePortMappingNonBlock())
+            val udpReplayInfoBean = UDPReplayInfoBean()
+            udpReplayInfoBean.senderCount = sc.receiveSenderCount()
+            udpReplayInfoBeans.add(udpReplayInfoBean)
+            Log.i(
+                "Replay",
+                "Channel ${sc.id}: Successfully received serverPortsMap and senderCount!"
+            )
+        }
+
+        return Pair(serverPortsMaps, udpReplayInfoBeans)
+    }
+
+    /**
+     * Creates TCP clients from CSPairs
+     *
+     * @param appData The app data for the test
+     * @param serverPortsMaps The port mappings received from the server
+     * @return List of TCP client mappings
+     */
+    fun createTCPClients(
+        appData: CombinedAppJSONInfoBean,
+        serverPortsMaps: ArrayList<HashMap<String, HashMap<String, HashMap<String, ServerInstance>>>>
+    ): ArrayList<HashMap<String, CTCPClient>> {
+        val CSPairMappings = ArrayList<HashMap<String, CTCPClient>>()
+
+        for (sc in 0 until servers.size) {
+            val CSPairMapping = HashMap<String, CTCPClient>()
+            for (csp in appData.tcpCSPs) {
+                // Get server IP and port
+                val destIP = csp.substring(
+                    csp.lastIndexOf('-') + 1,
+                    csp.lastIndexOf(".")
+                )
+                var destPort = csp.substring(csp.lastIndexOf('.') + 1)
+                // Pad port to 5 digits with 0s; ex. 00443 or 00080
+                destPort = String.format("%5s", destPort).replace(' ', '0')
+
+                // Get the server
+                val instance: ServerInstance
+                try {
+                    instance = serverPortsMaps[sc]["tcp"]
+                        ?.get(destIP)
+                        ?.get(destPort)!!
+                } catch (e: Exception) {
+                    Log.e("Replay", "Channel $sc: Cannot get instance", e)
+                    throw e
+                }
+
+                if (instance.server.trim { it <= ' ' } == "") {
+                    instance.server = servers[sc].toString()
+                }
+
+                // Create the client
+                val c = CTCPClient(
+                    csp, instance.server,
+                    instance.port.toInt(),
+                    appData.replayName, Config.get("publicIP"), false
+                )
+                CSPairMapping[csp] = c
+            }
+            CSPairMappings.add(CSPairMapping)
+        }
+
+        return CSPairMappings
+    }
+
+    /**
+     * Creates UDP clients from client ports
+     *
+     * @param appData The app data for the test
+     * @return List of UDP client mappings
+     */
+    fun createUDPClients(
+        appData: CombinedAppJSONInfoBean
+    ): ArrayList<HashMap<String, CUDPClient>> {
+        val udpPortMappings = ArrayList<HashMap<String, CUDPClient>>()
+
+        for (sc in 0 until servers.size) {
+            val udpPortMapping = HashMap<String, CUDPClient>()
+            for (originalClientPort in appData.udpClientPorts) {
+                val c = CUDPClient(Config.get("publicIP"))
+                udpPortMapping[originalClientPort] = c
+            }
+            udpPortMappings.add(udpPortMapping)
+        }
+
+        return udpPortMappings
+    }
+
+    /**
+     * Checks if connection to the specified port is allowed
+     *
+     * @param replayPort The port to check
+     * @return True if port is accessible, false if blocked
+     */
+    suspend fun checkPortAccess(replayPort: String): Boolean {
+        val ipThroughProxy = serverRepository.getPublicIP(replayPort)
+        return ipThroughProxy != "-1"
+    }
+
+    /**
+     * Sets up and initiates test with the server
+     *
+     * @param sideChannels The established side channels
+     * @param appData The app data for the test
+     * @param randomID User's random ID
+     * @param historyCount Current history count
+     * @param testId Test identifier (0 for open, 1 for random)
+     * @param endOfTest Whether this is the last test in the sequence
+     * @param doTest Additional test flag
+     * @param ipThroughProxy User's IP address
+     * @return List of number of time slices from the server
+     */
+    suspend fun initiateTestWithServer(
+        sideChannels: ArrayList<CombinedSideChannel>,
+        appData: CombinedAppJSONInfoBean,
+        randomID: String?,
+        historyCount: Int,
+        testId: Int,
+        endOfTest: Boolean,
+        doTest: Boolean,
+        ipThroughProxy: String
+    ): Result<ArrayList<Int>> {
+        // Step 1: Tell server(s) about the replay
+        var i = 0
+        for (sc in sideChannels) {
+            // Set extra string to number of tries needed to access MLab server
+            Config.set("extraString", if (numMLab.size == 0) "0" else numMLab[i].toString())
+            sc.declareID(
+                appData.replayName, if (endOfTest) "True" else "False",
+                randomID, historyCount.toString(), testId.toString(),
+                if (doTest) Config.get("extraString") + "-Test" else Config.get("extraString"),
+                ipThroughProxy, BuildConfig.VERSION_NAME
+            )
+
+            // Tell server if it should operate on packets of traces
+            sc.sendChangeSpec(-1, "null", "null")
+            i++
+        }
+
+        // Step 2: Ask server(s) for permission
+        val numOfTimeSlices = ArrayList<Int>()
+        for (sc in sideChannels) {
+            val permission = sc.ask4Permission()
+            val status = permission[0].trim { it <= ' ' }
+
+            Log.d(
+                "Replay", ("Channel " + sc.id + ": permission[0]: "
+                        + status + " permission[1]: " + permission[1])
+            )
+
+            val permissionError = permission[1].trim { it <= ' ' }
+            if (status == "0") {
+                // Errors that server can report
+                val errorCode = when (permissionError) {
+                    "1" -> R.string.error_unknown_replay
+                    "2" -> R.string.error_IP_connected
+                    "3" -> R.string.error_low_resources
+                    else -> R.string.error_unknown
+                }
+                return Result.failure(Exception(context.getString(errorCode)))
+            }
+            numOfTimeSlices.add(permission[2].trim { it <= ' ' }.toInt(10))
+        }
+
+        // Step 3: Send noIperf
+        for (sc in sideChannels) {
+            sc.sendIperf() // Always send noIperf here
+        }
+
+        // Step 4: Send device info
+        for (sc in sideChannels) {
+            sc.sendMobileStats(Config.get("sendMobileStats"), context)
+        }
+
+        return Result.success(numOfTimeSlices)
+    }
+
+    /**
+     * Run packet queue to server
+     *
+     * @param queue The combined queue of packets to send
+     * @param numberOfTypes Number of replay types being run
+     * @param CSPairMappings TCP client mappings
+     * @param udpPortMappings UDP client mappings
+     * @param udpReplayInfoBeans UDP replay info
+     * @param udpServerMappings UDP server mappings
+     * @param context Coroutine context for cancellation
+     * @return Elapsed time in seconds
+     */
+    suspend fun runPacketQueue(
+        queue: CombinedQueue,
+        numberOfTypes: Int,
+        CSPairMappings: ArrayList<HashMap<String, CTCPClient>>,
+        udpPortMappings: ArrayList<HashMap<String, CUDPClient>>,
+        udpReplayInfoBeans: ArrayList<UDPReplayInfoBean>,
+        udpServerMappings: ArrayList<HashMap<String, HashMap<String, ServerInstance>>>,
+        updateUIBean: UpdateUIBean,
+        coroutineContext: CoroutineContext
+    ): Double {
+        val timeStarted = System.nanoTime()
+
+        queue.run(
+            updateUIBean, numberOfTypes, CSPairMappings,
+            udpPortMappings, udpReplayInfoBeans, udpServerMappings,
+            Config.get("timing").toBoolean(), servers, coroutineContext
+        )
+
+        return ((System.nanoTime() - timeStarted).toDouble()) / 1000000000
+    }
+
+    /**
+     * Process results at the end of test
+     *
+     * @param sideChannels The established side channels
+     * @param duration Test duration in seconds
+     * @param analyzerTasks The analyzer tasks containing throughput data
+     */
+    suspend fun processTestResults(
+        sideChannels: ArrayList<CombinedSideChannel>,
+        duration: Double,
+        analyzerTasks: ArrayList<CombinedAnalyzerTask>
+    ) {
+        // Tell server replay is finished
+        for (sc in sideChannels) {
+            sc.sendDone(duration)
+        }
+
+        // Send throughputs and slices to server
+        for (sc in sideChannels) {
+            sc.sendTimeSlices(analyzerTasks[sc.id].averageThroughputsAndSlices)
+        }
+
+        // Send Result;No and wait for OK before moving forward
+        for (sc in sideChannels) {
+            while (sc.getResult(Config.get("result"))) {
+                delay(500)
+            }
+        }
+    }
+
+    /**
+     * Update history count in shared preferences
+     *
+     * @param historyCount Current history count
+     * @return Updated history count
+     */
+    fun updateHistoryCount(historyCount: Int): Int {
+        val updatedCount = historyCount + 1
+        val settings = context.getSharedPreferences("STATUS", Context.MODE_PRIVATE)
+        settings.edit().putInt("historyCount", updatedCount).apply()
+        Log.d("Replay", "historyCount: $updatedCount")
+        return updatedCount
+    }
+
+    /**
+     * Clean up resources after test
+     *
+     * @param sideChannels The side channels to close
+     * @param CSPairMappings TCP client mappings to close
+     * @param udpPortMappings UDP client mappings to close
+     * @param appData App data containing client ports
+     */
+    fun cleanupResources(
+        sideChannels: ArrayList<CombinedSideChannel>,
+        CSPairMappings: ArrayList<HashMap<String, CTCPClient>>,
+        udpPortMappings: ArrayList<HashMap<String, CUDPClient>>,
+        appData: CombinedAppJSONInfoBean
+    ) {
+        // Close side channel sockets
+        for (sc in sideChannels) {
+            sc.closeSideChannelSocket()
+        }
+
+        // Close TCP sockets
+        for (mapping in CSPairMappings) {
+            for (csp in appData.tcpCSPs) {
+                mapping[csp]?.close()
+            }
+        }
+
+        // Close UDP sockets
+        for (mapping in udpPortMappings) {
+            for (originalClientPort in appData.udpClientPorts) {
+                mapping[originalClientPort]?.close()
+            }
+        }
+    }
+
+    /**
+     * Requests analysis for test results from the server
+     *
+     * @param randomID User's random ID
+     * @param historyCount Current history count
+     * @return List of analysis results from servers
+     */
+    fun requestAnalysis(randomID: String, historyCount: Int): Result<ArrayList<JSONObject>> {
+        val analysisResults = ArrayList<JSONObject>()
+
+        for (server in getAnalyzerServerUrls()) {
+            for (retry in 3 downTo 1) {
+                val resp = ask4analysis(server, randomID, historyCount)
+                if (resp == null) {
+                    Log.e("Result Channel", "$server: ask4analysis returned null!")
+                } else {
+                    analysisResults.add(resp)
+                    break
+                }
+            }
+        }
+
+        if (analysisResults.size != getAnalyzerServerUrls().size) {
+            return Result.failure(Exception(context.getString(R.string.error_analysis_fail)))
+        }
+
+        // Verify all results were successful
+        for (result in analysisResults) {
+            val success = result.getBoolean("success")
+            if (!success) {
+                Log.e("Result Channel", "ask4analysis failed!")
+                return Result.failure(Exception(context.getString(R.string.error_analysis_fail)))
+            }
+        }
+
+        Log.i("Result Channel", "ask4analysis succeeded!")
+        return Result.success(analysisResults)
+    }
+
+    /**
+     * Retrieves test results from the server
+     *
+     * @param randomID User's random ID
+     * @param historyCount Current history count
+     * @param runPortTests Whether this is a port test
+     * @return List of result JSONObjects
+     */
+    suspend fun retrieveResults(randomID: String, historyCount: Int, runPortTests: Boolean): Result<List<JSONObject>> {
+        val analysisResults = ArrayList<JSONObject>()
+
+        for (url in getAnalyzerServerUrls()) {
+            var attempt = 0
+            while (attempt < 3) {
+                val resp = getSingleResult(url, randomID, historyCount)
+
+                if (resp == null) {
+                    Log.e("Result Channel", "$url: getSingleResult returned null!")
+                } else {
+                    val success = resp.getBoolean("success")
+                    if (success) {
+                        if (resp.has("response")) {
+                            analysisResults.add(resp)
+                            Log.i("Result Channel", "$url: retrieve result succeeded")
+                            break
+                        } else {
+                            Log.w("Result Channel", "$url: Server result not ready")
+                        }
+                    } else if (resp.has("error")) {
+                        Log.e("Result Channel", "ERROR: $url: ${resp.getString("error")}")
+                    } else {
+                        Log.e("Result Channel", "Error: $url: Some error getting results.")
+                    }
+                }
+
+                if (attempt < 3) {
+                    delay(2000)
+                } else if (runPortTests) {
+                    // Port is likely blocked
+                    Log.i("Result Channel", "Can't retrieve result, port blocked")
+                    return Result.success(emptyList()) // Return empty to signal port blocked
+                } else {
+                    return Result.failure(Exception(context.getString(R.string.not_all_tcp_sent_text)))
+                }
+                attempt++
+            }
+        }
+
+        return Result.success(analysisResults)
+    }
+
+    /**
+     * Analyze test results to determine differentiation
+     *
+     * @param response The server response JSON object
+     * @param randomID User's random ID
+     * @param historyCount Current history count
+     * @param appName Application name
+     * @param dataFile Data file name
+     * @param runPortTests True if port tests
+     * @param a_threshold Area threshold for differentiation
+     * @param ks2pvalue_threshold KS2 p-value threshold
+     * @param randomThroughput Random throughput value (for port tests)
+     * @return ResultAnalysis object containing analysis results
+     */
+    fun analyzeResults(
+        response: JSONObject,
+        randomID: String,
+        historyCount: Int,
+        appName: String,
+        dataFile: String,
+        runPortTests: Boolean,
+        a_threshold: Int,
+        ks2pvalue_threshold: Int,
+        randomThroughput: Double
+    ): Result<ResultAnalysis> {
+        try {
+            // Create response for port blocked case
+            val finalResponse = if (response.length() == 0) {
+                val newResponse = JSONObject()
+                newResponse.put("userID", randomID)
+                newResponse.put("historyCount", historyCount)
+                newResponse.put("replayName", dataFile)
+                newResponse.put("area_test", -1)
+                newResponse.put("ks2pVal", -1)
+                newResponse.put("ks2_ratio_test", -1)
+                newResponse.put("xput_avg_original", 0)
+                newResponse.put("xput_avg_test", randomThroughput)
+                newResponse
+            } else {
+                response
+            }
+
+            Log.d("Result Channel", "SERVER RESPONSE: $finalResponse")
+
+            // Extract values from response
+            val userID = finalResponse.getString("userID")
+            val responseHistoryCount = finalResponse.getInt("historyCount")
+            val area_test = finalResponse.getDouble("area_test")
+            val ks2pVal = finalResponse.getDouble("ks2pVal")
+            val ks2RatioTest = finalResponse.getDouble("ks2_ratio_test")
+            val xputOriginal = finalResponse.getDouble("xput_avg_original")
+            val xputTest = finalResponse.getDouble("xput_avg_test")
+
+            // Sanity check
+            if ((!userID.trim().equals(randomID, ignoreCase = true)) ||
+                (responseHistoryCount != historyCount)) {
+                Log.e("Result Channel", "Result didn't pass sanity check! " +
+                        "correct id: $randomID correct historyCount: $historyCount")
+                Log.e("Result Channel", "Result content: $finalResponse")
+                return Result.failure(Exception(context.getString(R.string.error_result)))
+            }
+
+            // Determine thresholds
+            var areaThreshold = a_threshold
+            if (xputOriginal > 10 || xputTest > 10) {
+                areaThreshold = 30
+            }
+
+            val area_test_threshold = areaThreshold.toDouble() / 100
+            val ks2pVal_threshold = ks2pvalue_threshold.toDouble() / 100
+
+            // Check for differentiation
+            val aboveArea = abs(area_test) >= area_test_threshold
+            val belowP = ks2pVal < ks2pVal_threshold
+            val portBlocked = response.length() == 0
+
+            var differentiation = false
+            var inconclusive = false
+
+            if (portBlocked) {
+                differentiation = true
+            } else if (aboveArea) {
+                if (belowP) {
+                    differentiation = true
+                } else {
+                    inconclusive = true
+                }
+            }
+
+            // Create error message if differentiation
+            var errorMessage: String? = null
+            if (differentiation) {
+                errorMessage = if (portBlocked) {
+                    if (runPortTests) context.getString(R.string.test_blocked_port_text)
+                    else context.getString(R.string.test_blocked_app_text)
+                } else {
+                    if (xputOriginal > xputTest) {
+                        if (runPortTests) context.getString(R.string.test_throttled_port_text)
+                        else context.getString(R.string.test_throttled_app_text)
+                    } else {
+                        if (runPortTests) context.getString(R.string.test_prioritized_port_text)
+                        else context.getString(R.string.test_prioritized_app_text)
+                    }
+                }
+            }
+
+            // Create result analysis object
+            return Result.success(
+                ResultAnalysis(
+                    differentiation = differentiation,
+                    inconclusive = inconclusive,
+                    portBlocked = portBlocked,
+                    area_test = area_test,
+                    ks2pVal = ks2pVal,
+                    ks2RatioTest = ks2RatioTest,
+                    xputOriginal = xputOriginal,
+                    xputTest = xputTest,
+                    errorMessage = errorMessage,
+                    response = finalResponse
+                )
+            )
+        } catch (e: JSONException) {
+            Log.e("Result Channel", "parsing json error", e)
+            return Result.failure(e)
+        }
+    }
+
+    /**
+     * Data class to hold result analysis
+     */
+    data class ResultAnalysis(
+        val differentiation: Boolean,
+        val inconclusive: Boolean,
+        val portBlocked: Boolean,
+        val area_test: Double,
+        val ks2pVal: Double,
+        val ks2RatioTest: Double,
+        val xputOriginal: Double,
+        val xputTest: Double,
+        val errorMessage: String?,
+        val response: JSONObject
+    )
 
     /**
      * Close all connections
