@@ -25,15 +25,17 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLSocketFactory
 import kotlinx.coroutines.Dispatchers
 
+/**
+ * Repository to send requests to the server.
+ */
 @Singleton
-class ServerRepository// Generate the certificate for main server on initialization of the class
+class ServerRepository
 {
-    // Class properties
     var hostnameVerifier: HostnameVerifier? = null
     var sslSocketFactory: SSLSocketFactory? = null
     private val timers = ArrayList<Timer>()
     private var servers = ArrayList<String?>() //servers to run the replays to
-    private var isIPv6 = false
+    var isIPv6 = false
 
     /**
      * Send a GET or POST request to the server.
@@ -54,18 +56,18 @@ class ServerRepository// Generate the certificate for main server on initializat
         val conn = arrayOfNulls<HttpsURLConnection>(1)
         val readyToReturn = booleanArrayOf(false)
         val serverComm = Thread {
-            var url_string = url
+            var urlString = url
             if (method.equals("GET", ignoreCase = true)) {
                 if (data != null) {
-                    val dataURL = URLEncoder(data)
-                    url_string += "?$dataURL"
+                    val dataURL = urlEncoder(data)
+                    urlString += "?$dataURL"
                 }
-                Log.d("Send GET Request", url_string)
+                Log.d("Send GET Request", urlString)
 
                 for (i in 0..2) {
                     try {
                         //connect to server
-                        val u = URL(url_string)
+                        val u = URL(urlString)
                         //send data to server
                         conn[0] = u.openConnection() as HttpsURLConnection
                         if (main && hostnameVerifier != null && sslSocketFactory != null) {
@@ -100,11 +102,11 @@ class ServerRepository// Generate the certificate for main server on initializat
                     }
                 }
             } else if (method.equals("POST", ignoreCase = true)) {
-                Log.d("Send POST Request", url_string)
+                Log.d("Send POST Request", urlString)
 
                 try {
                     //connect to server
-                    val u = URL(url_string)
+                    val u = URL(urlString)
                     conn[0] = u.openConnection() as HttpsURLConnection
                     conn[0]!!.hostnameVerifier = hostnameVerifier
                     conn[0]!!.sslSocketFactory = sslSocketFactory
@@ -181,7 +183,7 @@ class ServerRepository// Generate the certificate for main server on initializat
      * @param map List of strings to encode
      * @return Encoded URL string
      */
-    private fun URLEncoder(map: ArrayList<String>): String {
+    private fun urlEncoder(map: ArrayList<String>): String {
         val data = StringBuilder()
         for (s in map) {
             if (data.isNotEmpty()) {
@@ -324,6 +326,11 @@ class ServerRepository// Generate the certificate for main server on initializat
         return@withContext publicIP
     }
 
+    /**
+     * Set the servers to run the replays to
+     *
+     * @param servers list of servers to run the replays to
+     */
     fun setServers(servers : ArrayList<String?>) {
         this.servers = servers
     }

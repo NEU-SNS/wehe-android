@@ -12,7 +12,9 @@ import mobi.meddle.wehe.R
 import mobi.meddle.wehe.data.bean.Result
 import java.util.Locale
 
-
+/**
+ * Used to display previous results in the previous results list view.
+ */
 class ResultsAdapter(private val context: Context) : BaseAdapter() {
     private var results: List<Result> = emptyList()
 

@@ -1,5 +1,9 @@
 package mobi.meddle.wehe.data.bean
 
+/**
+ * Represents a previous result of a test, which is used to display the results in the
+ * previous results tab
+ */
 data class Result(
     var isPortTest: Boolean,
     var resultNameText: String,

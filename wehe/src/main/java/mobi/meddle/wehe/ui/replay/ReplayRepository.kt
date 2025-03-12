@@ -2,8 +2,6 @@ package mobi.meddle.wehe.ui.replay
 
 import android.content.Context
 import android.content.SharedPreferences
-import javax.net.ssl.HostnameVerifier
-import javax.net.ssl.SSLSocketFactory
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
@@ -19,6 +17,7 @@ import mobi.meddle.wehe.combined.WebSocketConnection
 import mobi.meddle.wehe.constant.Consts
 import mobi.meddle.wehe.data.bean.ApplicationBean
 import mobi.meddle.wehe.data.bean.CombinedAppJSONInfoBean
+import mobi.meddle.wehe.data.bean.JitterBean
 import mobi.meddle.wehe.data.bean.RequestSet
 import mobi.meddle.wehe.data.bean.ServerInstance
 import mobi.meddle.wehe.data.bean.UDPReplayInfoBean
@@ -39,16 +38,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
+import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSession
 import javax.net.ssl.TrustManagerFactory
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 
+/**
+ * Repository for replaying requests and analyzing results for replayed requests from the server
+ */
 class ReplayRepository @Inject constructor(private val context: Context) {
     // Server and certificate management
-    var hostnameVerifier: HostnameVerifier? = null
-    var sslSocketFactory: SSLSocketFactory? = null
     var serverRepository: ServerRepository = ServerRepository()
     val servers = ArrayList<String?>()
     val wsConns = ArrayList<WebSocketConnection>()
@@ -184,17 +185,14 @@ class ReplayRepository @Inject constructor(private val context: Context) {
             if (wsConns.size != numTests) {
                 Log.i("GetReplayServerIP", "Can't get MLab server, trying Amazon")
                 servers.clear()
-                for (ws in wsConns) {
-                    if (ws.isOpen) {
-                        ws.close()
-                    }
-                }
-                wsConns.clear()
+                closeWebSocketConnections("clear")
                 if (isTomography) {
+                    // Users cannot run tomogrophy tests without MLab servers
                     return Result.failure(Exception(context.getString(R.string.tomography_not_supported)))
                 }
                 servers.add(serverRepository.getServerIP("wehe2.meddle.mobi"))
             }
+
             return Result.success(true)
         } catch (e: Exception) {
             Log.e("WebSocket", "Can't retrieve M-Lab servers", e)
@@ -232,11 +230,9 @@ class ReplayRepository @Inject constructor(private val context: Context) {
             val context = SSLContext.getInstance("TLS")
             context.init(null, tmf.trustManagers, null)
             if (main) {
-                sslSocketFactory = context.socketFactory
-                hostnameVerifier =
+                serverRepository.sslSocketFactory = context.socketFactory
+                serverRepository.hostnameVerifier =
                     HostnameVerifier { hostname: String?, session: SSLSession? -> true }
-                serverRepository.sslSocketFactory = sslSocketFactory
-                serverRepository.hostnameVerifier = hostnameVerifier
             }
         } catch (e: Exception) {
             Log.e("Certificates", "Error generating certificates", e)
@@ -260,7 +256,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
     /**
      * Retrieves a replay result from the server
      */
-    fun getSingleResult(url: String, id: String?, historyCount: Int): JSONObject? {
+    private fun getSingleResult(url: String, id: String?, historyCount: Int): JSONObject? {
         val data = ArrayList<String>()
 
         data.add("userID=$id")
@@ -274,7 +270,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
     /**
      * Reads the replay files and loads them into memory as a bean
      */
-    fun loadAppData(filename: String): CombinedAppJSONInfoBean {
+    private fun loadAppData(filename: String): CombinedAppJSONInfoBean {
         val appData = CombinedAppJSONInfoBean()
         val Q = ArrayList<RequestSet>()
 
@@ -409,22 +405,31 @@ class ReplayRepository @Inject constructor(private val context: Context) {
      * @param appData The app data for the test
      * @return List of created side channels
      */
-    fun setupSideChannels(appData: CombinedAppJSONInfoBean): ArrayList<CombinedSideChannel> {
+    fun setupSideChannels(appData: CombinedAppJSONInfoBean): Pair<ArrayList<CombinedSideChannel>, ArrayList<JitterBean>> {
         val sideChannelPort = Config.get("combined_sidechannel_port").toInt()
         val sideChannels = ArrayList<CombinedSideChannel>()
+        val jitterBeans = ArrayList<JitterBean>()
+        val maxRetries = 3
 
-        var id = 0
-        for (server in servers) {
-            sideChannels.add(
-                CombinedSideChannel(
-                    id, sslSocketFactory!!,
-                    server, sideChannelPort, appData.isTCP
-                )
-            )
-            id++
+        for ((id, server) in servers.withIndex()) {
+            var retryCount = 0
+            var connected = false
+            while (retryCount < maxRetries && !connected) {
+                try {
+                    val sideChannel = CombinedSideChannel(
+                        id, serverRepository.sslSocketFactory!!,
+                        server, sideChannelPort, appData.isTCP
+                    )
+                    sideChannels.add(sideChannel)
+                    jitterBeans.add(JitterBean())
+                    connected = true
+                } catch (e: Exception) {
+                    retryCount++
+                    Thread.sleep(2000 * retryCount.toLong()) // Exponential backoff
+                }
+            }
         }
-
-        return sideChannels
+        return Pair(sideChannels, jitterBeans)
     }
 
     /**
@@ -433,7 +438,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
      * @param sideChannels The established side channels
      * @return Pair of server ports maps and UDP replay info
      */
-    suspend fun getPortMappingFromServer(sideChannels: ArrayList<CombinedSideChannel>): Pair<
+    fun getPortMappingFromServer(sideChannels: ArrayList<CombinedSideChannel>): Pair<
             ArrayList<HashMap<String, HashMap<String, HashMap<String, ServerInstance>>>>,
             ArrayList<UDPReplayInfoBean>
             > {
@@ -466,7 +471,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
         appData: CombinedAppJSONInfoBean,
         serverPortsMaps: ArrayList<HashMap<String, HashMap<String, HashMap<String, ServerInstance>>>>
     ): ArrayList<HashMap<String, CTCPClient>> {
-        val CSPairMappings = ArrayList<HashMap<String, CTCPClient>>()
+        val csPairMappings = ArrayList<HashMap<String, CTCPClient>>()
 
         for (sc in 0 until servers.size) {
             val CSPairMapping = HashMap<String, CTCPClient>()
@@ -503,10 +508,10 @@ class ReplayRepository @Inject constructor(private val context: Context) {
                 )
                 CSPairMapping[csp] = c
             }
-            CSPairMappings.add(CSPairMapping)
+            csPairMappings.add(CSPairMapping)
         }
 
-        return CSPairMappings
+        return csPairMappings
     }
 
     /**
@@ -538,9 +543,9 @@ class ReplayRepository @Inject constructor(private val context: Context) {
      * @param replayPort The port to check
      * @return True if port is accessible, false if blocked
      */
-    suspend fun checkPortAccess(replayPort: String): Boolean {
+    suspend fun checkPortAccess(replayPort: String): Pair<String, Boolean> {
         val ipThroughProxy = serverRepository.getPublicIP(replayPort)
-        return ipThroughProxy != "-1"
+        return Pair(ipThroughProxy, ipThroughProxy != "-1")
     }
 
     /**
@@ -556,7 +561,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
      * @param ipThroughProxy User's IP address
      * @return List of number of time slices from the server
      */
-    suspend fun initiateTestWithServer(
+    fun initiateTestWithServer(
         sideChannels: ArrayList<CombinedSideChannel>,
         appData: CombinedAppJSONInfoBean,
         randomID: String?,
@@ -626,17 +631,17 @@ class ReplayRepository @Inject constructor(private val context: Context) {
      *
      * @param queue The combined queue of packets to send
      * @param numberOfTypes Number of replay types being run
-     * @param CSPairMappings TCP client mappings
+     * @param csPairMappings TCP client mappings
      * @param udpPortMappings UDP client mappings
      * @param udpReplayInfoBeans UDP replay info
      * @param udpServerMappings UDP server mappings
      * @param context Coroutine context for cancellation
      * @return Elapsed time in seconds
      */
-    suspend fun runPacketQueue(
+    fun runPacketQueue(
         queue: CombinedQueue,
         numberOfTypes: Int,
-        CSPairMappings: ArrayList<HashMap<String, CTCPClient>>,
+        csPairMappings: ArrayList<HashMap<String, CTCPClient>>,
         udpPortMappings: ArrayList<HashMap<String, CUDPClient>>,
         udpReplayInfoBeans: ArrayList<UDPReplayInfoBean>,
         udpServerMappings: ArrayList<HashMap<String, HashMap<String, ServerInstance>>>,
@@ -646,7 +651,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
         val timeStarted = System.nanoTime()
 
         queue.run(
-            updateUIBean, numberOfTypes, CSPairMappings,
+            updateUIBean, numberOfTypes, csPairMappings,
             udpPortMappings, udpReplayInfoBeans, udpServerMappings,
             Config.get("timing").toBoolean(), servers, coroutineContext
         )
@@ -676,7 +681,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
             sc.sendTimeSlices(analyzerTasks[sc.id].averageThroughputsAndSlices)
         }
 
-        // Send Result;No and wait for OK before moving forward
+        // Send Result; No and wait for OK before moving forward
         for (sc in sideChannels) {
             while (sc.getResult(Config.get("result"))) {
                 delay(500)
@@ -702,13 +707,13 @@ class ReplayRepository @Inject constructor(private val context: Context) {
      * Clean up resources after test
      *
      * @param sideChannels The side channels to close
-     * @param CSPairMappings TCP client mappings to close
+     * @param csPairMappings TCP client mappings to close
      * @param udpPortMappings UDP client mappings to close
      * @param appData App data containing client ports
      */
     fun cleanupResources(
         sideChannels: ArrayList<CombinedSideChannel>,
-        CSPairMappings: ArrayList<HashMap<String, CTCPClient>>,
+        csPairMappings: ArrayList<HashMap<String, CTCPClient>>,
         udpPortMappings: ArrayList<HashMap<String, CUDPClient>>,
         appData: CombinedAppJSONInfoBean
     ) {
@@ -718,7 +723,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
         }
 
         // Close TCP sockets
-        for (mapping in CSPairMappings) {
+        for (mapping in csPairMappings) {
             for (csp in appData.tcpCSPs) {
                 mapping[csp]?.close()
             }
@@ -806,6 +811,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
                     }
                 }
 
+                attempt++
                 if (attempt < 3) {
                     delay(2000)
                 } else if (runPortTests) {
@@ -815,7 +821,6 @@ class ReplayRepository @Inject constructor(private val context: Context) {
                 } else {
                     return Result.failure(Exception(context.getString(R.string.not_all_tcp_sent_text)))
                 }
-                attempt++
             }
         }
 
@@ -968,11 +973,16 @@ class ReplayRepository @Inject constructor(private val context: Context) {
     /**
      * Close all connections
      */
-    fun closeConnections() {
-        for (ws in wsConns) {
-            ws.close()
+    private fun closeWebSocketConnections(s: String = "") {
+        Log.i("WebSocket", "Closing all WebSocket connections")
+        for (ws in wsConns) { //close opened WebSockets
+            if (ws.isOpen) {
+                ws.close()
+            }
         }
-//        wsConns.clear()
+        if (s == "clear") {
+            wsConns.clear()
+        }
     }
 
     /**
@@ -984,4 +994,18 @@ class ReplayRepository @Inject constructor(private val context: Context) {
      * Check if MLab server was used
      */
     fun isMlabServerUsed(): Boolean = mlabServerUsed
+
+    /**
+     * Check if server is IPv6
+     */
+    fun isIPv6(): Boolean {
+        return serverRepository.isIPv6
+    }
+
+    /**
+     * Clear all timers
+     */
+    fun clearTimers() {
+        serverRepository.cleanup()
+    }
 }

@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.ui.replay
+//package mobi.meddle.wehe.ui.replay
 //
 //import android.app.AlertDialog
 //import android.content.Context
@@ -82,7 +82,7 @@ package mobi.meddle.wehe.ui.replay
 // * XML layout: activity_replay.xml
 // * adapter.ImageReplayRecyclerViewAdapter.java for layout of each replay
 // */
-//class ReplayActivity : AppCompatActivity() {
+//class Temp : AppCompatActivity() {
 //    // Methods for managing replayOngoing state
 //    var isReplayOngoing: Boolean = false
 //    var selectedApps: ArrayList<ApplicationBean>? = null //apps to run
@@ -188,7 +188,7 @@ package mobi.meddle.wehe.ui.replay
 //    //rerun dialogue
 //    private val rerunListener = View.OnClickListener { //dialogue box to rerun tests
 //        val alertDialog = AlertDialog.Builder(
-//            this@ReplayActivity,
+//            this@Temp,
 //            AlertDialog.THEME_DEVICE_DEFAULT_LIGHT
 //        )
 //            .setTitle(R.string.rerun_test_title)
@@ -218,7 +218,7 @@ package mobi.meddle.wehe.ui.replay
 //        //automatically pops up when tests end if some tests have differentiation
 //        //asks if user wants to run tomography test
 //        AlertDialog.Builder(
-//            this@ReplayActivity,
+//            this@Temp,
 //            AlertDialog.THEME_DEVICE_DEFAULT_LIGHT
 //        )
 //            .setTitle(R.string.localize_diff)
@@ -295,7 +295,7 @@ package mobi.meddle.wehe.ui.replay
 //        super.onCreate(savedInstanceState)
 //        setContentView(R.layout.activity_replay)
 //        val mToolbar = findViewById<Toolbar>(R.id.replay_bar)
-//        serverRepository = ServerRepository(this@ReplayActivity)
+//        serverRepository = ServerRepository()
 //        setSupportActionBar(mToolbar)
 //        if (supportActionBar != null) {
 //            supportActionBar!!.title = getString(R.string.replay_page_title)
@@ -339,7 +339,7 @@ package mobi.meddle.wehe.ui.replay
 //        if (isReplayOngoing) {
 //            cancel()
 //            Toast.makeText(
-//                this@ReplayActivity, getText(R.string.replay_aborted),
+//                this@Temp, getText(R.string.replay_aborted),
 //                Toast.LENGTH_LONG
 //            ).show()
 //        }
@@ -382,9 +382,9 @@ package mobi.meddle.wehe.ui.replay
 //     * Display this popup message if there is no network
 //     */
 //    private fun displayNoNetworkDialogue() {
-//        this@ReplayActivity.runOnUiThread {
+//        this@Temp.runOnUiThread {
 //            AlertDialog.Builder(
-//                this@ReplayActivity,
+//                this@Temp,
 //                AlertDialog.THEME_DEVICE_DEFAULT_LIGHT
 //            )
 //                .setTitle(getString(R.string.network_error))
@@ -400,13 +400,13 @@ package mobi.meddle.wehe.ui.replay
 //     */
 //    private fun replayStop() {
 //        if (!isReplayOngoing) {
-//            this@ReplayActivity.finish() //calls onDestroy
-//            this@ReplayActivity.overridePendingTransition(
+//            this@Temp.finish() //calls onDestroy
+//            this@Temp.overridePendingTransition(
 //                android.R.anim.slide_in_left, android.R.anim.slide_out_right
 //            )
 //        } else {
 //            AlertDialog.Builder(
-//                this@ReplayActivity,  //pop up box
+//                this@Temp,  //pop up box
 //                AlertDialog.THEME_DEVICE_DEFAULT_LIGHT
 //            )
 //                .setTitle(getString(R.string.interrupt_ongoing_replay_title))
@@ -415,8 +415,8 @@ package mobi.meddle.wehe.ui.replay
 //                    getString(android.R.string.yes)
 //                )  //yes button
 //                { dialog, which -> //calls onDestroy
-//                    this@ReplayActivity.finish() //go back to SelectionFragment
-//                    this@ReplayActivity.overridePendingTransition(
+//                    this@Temp.finish() //go back to SelectionFragment
+//                    this@Temp.overridePendingTransition(
 //                        android.R.anim.slide_in_left,
 //                        android.R.anim.slide_out_right
 //                    )
@@ -522,16 +522,16 @@ package mobi.meddle.wehe.ui.replay
 //                    }
 //                }
 //                values[0].equals("makeToast", ignoreCase = true) -> {
-//                    Toast.makeText(this@ReplayActivity, values[1], Toast.LENGTH_LONG).show()
+//                    Toast.makeText(this@Temp, values[1], Toast.LENGTH_LONG).show()
 //                }
 //                values[0].equals("makeDialog", ignoreCase = true) -> {
 //                    //Display dialogue when replays finished or if there is an error that needs pop up.
 //                    //values[1] is title of dialogue, values[2] is message of dialogue
 //                    //values[3] true if the app should go back to the SelectionFragment when the user
-//                    //          clicks OK; else the app stays in the ReplayActivity
+//                    //          clicks OK; else the app stays in the Temp
 //                    val exitReplays = values[3].toBoolean()
 //                    AlertDialog.Builder(
-//                        this@ReplayActivity,
+//                        this@Temp,
 //                        AlertDialog.THEME_DEVICE_DEFAULT_LIGHT
 //                    )
 //                        .setTitle(values[1])
