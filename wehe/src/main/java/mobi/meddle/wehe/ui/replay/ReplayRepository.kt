@@ -973,7 +973,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
     /**
      * Close all connections
      */
-    private fun closeWebSocketConnections(s: String = "") {
+    fun closeWebSocketConnections(s: String = "") {
         Log.i("WebSocket", "Closing all WebSocket connections")
         for (ws in wsConns) { //close opened WebSockets
             if (ws.isOpen) {

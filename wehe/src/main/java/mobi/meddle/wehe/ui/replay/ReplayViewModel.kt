@@ -447,7 +447,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
                     return@let
                 }
 
-                if (!firstApp && repository.isMlabServerUsed()) {
+                if (!(firstApp && repository.isMlabServerUsed())) {
                     if (!setupServersAndCertificates(serverDisplay!!, null)) {
                         return@let
                     }
@@ -476,9 +476,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
                 }
 
 //                // Clean up
-                for (ws in repository.wsConns) {
-                    ws?.close()
-                }
+                repository.closeWebSocketConnections()
 
                 repository.clearTimers()
 
