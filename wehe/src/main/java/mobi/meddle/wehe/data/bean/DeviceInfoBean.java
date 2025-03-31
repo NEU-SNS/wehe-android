@@ -36,7 +36,6 @@ public class DeviceInfoBean {
     //public String phoneType;
     public String carrierName;
     public String networkType;
-
     public String cellInfo;
     public Location location;
 

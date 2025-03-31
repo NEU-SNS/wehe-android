@@ -44,6 +44,7 @@ import javax.net.ssl.SSLSession
 import javax.net.ssl.TrustManagerFactory
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
+import kotlin.math.log
 
 /**
  * Repository for replaying requests and analyzing results for replayed requests from the server
@@ -100,6 +101,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
         // Connect to an MLab server if needed
         mlabServerUsed = false
         if (servers[0] == "10.0.0.0" || serverIPisV6) {
+            mlabServerUsed = true
             val result = connectToMLabServers(numTests, isTomography)
             if (!result.isSuccess) {
                 return result
@@ -915,6 +917,10 @@ class ReplayRepository @Inject constructor(private val context: Context) {
                     inconclusive = true
                 }
             }
+
+            // Uncomment for differentiation to occur
+//            differentiation = true
+//            inconclusive = true
 
             // Create error message if differentiation
             var errorMessage: String? = null
