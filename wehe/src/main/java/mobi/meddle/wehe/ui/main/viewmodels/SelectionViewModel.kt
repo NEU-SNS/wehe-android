@@ -18,7 +18,7 @@ import java.io.InputStreamReader
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.SavedStateHandle
-import mobi.meddle.wehe.ui.main.fragments.SelectionUiState
+import mobi.meddle.wehe.data.model.SelectionUiState
 import javax.inject.Inject
 
 class SelectionViewModel @Inject constructor(

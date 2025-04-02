@@ -1,226 +1,219 @@
-//package mobi.meddle.wehe.ui.main.fragments
-//
-//import android.os.Bundle
-//import android.view.View
-//import android.widget.EditText
-//import android.widget.LinearLayout
-//import android.widget.Toast
-//import androidx.appcompat.app.AlertDialog
-//import androidx.appcompat.app.AppCompatActivity
-//import androidx.fragment.app.viewModels
-//import androidx.lifecycle.Observer
-//import androidx.preference.EditTextPreference
-//import androidx.preference.ListPreference
-//import androidx.preference.Preference
-//import androidx.preference.PreferenceFragmentCompat
-//import androidx.preference.SwitchPreference
-//import androidx.recyclerview.widget.RecyclerView
-//import com.google.android.material.navigation.NavigationView
-//import dagger.hilt.android.AndroidEntryPoint
-//import mobi.meddle.wehe.R
-//import mobi.meddle.wehe.ui.main.MainActivity
-//import mobi.meddle.wehe.ui.main.viewmodels.SettingsViewModel
-//import java.util.Objects
-//
-///**
-// * Settings Fragment controls the app settings and uses most of the elements from Default Shared
-// * Preferences
-// * Settings item in navigation bar (menu.drawer_view.xml)
-// * XML layout: xml.preferences.xml
-// */
-//@AndroidEntryPoint
-//class SettingsFragment : PreferenceFragmentCompat() {
-//    companion object {
-//        const val TAG = "SettingsFragment"
-//    }
-//
-//    // Use Hilt to inject the ViewModel
-//    private val viewModel: SettingsViewModel by viewModels()
-//
-//    // UI reference objects
-//    private lateinit var serverPref: ListPreference
-//    private lateinit var areaPref: EditTextPreference
-//    private lateinit var ks2pPref: EditTextPreference
-//    private lateinit var defaultSwitch: SwitchPreference
-//
-//    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-//        // Attach fragment to xml.preferences
-//        setPreferencesFromResource(R.xml.preferences, rootKey)
-//
-//        // Initialize UI references
-//        initPreferenceReferences()
-//
-//        // Set up observers for the ViewModel data
-//        setupObservers()
-//
-//        // Attach input listeners
-//        attachListeners()
-//    }
-//
-//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        super.onViewCreated(view, savedInstanceState)
-//
-//        // Remove padding to use full width
-//        view.findViewById<RecyclerView>(androidx.preference.R.id.recycler_view)?.apply {
-//            setPadding(0, paddingTop, 0, paddingBottom)
-//        }
-//    }
-//
-//    private fun initPreferenceReferences() {
-//        serverPref = findPreference(getString(R.string.pref_server_key))!!
-//        areaPref = findPreference(getString(R.string.pref_area_key))!!
-//        ks2pPref = findPreference(getString(R.string.pref_ks2p_key))!!
-//        defaultSwitch = findPreference(getString(R.string.pref_switch_key))!!
-//    }
-//
-//    private fun setupObservers() {
-//        /// Observe changes to settings from the ViewModel
-//        viewModel.serverAddress.observe(this, Observer { server ->
-//            // Only update if the current value is different to prevent loops
-//            if (serverPref.value != server) {
-//                serverPref.value = server
-//                serverPref.summary = String.format(getString(R.string.pref_cur_server), server)
-//            }
-//        })
-//
-//        viewModel.areaThreshold.observe(this, Observer { area ->
-//            areaPref.text = area.toString()
-//            areaPref.summary = String.format(getString(R.string.pref_cur_percent), area)
-//        })
-//
-//        viewModel.ks2pThreshold.observe(this, Observer { ks2p ->
-//            ks2pPref.text = ks2p.toString()
-//            ks2pPref.summary = String.format(getString(R.string.pref_cur_percent), ks2p)
-//        })
-//
-//        viewModel.usingDefaultSettings.observe(this, Observer { isDefault ->
-//            defaultSwitch.isChecked = isDefault
-//        })
-//    }
-//
-//    private fun attachListeners() {
-//        // Area and KS2P validation listener
-//        val numberListener = Preference.OnPreferenceChangeListener { preference, newValue ->
-//            viewModel.validatePercentageInput(newValue.toString()).also { isValid ->
-//                if (!isValid) {
-//                    Toast.makeText(context, getString(R.string.inval_percent), Toast.LENGTH_LONG).show()
-//                }
-//                return@OnPreferenceChangeListener isValid
-//            }
-//        }
-//
-//        // Server change listener
-//        serverPref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { preference, newValue ->
-//            val index = serverPref.findIndexOfValue(newValue.toString())
-//
-//            if (index != serverPref.entries.size - 1) {
-//                // Regular server selected (not custom)
-//                viewModel.updateServerAddress(newValue.toString())
-//                return@OnPreferenceChangeListener true
-//            } else {
-//                // Custom server selected - show dialog
-//                showCustomServerDialog()
-//                return@OnPreferenceChangeListener false
-//            }
-//        }
-//
-//        // Attach number validation listeners
-//        areaPref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
-//            if (numberListener.onPreferenceChange(areaPref, newValue)) {
-//                viewModel.updateAreaThreshold(newValue.toString().toInt())
-//                return@OnPreferenceChangeListener true
-//            }
-//            return@OnPreferenceChangeListener false
-//        }
-//
-//        ks2pPref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
-//            if (numberListener.onPreferenceChange(ks2pPref, newValue)) {
-//                viewModel.updateKs2pThreshold(newValue.toString().toInt())
-//                return@OnPreferenceChangeListener true
-//            }
-//            return@OnPreferenceChangeListener false
-//        }
-//
-//        // Default settings switch listener
-//        defaultSwitch.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
-//            val useDefaultSettings = newValue.toString().toBoolean()
-//            if (useDefaultSettings) {
-//                viewModel.resetToDefaultSettings()
-//            }
-//            return@OnPreferenceChangeListener true
-//        }
-//    }
-//
-//    private fun showCustomServerDialog() {
-//        // Create custom server input field
-//        val customServer = EditText(context)
-//        customServer.setText(R.string.cust_server)
-//        customServer.hint = ""
-//
-//        // Create a container with padding
-//        val container = LinearLayout(requireContext()).apply {
-//            orientation = LinearLayout.VERTICAL
-//            setPadding(32, 16, 32, 16)
-//            addView(customServer)
-//        }
-//
-//        // Store previous server value
-//        val oldServer = viewModel.serverAddress.value
-//
-//        // Show dialog for custom server input
-//        AlertDialog.Builder(requireContext())
-//            .setTitle(getString(R.string.cust_server))
-//            .setView(container)
-//            .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
-//                val customServerText = customServer.text.toString().toLowerCase()
-//                if (viewModel.validateServerAddress(customServerText)) {
-//                    viewModel.updateServerAddress(customServerText)
-//                } else {
-//                    Toast.makeText(context, getString(R.string.inval_server), Toast.LENGTH_LONG).show()
-//                    // Revert to previous server if validation fails
-//                    oldServer?.let { viewModel.updateServerAddress(it) }
-//                }
-//            }
-//            .setNegativeButton(getString(android.R.string.cancel)) { dialog, _ ->
-//                // User cancels; revert to previous server
-//                oldServer?.let { viewModel.updateServerAddress(it) }
-//                dialog.cancel()
-//            }
-//            .create()
-//            .show()
-//    }
-//
-//    override fun onResume() {
-//        super.onResume()
-//
-//        // Update action bar title
-//        updateActionBarTitle()
-//
-//        // Update navigation drawer selection
-//        updateNavigationDrawerSelection()
-//
-//        // Load current settings from preferences
-//        viewModel.loadCurrentSettings()
-//    }
-//
-//    private fun updateActionBarTitle() {
-//        if (activity is AppCompatActivity) {
-//            val actionBar = (activity as AppCompatActivity).supportActionBar
-//            actionBar?.title = "Settings"
-//        }
-//    }
-//
-//    private fun updateNavigationDrawerSelection() {
-//        if (activity is MainActivity) {
-//            val mainActivity = activity as MainActivity
-//            val navigationView = mainActivity.findViewById<NavigationView>(R.id.nav_view)
-//            navigationView?.let { navView ->
-//                // Clear all selections
-//                for (i in 0 until navView.menu.size()) {
-//                    val menuItem = navView.menu.getItem(i)
-//                    menuItem.isChecked = Objects.requireNonNull(menuItem.title).toString() == "Settings"
-//                }
-//            }
-//        }
-//    }
-//}
+package mobi.meddle.wehe.ui.main.fragments
+
+import android.os.Bundle
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SwitchPreference
+import com.google.android.material.navigation.NavigationView
+import dagger.hilt.android.AndroidEntryPoint
+import mobi.meddle.wehe.R
+import mobi.meddle.wehe.constant.Consts
+import mobi.meddle.wehe.ui.main.MainActivity
+import java.util.Locale
+import java.util.Objects
+
+/**
+ * @author Alankrit Joshi, Derek Ng
+ * Settings Fragment controls the app settings and uses most of the elements from Default Shared
+ * Preferences
+ * Settings item in navigation bar (menu.drawer_view.xml)
+ * XML layout: xml.preferences.xml
+ */
+@AndroidEntryPoint
+class SettingsFragment : PreferenceFragmentCompat() {
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        //attach fragment to xml.preferences
+        setPreferencesFromResource(R.xml.preferences, rootKey)
+        setCurrentPreferences()
+        attachListeners()
+    }
+
+    /**
+     * Set the summary labels to display the current values of the server, area, and ks2p when
+     * loading page or when using defaults.
+     */
+    private fun setCurrentPreferences() {
+        val serverPref =
+            checkNotNull(preferenceScreen.findPreference<ListPreference>(getString(R.string.pref_server_key)))
+        serverPref.summary =
+            String.format(getString(R.string.pref_cur_server), serverPref.value)
+
+        val areaPref =
+            checkNotNull(preferenceScreen.findPreference<EditTextPreference>(getString(R.string.pref_area_key)))
+        areaPref.summary = String.format(
+            getString(R.string.pref_cur_percent),
+            areaPref.text!!.toInt()
+        )
+
+        val ks2pPref =
+            checkNotNull(preferenceScreen.findPreference<EditTextPreference>(getString(R.string.pref_ks2p_key)))
+        ks2pPref.summary = String.format(
+            getString(R.string.pref_cur_percent),
+            ks2pPref.text!!.toInt()
+        )
+    }
+
+    private fun attachListeners() {
+        //determines if input is valid number between 0 and 100, used for area and ks2p
+        val numberListener =
+            Preference.OnPreferenceChangeListener { preference, newValue ->
+                try {
+                    val newNumber = newValue.toString().toInt(10)
+                    if (newNumber >= 0 && newNumber <= 100) {
+                        preference.summary = String.format(
+                            getString(R.string.pref_cur_percent),
+                            newNumber
+                        )
+                        return@OnPreferenceChangeListener true
+                    }
+                } catch (ignored: NumberFormatException) {
+                }
+                Toast.makeText(context, getString(R.string.inval_percent), Toast.LENGTH_LONG).show()
+                false
+            }
+
+        //set custom server
+        val servPref = checkNotNull(
+            preferenceScreen.findPreference<ListPreference>(getString(R.string.pref_server_key))
+        )
+        val changeCurrentText =
+            Preference.OnPreferenceChangeListener { preference, newValue ->
+                val index = servPref.findIndexOfValue(newValue.toString())
+                if (index != servPref.entries.size - 1) { //not custom server
+                    preference.summary = String.format(
+                        getString(R.string.pref_cur_server),
+                        newValue.toString()
+                    )
+                    return@OnPreferenceChangeListener true
+                }
+
+                /*custom server*/
+                //custom server text box
+                val customServer = EditText(context)
+                customServer.setText(R.string.cust_server)
+                customServer.hint = ""
+
+                //get previous server if user cancels typing in new server
+                val oldServer = preference.sharedPreferences!!.getString(
+                    getString(R.string.pref_server_key), Consts.DEFAULT_SERVER
+                )
+
+                //dialogue to popup to let user type in new server
+                AlertDialog.Builder(requireContext())
+                    .setTitle(getString(R.string.cust_server))
+                    .setView(customServer)
+                    .setPositiveButton(
+                        getString(android.R.string.ok)
+                    ) { dialog, which -> //set new server
+                        val customServerText =
+                            customServer.text.toString().lowercase(Locale.getDefault())
+                        if (customServerText.matches("[a-z0-9.-]+".toRegex())) {
+                            servPref.value = customServerText
+                            preference.summary = String.format(
+                                getString(R.string.pref_cur_server),
+                                customServerText
+                            )
+                        } else {
+                            Toast.makeText(
+                                context, getString(R.string.inval_server),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                    .setNegativeButton(
+                        getString(android.R.string.cancel)
+                    ) { dialog, which -> //user cancels; set server to the previous server
+                        servPref.value = oldServer
+                        dialog.cancel()
+                    }
+                    .create().show()
+                true
+            }
+
+        //use default settings switch
+        val switchListener =
+            Preference.OnPreferenceChangeListener { preference, newValue ->
+                val defaultSettings = newValue.toString().toBoolean()
+                if (!defaultSettings) {
+                    return@OnPreferenceChangeListener true
+                }
+
+                val serverPref =
+                    preferenceScreen.findPreference<ListPreference>(getString(R.string.pref_server_key))
+                val areaPref =
+                    preferenceScreen.findPreference<EditTextPreference>(
+                        getString(R.string.pref_area_key)
+                    )
+                val ks2pPref =
+                    preferenceScreen.findPreference<EditTextPreference>(
+                        getString(R.string.pref_ks2p_key)
+                    )
+
+                checkNotNull(serverPref)
+                serverPref.value = Consts.DEFAULT_SERVER
+                checkNotNull(areaPref)
+                areaPref.text = Consts.A_THRESHOLD.toString()
+                checkNotNull(ks2pPref)
+                ks2pPref.text = Consts.KS2PVAL_THRESHOLD.toString()
+
+                setCurrentPreferences()
+                true
+            }
+
+        //attach the listeners
+        val areaPref = checkNotNull(
+            preferenceScreen.findPreference<EditTextPreference>(getString(R.string.pref_area_key))
+        )
+        areaPref.onPreferenceChangeListener = numberListener
+
+        val ks2pPref = checkNotNull(
+            preferenceScreen.findPreference<EditTextPreference>(getString(R.string.pref_ks2p_key))
+        )
+        ks2pPref.onPreferenceChangeListener = numberListener
+
+        val serverPref = checkNotNull(
+            preferenceScreen.findPreference<ListPreference>(getString(R.string.pref_server_key))
+        )
+        serverPref.onPreferenceChangeListener = changeCurrentText
+
+        val defaultSwitch = checkNotNull(
+            preferenceScreen.findPreference<SwitchPreference>(getString(R.string.pref_switch_key))
+        )
+        defaultSwitch.onPreferenceChangeListener = switchListener
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (activity is AppCompatActivity) {
+            val actionBar = (activity as AppCompatActivity).supportActionBar
+            if (actionBar != null) {
+                actionBar.title = "Settings"
+            }
+        }
+
+        // Update navigation drawer selection
+        if (activity is MainActivity) {
+            val mainActivity = activity as MainActivity?
+            val navigationView = mainActivity!!.findViewById<NavigationView>(R.id.nav_view)
+            if (navigationView != null) {
+                // Clear all selections
+                for (i in 0 until navigationView.menu.size()) {
+                    val menuItem = navigationView.menu.getItem(i)
+                    menuItem.setChecked(
+                        Objects.requireNonNull(menuItem.title).toString() == "Settings"
+                    )
+                }
+            }
+        }
+    }
+
+    companion object {
+        const val TAG: String = "SettingsFragment"
+    }
+}
