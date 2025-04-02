@@ -864,15 +864,14 @@ class ReplayViewModel @Inject constructor(application : Application, private val
      * @param isConfirmation Whether this is a confirmation test
      * @param isTomography Whether this is a tomography test
      * @param carrier Carrier name for tomography tests
-     * @param results JSONArray for storing results
      * @return ResultState containing the status of the test
      */
     private suspend fun processResults(
         analysis: ReplayRepository.ResultAnalysis,
         isConfirmation: Boolean,
         isTomography: Boolean,
-        carrier: String,
-        results: JSONArray
+        carrier: String
+//        results: JSONArray
     ): ResultState {
         val current = applicationContext.resources?.configuration?.locale
         val country = current?.country
@@ -885,8 +884,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
 
         if (needsConfirmation) {
             app?.let {
-                applicationContext.getString(R.string.confirmation_replay)
-                    ?.let { message -> updateAppStatus(it.name, message) }
+                updateAppStatus(it.name, applicationContext.getString(R.string.confirmation_replay))
             }
             return ResultState(
                 needsConfirmation = true,
@@ -960,7 +958,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
             }
         }
 
-        results.put(response)
+        results?.put(response)
 
         return ResultState(
             needsConfirmation = false,
@@ -1090,8 +1088,8 @@ class ReplayViewModel @Inject constructor(application : Application, private val
                     analysis = analysis,
                     isConfirmation = isConfirmation,
                     isTomography = isTomography,
-                    carrier = it,
-                    results = results!!
+                    carrier = it
+//                    results = results!!
                 )
             }
 

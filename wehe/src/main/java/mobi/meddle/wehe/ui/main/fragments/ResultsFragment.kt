@@ -41,7 +41,7 @@ class ResultsFragment : Fragment() {
             resultsAdapter.updateResults(results)
         }
 
-        viewModel.loadResults(requireContext())
+        viewModel.loadResults(requireContext().applicationContext)
     }
 
     private fun setupNavigationSelection() {

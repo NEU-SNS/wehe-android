@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.preference.PreferenceManager
 import kotlinx.coroutines.launch
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.data.bean.Result
@@ -24,19 +25,20 @@ class ResultsViewModel : ViewModel() {
     fun loadResults(context: Context) {
         viewModelScope.launch {
             try {
-                val history = context.getSharedPreferences(
-                    ReplayActivity.STATUS, Context.MODE_PRIVATE)
-                val resultsWithDate = JSONObject(history.getString("lastResult", "{}"))
+                val history = PreferenceManager.getDefaultSharedPreferences(context)
+                val resultsWithDate = history.getString("lastResult", "{}")?.let { JSONObject(it) }
                 val resultsList = ArrayList<Result>()
 
-                if (resultsWithDate.length() > 0) {
-                    val iter = resultsWithDate.keys()
-                    while (iter.hasNext()) {
-                        val currentDate = iter.next()
-                        val responses = resultsWithDate.getJSONArray(currentDate)
-                        for (i in 0 until responses.length()) {
-                            val response = responses.getJSONObject(i)
-                            resultsList.add(parseResult(response, context))
+                if (resultsWithDate != null) {
+                    if (resultsWithDate.length() > 0) {
+                        val iter = resultsWithDate.keys()
+                        while (iter.hasNext()) {
+                            val currentDate = iter.next()
+                            val responses = resultsWithDate.getJSONArray(currentDate)
+                            for (i in 0 until responses.length()) {
+                                val response = responses.getJSONObject(i)
+                                resultsList.add(parseResult(response, context))
+                            }
                         }
                     }
                 }

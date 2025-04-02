@@ -355,32 +355,37 @@ class ReplayRepository @Inject constructor(private val context: Context) {
         val dateFormat: DateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US)
         val strDate = dateFormat.format(Date())
 
-        var resultsWithDate = try {
-            JSONObject(settings?.getString("lastResult", "{}"))
+        val resultsWithDate = try {
+            settings?.getString("lastResult", "{}")?.let { JSONObject(it) }
         } catch (e: JSONException) {
             JSONObject()
         }
 
-        if (resultsWithDate.length() >= 10) {
-            val it = resultsWithDate.keys()
-            if (it.hasNext()) {
-                resultsWithDate.remove(it.next())
-            } else {
-                Log.w("Result Channel", "iterator doesn't have next but length is not 0")
+        if (resultsWithDate != null) {
+            if (resultsWithDate.length() >= 10) {
+                val it = resultsWithDate.keys()
+                if (it.hasNext()) {
+                    resultsWithDate.remove(it.next())
+                } else {
+                    Log.w("Result Channel", "iterator doesn't have next but length is not 0")
+                }
             }
         }
 
         try {
-            resultsWithDate.put(strDate, results)
+            resultsWithDate?.put(strDate, results)
         } catch (e: JSONException) {
             Log.e("saveResults", "Error saving results, $e")
             return
         }
 
-        settings?.edit()?.apply {
-            putString("lastResult", resultsWithDate.toString())
-            apply()
-        }
+        val editor = settings!!.edit()
+        editor.putString("lastResult", resultsWithDate.toString())
+        editor.apply()
+//        settings?.edit()?.apply {
+//            putString("lastResult", resultsWithDate.toString())
+//            apply()
+//        }
     }
 
     /**
