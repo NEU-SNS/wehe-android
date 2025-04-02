@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.data.bean;
+package mobi.meddle.wehe.data.model;
 
 import java.nio.channels.DatagramChannel;
 import java.util.ArrayList;

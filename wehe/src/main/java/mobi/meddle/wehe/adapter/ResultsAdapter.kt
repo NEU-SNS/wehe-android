@@ -9,7 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import mobi.meddle.wehe.R
-import mobi.meddle.wehe.data.bean.Result
+import mobi.meddle.wehe.data.model.Result
 import java.util.Locale
 
 /**

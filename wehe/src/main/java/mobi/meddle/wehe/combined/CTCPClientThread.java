@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
-import mobi.meddle.wehe.data.bean.RequestSet;
+import mobi.meddle.wehe.data.model.RequestSet;
 import mobi.meddle.wehe.util.Config;
 
 // @@@ Adrian add this

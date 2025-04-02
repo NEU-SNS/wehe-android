@@ -1,8 +1,5 @@
-package mobi.meddle.wehe.ui.replay
+package mobi.meddle.wehe.data.service
 
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
-import retrofit2.http.Field
 import retrofit2.http.FieldMap
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET

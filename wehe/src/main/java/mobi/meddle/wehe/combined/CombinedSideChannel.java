@@ -22,9 +22,9 @@ import java.util.Locale;
 
 import javax.net.ssl.SSLSocketFactory;
 
-import mobi.meddle.wehe.data.bean.DeviceInfoBean;
-import mobi.meddle.wehe.data.bean.ServerInstance;
-import mobi.meddle.wehe.data.bean.UDPReplayInfoBean;
+import mobi.meddle.wehe.data.model.DeviceInfoBean;
+import mobi.meddle.wehe.data.model.ServerInstance;
+import mobi.meddle.wehe.data.model.UDPReplayInfoBean;
 
 /**
  * This side channel is used to communicate with the server in bytes mode and to

@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.ui.replay
+package mobi.meddle.wehe.di
 
 import android.app.Application
 import android.content.Context

@@ -29,10 +29,11 @@ import mobi.meddle.wehe.combined.CombinedNotifierThread
 import mobi.meddle.wehe.combined.CombinedQueue
 import mobi.meddle.wehe.combined.CombinedReceiverThread
 import mobi.meddle.wehe.constant.Consts
-import mobi.meddle.wehe.data.bean.ApplicationBean
-import mobi.meddle.wehe.data.bean.CombinedAppJSONInfoBean
-import mobi.meddle.wehe.data.bean.ServerInstance
-import mobi.meddle.wehe.data.bean.UpdateUIBean
+import mobi.meddle.wehe.data.model.ApplicationBean
+import mobi.meddle.wehe.data.model.CombinedAppJSONInfoBean
+import mobi.meddle.wehe.data.model.ServerInstance
+import mobi.meddle.wehe.data.model.UpdateUIBean
+import mobi.meddle.wehe.data.repository.ReplayRepository
 import mobi.meddle.wehe.util.Config
 import mobi.meddle.wehe.util.RandomString
 import org.json.JSONArray
@@ -219,22 +220,22 @@ class ReplayViewModel @Inject constructor(application : Application, private val
         execute()
     }
 
-    /**
-     * Prepare for tomography tests
-     */
-    fun prepareTomographyTests() {
-        isTomography = true
-        selectedApps = ArrayList(diffApps)
-
-        for (app in selectedApps!!) {
-            app.isTomography = true
-            app.arcepNeedsAlerting = false
-            app.isAlertFCC = false
-            app.status = applicationContext.getString(R.string.pending) ?: "Pending"
-        }
-
-        execute()
-    }
+//    /**
+//     * Prepare for tomography tests
+//     */
+//    fun prepareTomographyTests() {
+//        isTomography = true
+//        selectedApps = ArrayList(diffApps)
+//
+//        for (app in selectedApps!!) {
+//            app.isTomography = true
+//            app.arcepNeedsAlerting = false
+//            app.isAlertFCC = false
+//            app.status = applicationContext.getString(R.string.pending) ?: "Pending"
+//        }
+//
+//        execute()
+//    }
 
     /**
      * Update app status
@@ -1112,12 +1113,10 @@ class ReplayViewModel @Inject constructor(application : Application, private val
     private fun logWebSocketConnections(prefix: String = "") {
 
         for ((id, w) in repository.wsConns.withIndex()) {
-            if (w != null) {
-                Log.d(
-                    "WebSocket", (prefix + "WebSocket (id: " + id + ") connectivity check: "
-                            + (if (w.isOpen) "CONNECTED" else "CLOSED"))
-                )
-            }
+            Log.d(
+                "WebSocket", (prefix + "WebSocket (id: " + id + ") connectivity check: "
+                        + (if (w.isOpen) "CONNECTED" else "CLOSED"))
+            )
         }
     }
 }

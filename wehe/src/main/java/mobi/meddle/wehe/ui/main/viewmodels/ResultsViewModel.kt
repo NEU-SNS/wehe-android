@@ -10,8 +10,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.launch
 import mobi.meddle.wehe.R
-import mobi.meddle.wehe.data.bean.Result
-import mobi.meddle.wehe.ui.replay.ReplayActivity
+import mobi.meddle.wehe.data.model.Result
 import org.json.JSONException
 import org.json.JSONObject
 import java.text.DateFormat

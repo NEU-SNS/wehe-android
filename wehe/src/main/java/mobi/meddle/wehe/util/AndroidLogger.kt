@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.ui.replay
+package mobi.meddle.wehe.util
 
 import android.util.Log
 import javax.inject.Inject

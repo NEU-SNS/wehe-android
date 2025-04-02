@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.data.bean;
+package mobi.meddle.wehe.data.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;

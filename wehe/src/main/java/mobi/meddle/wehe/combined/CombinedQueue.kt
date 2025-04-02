@@ -3,11 +3,11 @@ package mobi.meddle.wehe.combined
 import android.util.Log
 import kotlinx.coroutines.isActive
 import mobi.meddle.wehe.constant.Consts
-import mobi.meddle.wehe.data.bean.JitterBean
-import mobi.meddle.wehe.data.bean.RequestSet
-import mobi.meddle.wehe.data.bean.ServerInstance
-import mobi.meddle.wehe.data.bean.UDPReplayInfoBean
-import mobi.meddle.wehe.data.bean.UpdateUIBean
+import mobi.meddle.wehe.data.model.JitterBean
+import mobi.meddle.wehe.data.model.RequestSet
+import mobi.meddle.wehe.data.model.ServerInstance
+import mobi.meddle.wehe.data.model.UDPReplayInfoBean
+import mobi.meddle.wehe.data.model.UpdateUIBean
 import java.util.Objects
 import java.util.Timer
 import java.util.TimerTask

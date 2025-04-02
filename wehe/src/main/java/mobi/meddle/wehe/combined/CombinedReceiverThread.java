@@ -9,8 +9,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.Iterator;
 
-import mobi.meddle.wehe.data.bean.JitterBean;
-import mobi.meddle.wehe.data.bean.UDPReplayInfoBean;
+import mobi.meddle.wehe.data.model.JitterBean;
+import mobi.meddle.wehe.data.model.UDPReplayInfoBean;
 
 /**
  * Receives the UDP throughputs.

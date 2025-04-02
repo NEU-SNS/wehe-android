@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.data.bean
+package mobi.meddle.wehe.data.model
 
 /**
  * Represents a server instance that the client can connect to

@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.data.bean
+package mobi.meddle.wehe.data.model
 
 /**
  * Represents a previous result of a test, which is used to display the results in the

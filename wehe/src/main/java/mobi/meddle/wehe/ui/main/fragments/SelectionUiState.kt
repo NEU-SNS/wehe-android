@@ -1,5 +1,5 @@
 package mobi.meddle.wehe.ui.main.fragments
-import mobi.meddle.wehe.data.bean.ApplicationBean
+import mobi.meddle.wehe.data.model.ApplicationBean
 
 // SelectionUiState.kt
 data class SelectionUiState(

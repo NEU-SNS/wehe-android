@@ -10,7 +10,7 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnitRunner
 import mobi.meddle.wehe.R
-import mobi.meddle.wehe.ui.replay.ReplayRepository
+import mobi.meddle.wehe.data.repository.ReplayRepository
 
 @RunWith(MockitoJUnitRunner::class)
 class AnalysisRequesterTest {

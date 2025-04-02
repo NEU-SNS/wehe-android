@@ -1,38 +1,20 @@
 package mobi.meddle.wehe.data.model
 
 /**
-* Represents a set of network requests
-*/
+ * Represents a packet in a replay to be sent
+ * Fields in this class correspond with the fields in the replay files in the assets directory
+ */
 data class RequestSet(
-    val clientServerPair: String = "",
-    val payload: ByteArray = byteArrayOf(),
-    val timestamp: Double = 0.0,
-    val responseLength: Int? = null,
-    val responseHash: String? = null,
-    val isEnd: Boolean = false
+    var cSPair: String? = null, // client-server pair in the form {client_IP}.{client_port}-{server_IP}.{server_port}
+    var timestamp: Double = 0.0, // time when packet should be sent
+    var payload: ByteArray? = null, // the stuff to send
+    var responseLen: Int = -1, // expected length of response to a TCP packet being sent
+    var responseHash: String? = null, // expected hash of response
+    var end: Boolean = false // for UDP
 ) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+    fun isUDP(): Boolean = responseLen == -1
 
-        other as RequestSet
-        if (clientServerPair != other.clientServerPair) return false
-        if (!payload.contentEquals(other.payload)) return false
-        if (timestamp != other.timestamp) return false
-        if (responseLength != other.responseLength) return false
-        if (responseHash != other.responseHash) return false
-        if (isEnd != other.isEnd) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = clientServerPair.hashCode()
-        result = 31 * result + payload.contentHashCode()
-        result = 31 * result + timestamp.hashCode()
-        result = 31 * result + (responseLength ?: 0)
-        result = 31 * result + (responseHash?.hashCode() ?: 0)
-        result = 31 * result + isEnd.hashCode()
-        return result
+    override fun toString(): String {
+        return "RequestSet(cSPair=$cSPair, responseLen=$responseLen, timestamp=$timestamp)"
     }
 }

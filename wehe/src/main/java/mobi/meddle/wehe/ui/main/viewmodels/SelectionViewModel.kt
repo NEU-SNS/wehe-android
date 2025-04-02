@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.constant.Consts
-import mobi.meddle.wehe.data.bean.ApplicationBean
+import mobi.meddle.wehe.data.model.ApplicationBean
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStream

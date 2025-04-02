@@ -15,7 +15,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.constant.Consts
-import mobi.meddle.wehe.data.bean.ApplicationBean
+import mobi.meddle.wehe.data.model.ApplicationBean
 import mobi.meddle.wehe.ui.replay.ReplayActivity
 import java.util.Locale
 import kotlin.math.min

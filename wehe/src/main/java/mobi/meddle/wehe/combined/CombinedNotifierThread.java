@@ -8,7 +8,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import mobi.meddle.wehe.data.bean.UDPReplayInfoBean;
+import mobi.meddle.wehe.data.model.UDPReplayInfoBean;
 
 /**
  * Class that seemed to keep track of when UDP data was being received. Doesn't seem to do anything

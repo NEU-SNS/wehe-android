@@ -21,7 +21,7 @@ import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.adapter.ImageReplayRecyclerViewAdapter
-import mobi.meddle.wehe.data.bean.ApplicationBean
+import mobi.meddle.wehe.data.model.ApplicationBean
 
 @AndroidEntryPoint
 class ReplayActivity : AppCompatActivity() {

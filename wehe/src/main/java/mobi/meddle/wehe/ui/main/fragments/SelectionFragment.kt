@@ -53,14 +53,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.constant.Consts
-import mobi.meddle.wehe.data.bean.ApplicationBean
+import mobi.meddle.wehe.data.model.ApplicationBean
 import mobi.meddle.wehe.ui.main.MainActivity
 import mobi.meddle.wehe.ui.main.viewmodels.SelectionViewModel
 import mobi.meddle.wehe.ui.replay.ReplayActivity
