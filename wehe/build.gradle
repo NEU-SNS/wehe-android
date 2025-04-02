@@ -8,12 +8,12 @@ android {
 
     defaultConfig {
         applicationId "mobi.meddle.wehe"
-        compileSdk 34
+        compileSdk 35
         minSdkVersion 24
-        targetSdkVersion 34
+        targetSdkVersion 35
 //        multiDexEnabled true
-        versionCode 50
-        versionName "3.8.0"
+        versionCode 54
+        versionName "3.8.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -115,6 +115,18 @@ dependencies {
 
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+
+    // Retrofit (core library)
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+
+    // Moshi Converter (for JSON parsing)
+    implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
+
+    // Logging Interceptor (for debugging network requests)
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.3'
+
+    // Coroutines Support for Retrofit (if using Kotlin Coroutines)
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4'
 }
 kapt {
     correctErrorTypes true

@@ -808,9 +808,9 @@ class ReplayViewModel @Inject constructor(application : Application, private val
 
                 // Update progress bar
                 if (iteration == 1) { //make progress bar to 50%
-                    updateProgress( 50)
+                    finishProgress( 1)
                 } else { //make progress bar to 100%
-                    updateProgress(100)
+                    finishProgress(2)
                     Log.i("UpdateUI", "completed!")
                 }
 
