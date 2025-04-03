@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -51,6 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.ComposeView
@@ -299,7 +301,7 @@ class SelectionFragment : Fragment() {
                             id = getImageResourceByName(app.image, LocalContext.current)
                         ),
                         contentDescription = "${app.name} icon",
-                        modifier = Modifier.size(70.dp)
+                        modifier = Modifier.size(70.dp).clip(RoundedCornerShape(16.dp))
                     )
 
                     Switch(
@@ -310,7 +312,7 @@ class SelectionFragment : Fragment() {
                             checkedTrackColor = Color(0xFF4CAF50),
                             uncheckedTrackColor = Color.LightGray
                         ),
-                        modifier = Modifier.padding(vertical = 4.dp, horizontal = 2.dp)
+                        modifier = Modifier.padding(top = 4.dp, bottom = 4.dp, start = 12.dp, end = 2.dp)
                     )
                 }
         }
