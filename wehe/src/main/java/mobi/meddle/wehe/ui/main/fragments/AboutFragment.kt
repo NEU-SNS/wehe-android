@@ -5,12 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,11 +48,11 @@ class AboutFragment : Fragment() {
     @Composable
     fun AboutScreen(viewModel: AboutViewModel) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(16.dp),
+            modifier = Modifier.background(MaterialTheme.colorScheme.background).fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(text = String.format(getString(R.string.about_text), viewModel.versionName), style= MaterialTheme.typography.bodyLarge)
+            Text(text = String.format(getString(R.string.about_text), viewModel.versionName), style= MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onBackground)
         }
     }
 

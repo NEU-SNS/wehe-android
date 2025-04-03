@@ -259,6 +259,12 @@ class ReplayViewModel @Inject constructor(application : Application, private val
         }
     }
 
+    private suspend fun updateAllAppsToUnavailable() {
+        selectedApps?.forEach { app ->
+            updateAppStatus(app.name, applicationContext.getString(R.string.server_unavailable))
+        }
+    }
+
     /**
      * Update UI progress
      */
@@ -280,8 +286,10 @@ class ReplayViewModel @Inject constructor(application : Application, private val
     /**
      * Show toast message
      */
-    private fun showToast(message: String) {
-        _toastEvent.value = message
+    private suspend fun showToast(message: String) {
+        withContext(Dispatchers.Main) {
+            _toastEvent.value = message
+        }
     }
 
     /**
@@ -371,6 +379,10 @@ class ReplayViewModel @Inject constructor(application : Application, private val
         // Metadata here is user's network type device used geolocation if permitted etc
         metadataServer = Consts.METADATA_SERVER
         if (!setupServersAndCertificates(serverDisplay!!, metadataServer)) {
+            showToast(
+                applicationContext.getString(R.string.server_unavailable)
+            )
+            updateAllAppsToUnavailable()
             return
         }
 
@@ -450,6 +462,10 @@ class ReplayViewModel @Inject constructor(application : Application, private val
 
                 if (!(firstApp && repository.isMlabServerUsed())) {
                     if (!setupServersAndCertificates(serverDisplay!!, null)) {
+                        showToast(
+                            applicationContext.getString(R.string.server_unavailable)
+                        )
+                        updateAllAppsToUnavailable()
                         return@let
                     }
                 }
@@ -476,21 +492,20 @@ class ReplayViewModel @Inject constructor(application : Application, private val
                     runTest(true)
                 }
 
-//                // Clean up
-                repository.closeWebSocketConnections()
-
-                repository.clearTimers()
-
-//                for (t in timers) {
-//                    t.cancel()
-//                }
-//                timers.clear()
+                // Clean up
 
                 // Cancel all UI update jobs
                 for (job in uiUpdateJobs) {
                     job.cancel()
                 }
                 uiUpdateJobs.clear()
+                repository.clearTimers()
+                repository.closeWebSocketConnections()
+
+//                for (t in timers) {
+//                    t.cancel()
+//                }
+//                timers.clear()
 
                 firstApp = false
 

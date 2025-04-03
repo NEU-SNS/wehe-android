@@ -753,7 +753,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
     fun requestAnalysis(randomID: String, historyCount: Int): Result<ArrayList<JSONObject>> {
         val analysisResults = ArrayList<JSONObject>()
 
-        for (server in getAnalyzerServerUrls()) {
+        for (server in analyzerServerUrls) {
             for (retry in 3 downTo 1) {
                 val resp = ask4analysis(server, randomID, historyCount)
                 if (resp == null) {
@@ -765,7 +765,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
             }
         }
 
-        if (analysisResults.size != getAnalyzerServerUrls().size) {
+        if (analysisResults.size != analyzerServerUrls.size) {
             return Result.failure(Exception(context.getString(R.string.error_analysis_fail)))
         }
 
@@ -793,7 +793,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
     suspend fun retrieveResults(randomID: String, historyCount: Int, runPortTests: Boolean): Result<List<JSONObject>> {
         val analysisResults = ArrayList<JSONObject>()
 
-        for (url in getAnalyzerServerUrls()) {
+        for (url in analyzerServerUrls) {
             var attempt = 0
             while (attempt < 3) {
                 val resp = getSingleResult(url, randomID, historyCount)
@@ -994,11 +994,6 @@ class ReplayRepository @Inject constructor(private val context: Context) {
             wsConns.clear()
         }
     }
-
-    /**
-     * Get all analyzer server URLs
-     */
-    fun getAnalyzerServerUrls(): List<String> = analyzerServerUrls
 
     /**
      * Check if MLab server was used

@@ -7,6 +7,7 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
+
 import java.io.IOException
 import java.net.URI
 import java.util.concurrent.CountDownLatch
@@ -135,6 +136,7 @@ class WebSocketConnection(
      * Close the WebSocket.
      */
     fun close() {
+        if (isOpen) {
             // Normal closure status code is 1000
             val closed = webSocket?.close(1000, "Closing connection")
             if (!closed!!) {
@@ -142,6 +144,7 @@ class WebSocketConnection(
             }
             // Force shutdown of connection pools to free resources
             client.dispatcher.executorService.shutdown()
+        }
     }
 
     companion object {

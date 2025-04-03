@@ -228,7 +228,7 @@ class ServerRepository
      * @param server the hostname to be resolved
      * @return the IP of the host; empty string if there is an error doing so.
      */
-    suspend fun getServerIP(server: String): String? = withContext(Dispatchers.IO) {
+    suspend fun getServerIP(server: String): String = withContext(Dispatchers.IO) {
         var server = server
         Log.d("getServerIP", "Server hostname: $server")
         var address: InetAddress?
