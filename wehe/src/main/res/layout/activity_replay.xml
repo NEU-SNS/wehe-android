@@ -30,6 +30,7 @@
             android:layout_height="wrap_content"
             android:max="100"
             android:progress="0"
+            android:background="?android:attr/colorBackground"
             android:visibility="gone" />
     </LinearLayout>
 

@@ -412,7 +412,7 @@ class SelectionFragment : Fragment() {
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(70.dp),
+                .height(60.dp),
             shape = RectangleShape,
             colors = ButtonDefaults.buttonColors(
                 containerColor = WEHE_BLUE,

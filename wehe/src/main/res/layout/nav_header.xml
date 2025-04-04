@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="192dp"
     android:background="?attr/colorPrimary"
-    android:gravity="bottom"
+    android:gravity="center_horizontal|bottom"
     android:orientation="vertical"
     android:padding="@dimen/margin_large"
     android:theme="@style/ThemeOverlay.AppCompat.Light">
@@ -15,11 +15,5 @@
         android:layout_height="@dimen/app_icon"
         android:src="@drawable/app_icon"
         tools:ignore="ContentDescription" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/nav_header"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
 </LinearLayout>

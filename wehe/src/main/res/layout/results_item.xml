@@ -12,7 +12,8 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/white">
+            android:background="?android:attr/colorBackground"
+            >
 
             <ImageView
                 android:id="@+id/appImageView"
@@ -30,6 +31,7 @@
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@+id/appImageView"
                 android:text="@string/Viber"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="@dimen/text_medium"
                 android:textStyle="bold" />
 
@@ -41,6 +43,7 @@
                 android:layout_marginTop="@dimen/margin_medium"
                 android:layout_toEndOf="@+id/appImageView"
                 android:text="@string/Viber"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="@dimen/text_medium" />
 
             <TextView
@@ -51,6 +54,7 @@
                 android:layout_marginTop="@dimen/margin_medium"
                 android:layout_toEndOf="@+id/appImageView"
                 android:text="@string/Viber"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="@dimen/text_medium" />
 
             <TextView
@@ -60,6 +64,7 @@
                 android:layout_below="@+id/appImageView"
                 android:layout_alignParentStart="true"
                 android:text="@string/app_throughput"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="@dimen/text_medium" />
 
             <TextView
@@ -69,6 +74,7 @@
                 android:layout_below="@+id/appImageView"
                 android:layout_alignParentEnd="true"
                 android:text="@string/Viber"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="@dimen/text_medium" />
 
             <TextView
@@ -79,6 +85,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_marginTop="@dimen/margin_medium"
                 android:text="@string/nonapp_throughput"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="@dimen/text_medium" />
 
             <TextView
@@ -89,6 +96,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_marginTop="@dimen/margin_medium"
                 android:text="@string/Viber"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="@dimen/text_medium" />
 
             <TextView
@@ -97,6 +105,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/nonappThroughputNameText"
                 android:layout_marginTop="@dimen/margin_large"
+                android:textColor="?android:attr/textColorPrimary"
                 android:text="@string/ip_type" />
 
             <TextView
@@ -109,7 +118,8 @@
                 android:layout_marginTop="@dimen/margin_large"
                 android:layout_toEndOf="@id/ipTypeTextView"
                 android:gravity="end"
-                android:text="@string/Viber" />
+                android:text="@string/Viber"
+                android:textColor="?android:attr/textColorPrimary"/>
 
             <TextView
                 android:id="@+id/serverTextView"
@@ -119,6 +129,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_marginTop="@dimen/margin_medium"
                 android:text="@string/server"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="@dimen/text_medium" />
 
             <TextView
@@ -132,6 +143,7 @@
                 android:layout_toEndOf="@+id/serverTextView"
                 android:gravity="end"
                 android:text="@string/Viber"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="@dimen/text_medium" />
 
             <TextView
@@ -142,6 +154,7 @@
                 android:layout_alignParentStart="true"
                 android:layout_marginTop="@dimen/margin_medium"
                 android:text="@string/carrier"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="@dimen/text_medium" />
 
             <TextView
@@ -155,6 +168,7 @@
                 android:layout_toEndOf="@+id/carrierTextView"
                 android:gravity="end"
                 android:text="@string/Viber"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="@dimen/text_medium" />
 
         </RelativeLayout>

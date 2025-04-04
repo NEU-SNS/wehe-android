@@ -22,13 +22,13 @@ val WEHE_GREY : Color = Color(0xFFC8D3E6)
 private val DarkColorScheme = darkColorScheme(
     primary = WEHE_BLUE,
     secondary = WEHE_GREY,
-    tertiary = Pink80
+    tertiary = Pink80,
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = WEHE_BLUE,
     secondary = WEHE_GREY,
-    tertiary = Pink40
+    tertiary = Pink40,
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
