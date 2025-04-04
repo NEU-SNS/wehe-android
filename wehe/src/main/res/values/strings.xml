@@ -228,7 +228,7 @@
     <string name="ip_type">IP Version</string>
     <string name="server">Server</string>
     <string name="carrier">Carrier</string>
-    <string name="your_carrier">Your carrier</string>
+    <string name="your_carrier">your carrier</string>
 
     <string name="nav_about">Why Wehe</string>
     <string name="nav_run">Differentiation Tests</string>

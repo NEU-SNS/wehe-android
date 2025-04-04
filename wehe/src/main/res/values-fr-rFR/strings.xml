@@ -152,7 +152,7 @@
     <string name="port_throughput">Débit du port %s</string>
     <string name="server">Serveur</string>
     <string name="carrier">Opérateur</string>
-    <string name="your_carrier">Votre opérateur</string>
+    <string name="your_carrier">votre opérateur</string>
 
     <string name="replay_finished_title">Test terminé</string>
     <string name="pref_summary_threshold_area">Seuil de la différence d\'aire, en % (plus le seuil est faible, plus Wehe sera sensible aux variations de débits)</string>
