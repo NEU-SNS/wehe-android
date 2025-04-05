@@ -309,5 +309,7 @@
     <string name="tomography_not_supported">Tomography tests are not supported on your device.</string>
     <string name="tomo_test_desc">For tests where differentiation was detected, Wehe might be able to determine which network         or ISP is causing such differentiation to occur by running several duplicate tests at the         same time to different Wehe servers and comparing the results. See the \\\"How it Works\\\" page         for more details.</string>
     <string name="unknown_carrier">Unknown Carrier</string>
+    <string name="ongoing_replay_image">ongoing replay image</string>
+    <string name="replay_header_text">Test: %s of 2</string>
 
 </resources>

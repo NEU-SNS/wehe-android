@@ -73,6 +73,10 @@ class ReplayViewModel @Inject constructor(application : Application, private val
     val dialogEvent: LiveData<Triple<String, String, Boolean>> = _dialogEvent
     private val _showRerunTomoButtonsEvent = MutableLiveData<Boolean>()
     val showRerunTomoButtonsEvent: LiveData<Boolean> = _showRerunTomoButtonsEvent
+    private val _currentTestingApp = MutableLiveData<ApplicationBean?>()
+    val currentTestingApp: LiveData<ApplicationBean?> = _currentTestingApp
+    private val _iteration = MutableLiveData<Int>()
+    val iteration: LiveData<Int> = _iteration
 
     // Coroutine jobs
     private var job: Job? = null
@@ -218,6 +222,10 @@ class ReplayViewModel @Inject constructor(application : Application, private val
         inconclusiveApps.clear()
         diffApps.clear()
         execute()
+    }
+
+    private fun updateCurrentTestingApp(app: ApplicationBean?) {
+        _currentTestingApp.postValue(app)
     }
 
 //    /**
@@ -456,6 +464,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
         var firstApp = true
         selectedApps?.let { apps ->
             for (app in apps) {
+                updateCurrentTestingApp(app)
                 if (!isActive) {
                     return@let
                 }
@@ -512,6 +521,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
                 if (!isActive) {
                     return@let
                 }
+                updateCurrentTestingApp(null)
             }
         }
 
@@ -586,6 +596,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
         var iteration = 1
         var portBlocked = false
         for (channel in types) {
+            _iteration.postValue(iteration)
             logWebSocketConnections("Before running test ")
 
             if (!isActive) { //user cancels running tests

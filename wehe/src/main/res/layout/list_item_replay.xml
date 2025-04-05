@@ -144,6 +144,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_marginTop="@dimen/margin_medium"
                 android:text="@string/alert_arcep"
+                android:background="@drawable/rounded_button"
                 android:visibility="gone" />
 
             <Button
@@ -157,7 +158,8 @@
                 android:layout_marginTop="@dimen/margin_medium"
                 android:layout_marginEnd="135dp"
                 android:text="@string/fcc_alert"
-                android:visibility="gone" />
+                android:background="@drawable/rounded_button"
+                android:visibility="visible" />
 
         </RelativeLayout>
 

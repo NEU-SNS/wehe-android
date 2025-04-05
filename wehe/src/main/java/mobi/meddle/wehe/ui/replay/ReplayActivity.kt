@@ -13,6 +13,8 @@ import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.Toast
 import android.app.AlertDialog
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -29,6 +31,9 @@ class ReplayActivity : AppCompatActivity() {
     private val viewModel: ReplayViewModel by viewModels()
     private lateinit var progressBar: ProgressBar
     private lateinit var adapter: ImageReplayRecyclerViewAdapter
+    private lateinit var headerLayout: LinearLayout
+    private lateinit var headerImage: ImageView
+    private lateinit var headerText: TextView
     private val doNothing = DialogInterface.OnClickListener { _, _ -> }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,6 +82,10 @@ class ReplayActivity : AppCompatActivity() {
             }
         }
 
+        headerLayout = findViewById(R.id.headerLayout)
+        headerImage = findViewById(R.id.headerImage)
+        headerText = findViewById(R.id.headerText)
+
         // Observe LiveData from ViewModel
         setupObservers()
     }
@@ -91,6 +100,26 @@ class ReplayActivity : AppCompatActivity() {
         viewModel.statusUpdateEvent.observe(this) { (appName, status) ->
             // Update status of app in adapter
             adapter.notifyDataSetChanged()
+        }
+
+        viewModel.currentTestingApp.observe(this) { appInfo ->
+            if (appInfo != null) {
+
+                val resourceId = resources.getIdentifier(appInfo.image, "drawable", packageName)
+
+                // Update image based on current app
+                if (appInfo.image != null) {
+                    headerImage.setImageResource(resourceId)
+                    headerLayout.visibility = View.VISIBLE
+                }
+            }
+        }
+
+        viewModel.iteration.observe(this) { iter ->
+            if (iter != null) {
+                headerText.text = getString(R.string.replay_header_text, iter.toString())
+                headerLayout.visibility = View.VISIBLE
+            }
         }
 
         // Observe progress updates
