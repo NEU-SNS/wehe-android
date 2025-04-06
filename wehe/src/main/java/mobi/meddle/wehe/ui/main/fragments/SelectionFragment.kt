@@ -486,12 +486,12 @@ class SelectionFragment : Fragment() {
         (activity as? AppCompatActivity)?.supportActionBar?.title =
             if (runPortTests) "Port Tests" else "Differentiation Tests"
 
-        (activity as? MainActivity)?.findViewById<NavigationView>(R.id.nav_view)?.let { nav ->
-            val targetTitle = if (runPortTests) "Port Tests" else "Differentiation Tests"
-            for (i in 0 until nav.menu.size()) {
-                nav.menu.getItem(i).isChecked = nav.menu.getItem(i).title == targetTitle
-            }
-        }
+//        (activity as? MainActivity)?.findViewById<NavigationView>(R.id.nav_view)?.let { nav ->
+//            val targetTitle = if (runPortTests) "Port Tests" else "Differentiation Tests"
+//            for (i in 0 until nav.menu.size()) {
+//                nav.menu.getItem(i).isChecked = nav.menu.getItem(i).title == targetTitle
+//            }
+//        }
     }
 
     private fun updateViewModelValues() {

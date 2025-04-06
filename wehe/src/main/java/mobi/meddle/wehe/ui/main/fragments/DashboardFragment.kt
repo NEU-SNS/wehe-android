@@ -26,9 +26,9 @@ class DashboardFragment : Fragment() {
     ): View? {
         val navigationView = requireActivity().findViewById<NavigationView>(R.id.nav_view)
         val menuItem = navigationView.menu.findItem(R.id.nav_dashboard)
-        if (!menuItem.isChecked) {
-            menuItem.setChecked(true)
-        }
+//        if (!menuItem.isChecked) {
+//            menuItem.setChecked(true)
+//        }
         requireActivity().title = menuItem.title
         return inflater.inflate(R.layout.fragment_dashboard, parent, false)
     }
@@ -52,20 +52,20 @@ class DashboardFragment : Fragment() {
             }
         }
 
-        // Update navigation drawer selection
-        if (activity is MainActivity) {
-            val mainActivity = activity as MainActivity?
-            val navigationView = mainActivity!!.findViewById<NavigationView>(R.id.nav_view)
-            if (navigationView != null) {
-                // Clear all selections
-                for (i in 0 until navigationView.menu.size()) {
-                    val menuItem = navigationView.menu.getItem(i)
-                    menuItem.setChecked(
-                        Objects.requireNonNull(menuItem.title).toString() == "View Online Dashboard"
-                    )
-                }
-            }
-        }
+//        // Update navigation drawer selection
+//        if (activity is MainActivity) {
+//            val mainActivity = activity as MainActivity?
+//            val navigationView = mainActivity!!.findViewById<NavigationView>(R.id.nav_view)
+//            if (navigationView != null) {
+//                // Clear all selections
+//                for (i in 0 until navigationView.menu.size()) {
+//                    val menuItem = navigationView.menu.getItem(i)
+//                    menuItem.setChecked(
+//                        Objects.requireNonNull(menuItem.title).toString() == "View Online Dashboard"
+//                    )
+//                }
+//            }
+//        }
     }
 
     companion object {

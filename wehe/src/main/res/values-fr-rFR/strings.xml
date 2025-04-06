@@ -106,7 +106,7 @@
     <string name="no_diff">Pas de différenciation</string>
     <string name="has_diff">Différenciation détectée</string>
     <string name="inconclusive">Résultats non concluants, essayez de relancer un test</string>
-    <string name="fcc_alert">Alertez la FCC</string>
+    <string name="fcc_alert">Alertez FCC!</string>
     <string name="tomo_failed">La différenciation de localisation a échoué</string>
     <string name="tomo_succ">La différenciation localisée a réussi</string>
     <string name="waiting">En attente des résultats du test</string>

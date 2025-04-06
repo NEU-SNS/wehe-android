@@ -131,7 +131,7 @@
     <string name="no_diff">No differentiation</string>
     <string name="has_diff">Differentiation detected</string>
     <string name="inconclusive">Results inconclusive, try running the test again</string>
-    <string name="fcc_alert">Alert the FCC</string>
+    <string name="fcc_alert">Alert FCC!</string>
     <string name="tomo_failed">Localizing differentiation failed</string>
     <string name="tomo_succ">Localizing differentiation succeeded</string>
     <string name="waiting">Waiting for server result</string>

@@ -47,9 +47,9 @@ class ResultsFragment : Fragment() {
     private fun setupNavigationSelection() {
         val navigationView = requireActivity().findViewById<NavigationView>(R.id.nav_view)
         val menuItem = navigationView.menu.findItem(R.id.nav_results)
-        if (!menuItem.isChecked) {
-            menuItem.isChecked = true
-        }
+//        if (!menuItem.isChecked) {
+//            menuItem.isChecked = true
+//        }
         requireActivity().title = menuItem.title
     }
 
@@ -57,15 +57,15 @@ class ResultsFragment : Fragment() {
         super.onResume()
         (activity as? AppCompatActivity)?.supportActionBar?.title = "Previous Results"
 
-        // Update navigation drawer selection
-        (activity as? MainActivity)?.let { mainActivity ->
-            mainActivity.findViewById<NavigationView>(R.id.nav_view)?.let { navigationView ->
-                // Clear all selections
-                for (i in 0 until navigationView.menu.size()) {
-                    navigationView.menu.getItem(i).isChecked = navigationView.menu.getItem(i).title == "Previous Results"
-                }
-            }
-        }
+//        // Update navigation drawer selection
+//        (activity as? MainActivity)?.let { mainActivity ->
+//            mainActivity.findViewById<NavigationView>(R.id.nav_view)?.let { navigationView ->
+//                // Clear all selections
+//                for (i in 0 until navigationView.menu.size()) {
+//                    navigationView.menu.getItem(i).isChecked = navigationView.menu.getItem(i).title == "Previous Results"
+//                }
+//            }
+//        }
     }
 
     companion object {

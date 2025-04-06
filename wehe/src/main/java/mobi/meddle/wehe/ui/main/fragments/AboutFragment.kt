@@ -119,13 +119,13 @@ class AboutFragment : Fragment() {
         super.onResume()
         (activity as? AppCompatActivity)?.supportActionBar?.title = "Why Wehe"
 
-        // Update navigation drawer selection
-        (activity as? MainActivity)?.let { mainActivity ->
-            mainActivity.findViewById<NavigationView>(R.id.nav_view)?.let { navigationView ->
-                for (i in 0 until navigationView.menu.size()) {
-                    navigationView.menu.getItem(i).isChecked = navigationView.menu.getItem(i).title == "Why Wehe"
-                }
-            }
-        }
+//        // Update navigation drawer selection
+//        (activity as? MainActivity)?.let { mainActivity ->
+//            mainActivity.findViewById<NavigationView>(R.id.nav_view)?.let { navigationView ->
+//                for (i in 0 until navigationView.menu.size()) {
+//                    navigationView.menu.getItem(i).isChecked = navigationView.menu.getItem(i).title == "Why Wehe"
+//                }
+//            }
+//        }
     }
 }

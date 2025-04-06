@@ -65,7 +65,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             Preference.OnPreferenceChangeListener { preference, newValue ->
                 try {
                     val newNumber = newValue.toString().toInt(10)
-                    if (newNumber >= 0 && newNumber <= 100) {
+                    if (newNumber in 0..100) {
                         preference.summary = String.format(
                             getString(R.string.pref_cur_percent),
                             newNumber
@@ -200,16 +200,16 @@ class SettingsFragment : PreferenceFragmentCompat() {
         // Update navigation drawer selection
         if (activity is MainActivity) {
             val mainActivity = activity as MainActivity?
-            val navigationView = mainActivity!!.findViewById<NavigationView>(R.id.nav_view)
-            if (navigationView != null) {
-                // Clear all selections
-                for (i in 0 until navigationView.menu.size()) {
-                    val menuItem = navigationView.menu.getItem(i)
-                    menuItem.setChecked(
-                        Objects.requireNonNull(menuItem.title).toString() == "Settings"
-                    )
-                }
-            }
+//            val navigationView = mainActivity!!.findViewById<NavigationView>(R.id.nav_view)
+//            if (navigationView != null) {
+//                // Clear all selections
+//                for (i in 0 until navigationView.menu.size()) {
+//                    val menuItem = navigationView.menu.getItem(i)
+//                    menuItem.setChecked(
+//                        Objects.requireNonNull(menuItem.title).toString() == "Settings"
+//                    )
+//                }
+//            }
         }
     }
 

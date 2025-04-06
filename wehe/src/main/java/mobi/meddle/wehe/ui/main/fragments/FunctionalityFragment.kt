@@ -25,9 +25,9 @@ class FunctionalityFragment : Fragment() {
     ): View? {
         val navigationView = requireActivity().findViewById<NavigationView>(R.id.nav_view)
         val menuItem = navigationView.menu.findItem(R.id.nav_functionality)
-        if (!menuItem.isChecked) {
-            menuItem.setChecked(true)
-        }
+//        if (!menuItem.isChecked) {
+//            menuItem.setChecked(true)
+//        }
         requireActivity().title = menuItem.title
         return inflater.inflate(R.layout.fragment_functionality, parent, false)
     }
@@ -45,16 +45,16 @@ class FunctionalityFragment : Fragment() {
         super.onResume()
         (activity as? AppCompatActivity)?.supportActionBar?.title = "How it Works"
 
-        // Update navigation drawer selection
-        (activity as? MainActivity)?.let { mainActivity ->
-            mainActivity.findViewById<NavigationView>(R.id.nav_view)?.let { navigationView ->
-                // Clear all selections
-                for (i in 0 until navigationView.menu.size()) {
-                    navigationView.menu.getItem(i).isChecked =
-                        navigationView.menu.getItem(i).title == "How it Works"
-                }
-            }
-        }
+//        // Update navigation drawer selection
+//        (activity as? MainActivity)?.let { mainActivity ->
+//            mainActivity.findViewById<NavigationView>(R.id.nav_view)?.let { navigationView ->
+//                // Clear all selections
+//                for (i in 0 until navigationView.menu.size()) {
+//                    navigationView.menu.getItem(i).isChecked =
+//                        navigationView.menu.getItem(i).title == "How it Works"
+//                }
+//            }
+//        }
     }
 }
 

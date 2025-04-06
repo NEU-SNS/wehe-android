@@ -6,6 +6,8 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -77,8 +79,16 @@ public class MainActivity extends AppCompatActivity {
         // Setup NavigationView with NavController
         NavigationUI.setupWithNavController(mNavigationView, navController);
 
+        // Disable item highlighting
+        Menu menu = mNavigationView.getMenu();
+        for (int i = 0; i < menu.size(); i++) {
+            MenuItem item = menu.getItem(i);
+            item.setCheckable(false); // This ensures it's never "selected"
+        }
+
         // Handle navigation for Why Wehe selection
         mNavigationView.getMenu().findItem(R.id.nav_about).setOnMenuItemClickListener(item -> {
+            item.setChecked(false);
             navController.navigate(R.id.aboutFragment);
             mDrawer.closeDrawer(GravityCompat.START);
             return true;
@@ -86,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle navigation for differentiation test selection
         mNavigationView.getMenu().findItem(R.id.nav_run).setOnMenuItemClickListener(item -> {
+            item.setChecked(false);
             Bundle args = new Bundle();
             args.putBoolean("runPortTest", false);
             args.putString("TAG", Consts.TAG_DIFFERENTIATION_TESTS);
@@ -96,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle navigation for port test selection
         mNavigationView.getMenu().findItem(R.id.nav_run_port).setOnMenuItemClickListener(item -> {
+            item.setChecked(false);
             Bundle args = new Bundle();
             args.putBoolean("runPortTest", true);
             args.putString("TAG", Consts.TAG_PORT_TESTS);
@@ -106,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle navigation for previous results selection
         mNavigationView.getMenu().findItem(R.id.nav_results).setOnMenuItemClickListener(item -> {
+            item.setChecked(false);
             navController.navigate(R.id.resultsFragment);
             mDrawer.closeDrawer(GravityCompat.START);
             return true;
@@ -113,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle navigation for settings selection
         mNavigationView.getMenu().findItem(R.id.nav_settings).setOnMenuItemClickListener(item -> {
+            item.setChecked(false);
             navController.navigate(R.id.settingsFragment);
             mDrawer.closeDrawer(GravityCompat.START);
             return true;
@@ -120,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle navigation for how it works selection
         mNavigationView.getMenu().findItem(R.id.nav_functionality).setOnMenuItemClickListener(item -> {
+            item.setChecked(false);
             navController.navigate(R.id.functionalityFragment);
             mDrawer.closeDrawer(GravityCompat.START);
             return true;
@@ -127,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle navigation for online dashboard selection
         mNavigationView.getMenu().findItem(R.id.nav_dashboard).setOnMenuItemClickListener(item -> {
+            item.setChecked(false);
             navController.navigate(R.id.dashboardFragment);
             mDrawer.closeDrawer(GravityCompat.START);
             return true;

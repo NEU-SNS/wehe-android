@@ -83,6 +83,7 @@
 
             <ImageButton
                 android:id="@+id/ib_reverse_engineer_info"
+                android:background="?android:attr/colorBackground"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
@@ -132,7 +133,7 @@
                 android:layout_marginTop="@dimen/margin_medium"
                 android:layout_marginEnd="0dp"
                 android:layout_toStartOf="@+id/reportToArcep"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:srcCompat="@drawable/arcep"
                 tools:ignore="ContentDescription" />
 
@@ -144,6 +145,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_marginTop="@dimen/margin_medium"
                 android:text="@string/alert_arcep"
+                android:textColor="@color/white"
                 android:background="@drawable/rounded_button"
                 android:visibility="gone" />
 
@@ -158,8 +160,9 @@
                 android:layout_marginTop="@dimen/margin_medium"
                 android:layout_marginEnd="135dp"
                 android:text="@string/fcc_alert"
+                android:textColor="@color/white"
                 android:background="@drawable/rounded_button"
-                android:visibility="visible" />
+                android:visibility="gone" />
 
         </RelativeLayout>
 
