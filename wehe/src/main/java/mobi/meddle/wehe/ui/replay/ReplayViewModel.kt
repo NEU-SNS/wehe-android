@@ -24,6 +24,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mobi.meddle.wehe.R
+import mobi.meddle.wehe.adapter.ImageReplayRecyclerViewAdapter
 import mobi.meddle.wehe.combined.CombinedAnalyzerTask
 import mobi.meddle.wehe.combined.CombinedNotifierThread
 import mobi.meddle.wehe.combined.CombinedQueue
@@ -52,7 +53,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
     val isReplayOngoing: LiveData<Boolean> = _isReplayOngoing
     private var selectedApps: ArrayList<ApplicationBean>? = null // Apps to run
     val diffApps: ArrayList<ApplicationBean> = ArrayList() // Apps with differentiation
-    val inconclusiveApps: ArrayList<ApplicationBean> = ArrayList()
+    val inconclusiveApps: ArrayList<ApplicationBean> = ArrayList() // Adapter for displaying apps
 
     private var runPortTests: Boolean = false
     var carrier: String? = null // Carrier to display in results
@@ -77,6 +78,8 @@ class ReplayViewModel @Inject constructor(application : Application, private val
     val currentTestingApp: LiveData<ApplicationBean?> = _currentTestingApp
     private val _iteration = MutableLiveData<Int>()
     val iteration: LiveData<Int> = _iteration
+    private val _appsList = MutableLiveData<List<ApplicationBean>>()
+    val appsList: LiveData<List<ApplicationBean>> = _appsList
 
     // Coroutine jobs
     private var job: Job? = null
@@ -202,7 +205,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
     /**
      * Prepare for rerun tests
      */
-    fun prepareRerunTests(isRunningDifferentiation: Boolean) {
+    fun prepareRerunTests(isRunningDifferentiation: Boolean) : ArrayList<ApplicationBean> {
         val selectedApps = if (isRunningDifferentiation) {
             ArrayList(diffApps)
         } else {
@@ -221,7 +224,8 @@ class ReplayViewModel @Inject constructor(application : Application, private val
 
         inconclusiveApps.clear()
         diffApps.clear()
-        execute()
+        _appsList.postValue(selectedApps)
+        return selectedApps
     }
 
     private fun updateCurrentTestingApp(app: ApplicationBean?) {
@@ -241,7 +245,6 @@ class ReplayViewModel @Inject constructor(application : Application, private val
 //            app.isAlertFCC = false
 //            app.status = applicationContext.getString(R.string.pending) ?: "Pending"
 //        }
-//
 //        execute()
 //    }
 

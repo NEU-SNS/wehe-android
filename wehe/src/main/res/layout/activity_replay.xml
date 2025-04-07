@@ -83,7 +83,8 @@
     <LinearLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="150dp"
+        android:layout_marginTop="15dp"
         android:layout_below="@id/replay_bar"
         android:orientation="vertical"
         android:visibility="gone"

@@ -923,7 +923,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
             }
 
             // Uncomment for differentiation to occur
-            differentiation = true
+//            differentiation = true
 //            inconclusive = true
 
             // Create error message if differentiation

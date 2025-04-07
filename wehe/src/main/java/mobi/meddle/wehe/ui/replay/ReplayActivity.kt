@@ -174,6 +174,11 @@ class ReplayActivity : AppCompatActivity() {
         viewModel.showRerunTomoButtonsEvent.observe(this) { show ->
             if (show) displayRerunTomoButtons()
         }
+
+        // update apps list in adapter
+        viewModel.appsList.observe(this) { apps ->
+            adapter.updateApps(ArrayList(apps))
+        }
     }
 
     override fun onDestroy() {
@@ -303,13 +308,15 @@ class ReplayActivity : AppCompatActivity() {
 
         // Rearrange layout to hide rerun button
         val params = findViewById<View>(R.id.appsRecyclerView).layoutParams as RelativeLayout.LayoutParams
-        params.addRule(RelativeLayout.ABOVE, R.id.prgBarLayout)
+        params.addRule(RelativeLayout.BELOW, R.id.prgBarLayout)
         findViewById<View>(R.id.rerunButton).visibility = View.GONE
         findViewById<View>(R.id.localizeDiffButton).visibility = View.GONE
 
         // Update adapter and prepare viewModel
         adapter.setTomography(false)
-        viewModel.prepareRerunTests(isRunningDifferentiation)
+        val newApps = viewModel.prepareRerunTests(isRunningDifferentiation)
+        adapter.updateApps(newApps)
+        viewModel.execute()
     }
 
 //    /**
