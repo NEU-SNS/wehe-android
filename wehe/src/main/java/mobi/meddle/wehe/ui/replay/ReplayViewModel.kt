@@ -524,9 +524,11 @@ class ReplayViewModel @Inject constructor(application : Application, private val
                 if (!isActive) {
                     return@let
                 }
-                updateCurrentTestingApp(null)
             }
         }
+
+        // to remove the header layout
+        updateCurrentTestingApp(null)
 
         /*
          * Step 3: Save results.

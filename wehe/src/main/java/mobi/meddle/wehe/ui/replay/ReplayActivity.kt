@@ -32,6 +32,7 @@ class ReplayActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var adapter: ImageReplayRecyclerViewAdapter
     private lateinit var headerLayout: LinearLayout
+    private lateinit var progressBarLayout: LinearLayout
     private lateinit var headerImage: ImageView
     private lateinit var headerText: TextView
     private val doNothing = DialogInterface.OnClickListener { _, _ -> }
@@ -83,6 +84,7 @@ class ReplayActivity : AppCompatActivity() {
         }
 
         headerLayout = findViewById(R.id.headerLayout)
+        progressBarLayout = findViewById(R.id.prgBarLayout)
         headerImage = findViewById(R.id.headerImage)
         headerText = findViewById(R.id.headerText)
 
@@ -111,7 +113,13 @@ class ReplayActivity : AppCompatActivity() {
                 if (appInfo.image != null) {
                     headerImage.setImageResource(resourceId)
                     headerLayout.visibility = View.VISIBLE
+                    progressBarLayout.visibility = View.VISIBLE
                 }
+            }
+
+            if (appInfo == null) {
+                headerLayout.visibility = View.GONE
+                progressBarLayout.visibility = View.GONE
             }
         }
 
@@ -260,7 +268,7 @@ class ReplayActivity : AppCompatActivity() {
         // Rearrange layout so progress bar disappears
         val params = findViewById<View>(R.id.appsRecyclerView).layoutParams as RelativeLayout.LayoutParams
         params.addRule(RelativeLayout.ABOVE, R.id.actionBtnsLayout)
-        findViewById<View>(R.id.prgBar).visibility = View.GONE
+        findViewById<View>(R.id.prgBarLayout).visibility = View.GONE
     }
 
     /**
