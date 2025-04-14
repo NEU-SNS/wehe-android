@@ -11,8 +11,6 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.R
-import mobi.meddle.wehe.ui.main.MainActivity
-import java.util.Objects
 
 /**
  * View Online Dashboard item in navigation bar (menu.drawer_view.xml)
@@ -67,8 +65,8 @@ class DashboardFragment : Fragment() {
 //            }
 //        }
     }
-
-    companion object {
-        const val TAG: String = "DashboardFragment"
-    }
+//
+//    companion object {
+//        const val TAG: String = "DashboardFragment"
+//    }
 }

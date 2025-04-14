@@ -152,13 +152,12 @@ public class ApplicationBean implements Parcelable {
         this.size = size;
     }
 
-    public boolean isSelected() {
-        return isSelected;
-    }
-
-    public void setSelected(boolean isSelected) {
-        this.isSelected = isSelected;
-    }
+//    public boolean isSelected() {
+//        return isSelected;
+//    }
+//    public void setSelected(boolean isSelected) {
+//        this.isSelected = isSelected;
+//    }
 
     public boolean isEnglishOnly() {
         return englishOnly;

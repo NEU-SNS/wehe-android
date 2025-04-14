@@ -8,7 +8,6 @@ import mobi.meddle.wehe.data.model.RequestSet
 import mobi.meddle.wehe.data.model.ServerInstance
 import mobi.meddle.wehe.data.model.UDPReplayInfoBean
 import mobi.meddle.wehe.data.model.UpdateUIBean
-import java.util.Objects
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.Semaphore
@@ -28,43 +27,27 @@ import kotlin.coroutines.CoroutineContext
 class CombinedQueue(//packets to send to server
     private val q: ArrayList<RequestSet>, // for jitter
     private var jitterBeans: ArrayList<JitterBean>,
-    analyzerTasks: ArrayList<CombinedAnalyzerTask>, timeout: Int
+    //class that tracks throughput data
+    private val analyzerTasks: ArrayList<CombinedAnalyzerTask>, timeout: Int
 ) {
     @Volatile
     var ABORT: Boolean = false // for indicating abortion!
 
     @Volatile
     var abort_reason: String? = null
-    private val analyzerTasks: ArrayList<CombinedAnalyzerTask> //class that tracks throughput data
     private var timeOrigin: Long = 0 //start time of replay
     private val jitterTimeOrigins = ArrayList<Long>() //start time of a UDP packet
-    private val sendSema: Semaphore //for TCP
+    private val sendSema: Semaphore = Semaphore(1) //for TCP
     private val recvSemaMap: MutableMap<CTCPClient?, Semaphore> = HashMap() //for TCP
     var threads: Int = 0 //number of TCP threads currently active
     private val cThreadList = ArrayList<Thread>() //list of TCP threads
-    val isUDP: Boolean
-    private val timeout: Int
+    private val isUDP: Boolean = q.size > 0 && q[0].isUDP()
+    private val timeout: Int = if (isUDP) timeout - 5 else timeout
     private val timers = ArrayList<Timer>()
-
-    /**
-     * Constructor.
-     *
-     * @param q             the list of packets to send to the server
-     * @param jitterBeans   beans to keep track of UDP packets sent to and received from the server
-     * @param analyzerTasks the class that keeps track of the throughput data
-     * @param timeout       max number of seconds a TCP replay can send packets (5 sec less for UDP)
-     */
-    init {
-        this.jitterBeans = jitterBeans
-        this.sendSema = Semaphore(1)
-        this.analyzerTasks = analyzerTasks
-        this.isUDP = q.size > 0 && q[0].isUDP()
-        this.timeout = if (isUDP) timeout - 5 else timeout
-    }
-
-    fun setAbort() {
-        ABORT = true
-    }
+//
+//    fun setAbort() {
+//        ABORT = true
+//    }
 
     /**
      * This method is where the packets begin sending to the servers (throughputs can finally now
@@ -86,7 +69,6 @@ class CombinedQueue(//packets to send to server
      * false if packets should be sent as fast as possible
      * @param servers            the IP address of the server - used as the server if the server
      * field in the ServerInstance is blank
-     * @param caller             the caller AsyncTask - used to stop sending packets if user cancels
      */
     fun run(
         updateUIBean: UpdateUIBean, numReplays: Int,
@@ -207,7 +189,7 @@ class CombinedQueue(//packets to send to server
         //all tests done
         Log.i("Queue", "waiting for all threads to die!" + System.nanoTime())
 
-        var timeLeft: Int = 1
+        var timeLeft = 1
 
         if (Consts.TIMEOUT_ENABLED) { //make sure joining thread doesn't wait past timeout
             val currentTime =
@@ -351,9 +333,7 @@ class CombinedQueue(//packets to send to server
         Log.d("nextUDP", "dstIP: $dstIP dstPort: $dstPort")
         //get the server
         val destAddr = checkNotNull(
-            Objects.requireNonNull(
-                udpServerMapping[dstIP]
-            )?.get(dstPort)
+                udpServerMapping[dstIP]?.get(dstPort)
         )
 
         if (destAddr.server.trim { it <= ' ' } == "") {

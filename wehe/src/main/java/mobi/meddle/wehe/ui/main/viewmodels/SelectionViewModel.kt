@@ -28,7 +28,7 @@ class SelectionViewModel @Inject constructor(
     val uiState: StateFlow<SelectionUiState> = _uiState.asStateFlow()
 
     private val _selectedApps = mutableStateListOf<ApplicationBean>()
-    val selectedApps: List<ApplicationBean> = _selectedApps
+//    val selectedApps: List<ApplicationBean> = _selectedApps
 
     private val _payloadSize = MutableStateFlow(0)
     val payloadSize: StateFlow<Int> = _payloadSize.asStateFlow()
@@ -40,7 +40,7 @@ class SelectionViewModel @Inject constructor(
     val appToggleStates: Map<ApplicationBean, Boolean> = _appToggleStates
 
     private val _isPortTest = MutableStateFlow(false)
-    val isPortTest: StateFlow<Boolean> = _isPortTest.asStateFlow()
+//    val isPortTest: StateFlow<Boolean> = _isPortTest.asStateFlow()
 
     private val _currentTabIndex = MutableStateFlow(0)
     val currentTabIndex: StateFlow<Int> = _currentTabIndex.asStateFlow()

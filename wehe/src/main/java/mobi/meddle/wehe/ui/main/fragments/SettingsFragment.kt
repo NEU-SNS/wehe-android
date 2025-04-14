@@ -10,13 +10,10 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
-import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.constant.Consts
-import mobi.meddle.wehe.ui.main.MainActivity
 import java.util.Locale
-import java.util.Objects
 
 /**
  * @author Alankrit Joshi, Derek Ng
@@ -110,7 +107,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     .setView(customServer)
                     .setPositiveButton(
                         getString(android.R.string.ok)
-                    ) { dialog, which -> //set new server
+                    ) { _, _ -> //set new server
                         val customServerText =
                             customServer.text.toString().lowercase(Locale.getDefault())
                         if (customServerText.matches("[a-z0-9.-]+".toRegex())) {
@@ -128,7 +125,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     }
                     .setNegativeButton(
                         getString(android.R.string.cancel)
-                    ) { dialog, which -> //user cancels; set server to the previous server
+                    ) { dialog, _ -> //user cancels; set server to the previous server
                         servPref.value = oldServer
                         dialog.cancel()
                     }
@@ -138,7 +135,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         //use default settings switch
         val switchListener =
-            Preference.OnPreferenceChangeListener { preference, newValue ->
+            Preference.OnPreferenceChangeListener { _, newValue ->
                 val defaultSettings = newValue.toString().toBoolean()
                 if (!defaultSettings) {
                     return@OnPreferenceChangeListener true
@@ -198,8 +195,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         // Update navigation drawer selection
-        if (activity is MainActivity) {
-            val mainActivity = activity as MainActivity?
+//        if (activity is MainActivity) {
+//            val mainActivity = activity as MainActivity?
 //            val navigationView = mainActivity!!.findViewById<NavigationView>(R.id.nav_view)
 //            if (navigationView != null) {
 //                // Clear all selections
@@ -210,10 +207,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
 //                    )
 //                }
 //            }
-        }
+//        }
     }
-
-    companion object {
-        const val TAG: String = "SettingsFragment"
-    }
+//
+//    companion object {
+//        const val TAG: String = "SettingsFragment"
+//    }
 }

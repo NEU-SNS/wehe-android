@@ -11,7 +11,6 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.R
-import mobi.meddle.wehe.ui.main.MainActivity
 
 /**
  * How it Works item in navigation bar (menu.drawer_view.xml)
@@ -37,9 +36,9 @@ class FunctionalityFragment : Fragment() {
         textView.movementMethod = ScrollingMovementMethod()
     }
 
-    companion object {
-        const val TAG: String = "FunctionalityFragment"
-    }
+//    companion object {
+//        const val TAG: String = "FunctionalityFragment"
+//    }
 
     override fun onResume() {
         super.onResume()

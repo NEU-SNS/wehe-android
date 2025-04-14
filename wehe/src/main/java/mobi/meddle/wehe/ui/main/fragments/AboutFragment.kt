@@ -91,8 +91,6 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import mobi.meddle.wehe.R
-import mobi.meddle.wehe.ui.main.MainActivity
-import com.google.android.material.navigation.NavigationView
 import mobi.meddle.wehe.BuildConfig
 
 class AboutFragment : Fragment() {

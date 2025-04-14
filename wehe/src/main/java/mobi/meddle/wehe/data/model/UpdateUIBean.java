@@ -40,17 +40,17 @@ public class UpdateUIBean {
         this.progress = 0;
     }
 
-    /**
-     * Set progress bar to 50% after 1st replay; set to 100% after 2nd replay.
-     *
-     * @param iteration replay number (1 for first replay; 2 for second replay)
-     */
-    public synchronized void finishProgress(int iteration) {
-        if (iteration == 1) {
-            this.progress = 50;
-        } else {
-            this.progress = 100;
-        }
-    }
+//    /**
+//     * Set progress bar to 50% after 1st replay; set to 100% after 2nd replay.
+//     *
+//     * @param iteration replay number (1 for first replay; 2 for second replay)
+//     */
+//    public synchronized void finishProgress(int iteration) {
+//        if (iteration == 1) {
+//            this.progress = 50;
+//        } else {
+//            this.progress = 100;
+//        }
+//    }
 }
 

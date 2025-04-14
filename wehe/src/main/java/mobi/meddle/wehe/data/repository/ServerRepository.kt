@@ -67,7 +67,7 @@ class ServerRepository
                 for (i in 0..2) {
                     try {
                         //connect to server
-                        var u = URL(urlString)
+                        val u = URL(urlString)
                         //send data to server
                         conn[0] = u.openConnection() as HttpsURLConnection
                         if (main && hostnameVerifier != null && sslSocketFactory != null) {

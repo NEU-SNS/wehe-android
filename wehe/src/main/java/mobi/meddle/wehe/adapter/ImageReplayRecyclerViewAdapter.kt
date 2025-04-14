@@ -302,6 +302,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import mobi.meddle.wehe.R
@@ -315,7 +316,7 @@ import kotlin.math.min
  * Used to display the apps/ports while the replays are running.
  * XML layout: list_item_replay.xml; Goes in appsRecyclerView in activity_replay.xml
  */
-class ImageReplayRecyclerViewAdapter(//list of apps/ports
+class ImageReplayRecyclerViewAdapter(
     private var dataList: List<ApplicationBean>, //replay activity, to get resources
     private val replayAct: ReplayActivity,
     private val runPortTests: Boolean
@@ -390,10 +391,10 @@ class ImageReplayRecyclerViewAdapter(//list of apps/ports
         holder.tvAppSize.visibility = View.VISIBLE
 
         // here we set different color for different results
-        val red = res.getColor(R.color.red)
-        val green = res.getColor(R.color.forestGreen)
-        val yellow = res.getColor(R.color.orange2)
-        val blue = res.getColor(R.color.blue0)
+        val red = ContextCompat.getColor(this, R.color.red)
+        val green = ContextCompat.getColor(this, R.color.forestGreen)
+        val yellow = ContextCompat.getColor(this, R.color.orange2)
+        val blue = ContextCompat.getColor(this, R.color.blue0)
 
         //load arcep alert button and logo
         if (app.arcepNeedsAlerting) {

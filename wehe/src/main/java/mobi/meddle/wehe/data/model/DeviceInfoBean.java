@@ -1,7 +1,5 @@
 package mobi.meddle.wehe.data.model;
 
-import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
-
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -116,11 +114,8 @@ public class DeviceInfoBean {
         if (networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTED) {
             this.networkType = "WIFI";
         } else {
-            int typeIndex = 0;
             // We only have the permission for devices that are old enough
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                typeIndex = telephonyManager.getDataNetworkType();
-            }
+            int typeIndex = telephonyManager.getDataNetworkType();
             if (typeIndex < NETWORK_TYPES.length) {
                 this.networkType = NETWORK_TYPES[typeIndex];
             } else {

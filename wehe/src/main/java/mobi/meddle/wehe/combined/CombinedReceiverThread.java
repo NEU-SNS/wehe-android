@@ -42,8 +42,7 @@ public final class CombinedReceiverThread implements Runnable {
         Thread.currentThread().setName("CombinedReceiverThread (Thread)");
         long jitterTimeOrigin = System.nanoTime();
 
-        try {
-            Selector selector = Selector.open();
+        try (Selector selector = Selector.open()) {
             int bufSize = 4096;
             ByteBuffer buf = ByteBuffer.allocate(bufSize);
             while (keepRunning) {
@@ -94,7 +93,6 @@ public final class CombinedReceiverThread implements Runnable {
                 }
                 buf.clear();
             }
-            selector.close();
         } catch (IOException e) {
             Log.w("Receiver", "receiving udp packet error!", e);
         }

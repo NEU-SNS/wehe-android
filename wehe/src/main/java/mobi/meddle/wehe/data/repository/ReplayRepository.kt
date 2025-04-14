@@ -74,7 +74,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
         var serverName = server
 
         // Version code 40 = version name 3.46
-        if (BuildConfig.VERSION_CODE >= 40 && serverName == "wehe3.meddle.mobi") {
+        if (serverName == "wehe3.meddle.mobi") {
             serverName = "wehe4.meddle.mobi"
         }
 
@@ -336,13 +336,11 @@ class ReplayRepository @Inject constructor(private val context: Context) {
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-        if (connectivityManager != null) {
-            val activeNetwork = connectivityManager.activeNetwork ?: return true
-            val networkCapabilities =
-                connectivityManager.getNetworkCapabilities(activeNetwork)
-            if (networkCapabilities != null) {
-                return !networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            }
+        val activeNetwork = connectivityManager.activeNetwork ?: return true
+        val networkCapabilities =
+            connectivityManager.getNetworkCapabilities(activeNetwork)
+        if (networkCapabilities != null) {
+            return !networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         }
         return true
     }
@@ -641,7 +639,8 @@ class ReplayRepository @Inject constructor(private val context: Context) {
      * @param udpPortMappings UDP client mappings
      * @param udpReplayInfoBeans UDP replay info
      * @param udpServerMappings UDP server mappings
-     * @param context Coroutine context for cancellation
+     * @param updateUIBean The UI update bean
+     * @param coroutineContext The coroutine context for running the test
      * @return Elapsed time in seconds
      */
     fun runPacketQueue(
@@ -795,7 +794,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
 
         for (url in analyzerServerUrls) {
             var attempt = 0
-            while (attempt < 3) {
+            while (true) {
                 val resp = getSingleResult(url, randomID, historyCount)
 
                 if (resp == null) {
@@ -839,7 +838,6 @@ class ReplayRepository @Inject constructor(private val context: Context) {
      * @param response The server response JSON object
      * @param randomID User's random ID
      * @param historyCount Current history count
-     * @param appName Application name
      * @param dataFile Data file name
      * @param runPortTests True if port tests
      * @param a_threshold Area threshold for differentiation
@@ -851,7 +849,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
         response: JSONObject,
         randomID: String,
         historyCount: Int,
-        appName: String,
+//        appName: String,
         dataFile: String,
         runPortTests: Boolean,
         a_threshold: Int,

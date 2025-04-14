@@ -24,7 +24,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mobi.meddle.wehe.R
-import mobi.meddle.wehe.adapter.ImageReplayRecyclerViewAdapter
 import mobi.meddle.wehe.combined.CombinedAnalyzerTask
 import mobi.meddle.wehe.combined.CombinedNotifierThread
 import mobi.meddle.wehe.combined.CombinedQueue
@@ -270,8 +269,8 @@ class ReplayViewModel @Inject constructor(application : Application, private val
         }
     }
 
-    private suspend fun updateAllAppsToUnavailable() {
-        selectedApps?.forEach { app ->
+    private suspend fun updateAllAppsToUnavailable(remainingApps:  MutableList<ApplicationBean>) {
+        remainingApps.forEach { app ->
             updateAppStatus(app.name, applicationContext.getString(R.string.server_unavailable))
         }
     }
@@ -393,7 +392,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
             showToast(
                 applicationContext.getString(R.string.server_unavailable)
             )
-            updateAllAppsToUnavailable()
+            updateAllAppsToUnavailable(selectedApps!!)
             return
         }
 
@@ -466,7 +465,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
          */
         var firstApp = true
         selectedApps?.let { apps ->
-            for (app in apps) {
+            for ((index, app) in apps.withIndex()) {
                 updateCurrentTestingApp(app)
                 if (!isActive) {
                     return@let
@@ -477,7 +476,8 @@ class ReplayViewModel @Inject constructor(application : Application, private val
                         showToast(
                             applicationContext.getString(R.string.server_unavailable)
                         )
-                        updateAllAppsToUnavailable()
+                        val remainingApps = apps.subList(index, apps.size)
+                        updateAllAppsToUnavailable(remainingApps)
                         return@let
                     }
                 }
@@ -1096,7 +1096,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
                     response = response,
                     randomID = it,
                     historyCount = app!!.historyCount,
-                    appName = app!!.name,
+//                    appName = app!!.name,
                     dataFile = app!!.dataFile,
                     runPortTests = runPortTests,
                     a_threshold = a_threshold,

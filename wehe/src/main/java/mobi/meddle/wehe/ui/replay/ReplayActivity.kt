@@ -94,12 +94,12 @@ class ReplayActivity : AppCompatActivity() {
 
     private fun setupObservers() {
         // Observe isReplayOngoing state
-        viewModel.isReplayOngoing.observe(this) { isOngoing ->
-            // Update UI based on replay state if needed
-        }
+//        viewModel.isReplayOngoing.observe(this) {
+//            // Update UI based on replay state if needed
+//        }
 
         // Observe status updates
-        viewModel.statusUpdateEvent.observe(this) { (appName, status) ->
+        viewModel.statusUpdateEvent.observe(this) { (_, _) ->
             // Update status of app in adapter
             adapter.notifyDataSetChanged()
         }
@@ -371,8 +371,8 @@ class ReplayActivity : AppCompatActivity() {
         params.gravity = Gravity.CENTER
         b.layoutParams = params
     }
-
-    companion object {
-        const val STATUS: String = "ReplayActPrefsFile"
-    }
+//
+//    companion object {
+//        const val STATUS: String = "ReplayActPrefsFile"
+//    }
 }

@@ -79,16 +79,16 @@ public class CombinedSideChannel {
         return id;
     }
 
-    /**
-     * Get cellphone carrier name.
-     *
-     * @param context the context
-     * @return the cell carrier name
-     */
-    public static String getCarrierName(Context context) {
-        DeviceInfoBean deviceInfoBean = new DeviceInfoBean(context);
-        return deviceInfoBean.carrierName;
-    }
+//    /**
+//     * Get cellphone carrier name.
+//     *
+//     * @param context the context
+//     * @return the cell carrier name
+//     */
+//    public static String getCarrierName(Context context) {
+//        DeviceInfoBean deviceInfoBean = new DeviceInfoBean(context);
+//        return deviceInfoBean.carrierName;
+//    }
 
     /**
      * Send replay info to server.
@@ -130,7 +130,7 @@ public class CombinedSideChannel {
     /**
      * Ask server for permission to run replay.
      *
-     * @return string with permission encoding
+     * @return array of string with permission encoding
      * if permission granted, server will send "1;[user_IP];[number_slices]"
      * else, server will send "0;[error_code]"
      * @throws IOException Probably issue with socket connection or unexpected end of data stream
@@ -187,7 +187,7 @@ public class CombinedSideChannel {
                 Log.e("sendMobileStats", "Channel " + id + ": JSON issue with mobile stats", e);
             }
 
-            Log.d("sendMobileStats", "Channel " + id + ": " + deviceInfo.toString());
+            Log.d("sendMobileStats", "Channel " + id + ": " + deviceInfo);
 
             sendObject("WillSendMobileStats".getBytes());
             sendObject(deviceInfo.toString().getBytes());
@@ -389,7 +389,7 @@ public class CombinedSideChannel {
      * Fixed by adrian
      *
      * @param k number of bytes to receive
-     * @return response from server, null if there is an issue getting response
+     * @return response from server
      * @throws IOException Probably issue with socket connection or unexpected end of data stream
      */
     @NonNull

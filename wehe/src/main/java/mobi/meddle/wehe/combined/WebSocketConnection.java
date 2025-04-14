@@ -50,16 +50,13 @@ public class WebSocketConnection {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         final Boolean[] success = {null};
         //hacky way to timeout WebSocket request for 5 seconds
-        executorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    container.connectToServer(WebSocketConnection.this, serverURI);
-                    success[0] = true;
-                } catch (DeploymentException | IOException e) {
-                    Log.e("WebSocket", "WebSocket " + id + ": Failed connecting to WebSocket", e);
-                    success[0] = false;
-                }
+        executorService.submit(() -> {
+            try {
+                container.connectToServer(WebSocketConnection.this, serverURI);
+                success[0] = true;
+            } catch (DeploymentException | IOException e) {
+                Log.e("WebSocket", "WebSocket " + id + ": Failed connecting to WebSocket", e);
+                success[0] = false;
             }
         });
         //check every 500 ms to see if successfully connected to ws

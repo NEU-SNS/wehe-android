@@ -3,20 +3,17 @@ package mobi.meddle.wehe.ui.main;
 import android.Manifest;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -28,23 +25,18 @@ import com.google.android.material.navigation.NavigationView;
 import dagger.hilt.android.AndroidEntryPoint;
 import mobi.meddle.wehe.R;
 import mobi.meddle.wehe.constant.Consts;
-import mobi.meddle.wehe.ui.main.viewmodels.SelectionViewModel;
 
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
-    private SelectionViewModel viewModel;
     private final int locationRequestCode = 1093;
     private DrawerLayout mDrawer;
-    private Toolbar mToolbar;
     private NavigationView mNavigationView;
-    private ActionBarDrawerToggle mDrawerToggle;
     private NavController navController;
     private AppBarConfiguration appBarConfiguration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        viewModel = new ViewModelProvider(this).get(SelectionViewModel.class);
         setContentView(R.layout.activity_main);
         setupViews();
         setupNavigation();
@@ -54,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private void setupViews() {
         mDrawer = findViewById(R.id.drawer_layout);
         mNavigationView = findViewById(R.id.nav_view);
-        mToolbar = findViewById(R.id.main_app_bar);
+        Toolbar mToolbar = findViewById(R.id.main_app_bar);
         setSupportActionBar(mToolbar);
     }
 
@@ -179,22 +171,20 @@ public class MainActivity extends AppCompatActivity {
                     editor.apply();
                     finish();
                 })
-                .setMessage(Html.fromHtml(getString(R.string.consent_form)))
+                .setMessage(Html.fromHtml(getString(R.string.consent_form), Html.FROM_HTML_MODE_LEGACY))
                 .show();
     }
 
     private void requestLocationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.dialog_permission_title)
-                    .setMessage(R.string.permission_explaination)
-                    .setPositiveButton(android.R.string.ok, (dialog, which) ->
-                            requestPermissions(
-                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                    locationRequestCode
-                            ))
-                    .show();
-        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.dialog_permission_title)
+                .setMessage(R.string.permission_explaination)
+                .setPositiveButton(android.R.string.ok, (dialog, which) ->
+                        requestPermissions(
+                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                locationRequestCode
+                        ))
+                .show();
     }
 
     @Override
