@@ -65,7 +65,7 @@ class ReplayActivity : AppCompatActivity() {
                 viewModel.initializeData(runPortTests, carrier, selectedApps, applicationContext)
 
                 // Setup RecyclerView
-                adapter = ImageReplayRecyclerViewAdapter(selectedApps, this, runPortTests)
+                adapter = ImageReplayRecyclerViewAdapter(this, selectedApps, this, runPortTests)
                 val appsRecyclerView = findViewById<RecyclerView>(R.id.appsRecyclerView)
                 val layoutManager = LinearLayoutManager(this)
                 appsRecyclerView.layoutManager = layoutManager

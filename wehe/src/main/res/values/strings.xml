@@ -85,16 +85,16 @@
     <string name="consent_form">
         <![CDATA[We would like to invite you to take part in a research project. The purpose of this
         research study is to understand how cellular Internet providers give different performance
-        to different network traffic from your smartphone.\n\nFor example, we would like to know if
+        to different network traffic from your smartphone.<br><br>For example, we would like to know if
         a provider is speeding up YouTube traffic and/or slowing down Netflix. We will use this
         information to understand how often this occurs, where this occurs and what are the
-        implications.\n\nWe are asking you to participate in this study because you are a smartphone
+        implications.<br><br>We are asking you to participate in this study because you are a smartphone
         user who has installed our app for detecting traffic differentiation. The decision to
         participate in this research project is voluntary. You do not have to participate and you
         can uninstall the app at any time. Even if you begin using the app, you can stop at any
-        time. You must be at least 18 years of age to participate.\n\nYou can run tests from the app
+        time. You must be at least 18 years of age to participate.<br><br>You can run tests from the app
         as many or as few times as you like. We would like you to run tests on different networks
-        that your mobile device connects to, and at different times of the day.\n\nThe possible
+        that your mobile device connects to, and at different times of the day.<br><br>The possible
         risks or discomforts of the study are minimal. When you use the app, we will record the
         traffic it generates (including timestamps) and use this data to determine whether your
         Internet service provider (ISP) is interfering with your network traffic in any way. If
@@ -105,24 +105,24 @@
         and jurisdiction (e.g., country, state, province) will be anonymized and made publicly
         available so that others can reproduce our findings. All other data will be shared only with
         co-investigators, and it will not be annotated with any personally identifiable
-        information.\n\nThere are no direct benefits to you from participating in this study.
+        information.<br><br>There are no direct benefits to you from participating in this study.
         However, by running the app you may help us learn more about how ISPs interfere with
         Internet traffic from mobile devices. You will not be paid for your participation in this
-        study.\n\nYour part of this study is anonymous to the researcher(s). However, because of the
+        study.<br><br>Your part of this study is anonymous to the researcher(s). However, because of the
         nature of Internet traffic, it is possible that participants could be identified by the IP
         address or other electronic records associated with the response. We will anonymize any IP
         addresses that could be used to identify you once we have processed the data to detect
         differentiation. Any reports or publications based on this research will use only group data
-        and will not identify you or any individual as being affiliated with this project.\n\nIf you
+        and will not identify you or any individual as being affiliated with this project.<br><br>If you
         have any questions about this study, please feel free to e-mail the project team at
-        wehe@ccs.neu.edu, and the person mainly responsible for the research will respond.\n\nIf you
-        have any questions about your rights in this research, you may contact:\n\n<b>Nan C.
-        Regina</b>,\nDirector,\nHuman Subject Research Protection,\n960 Renaissance
-        Park,\nNortheastern University,\nBoston, MA 02115.\n<a href="mailto:n.regina@neu.edu">n.regina@neu.edu</a>\n\nIf
-        you have any questions regarding electronic privacy, please feel free to contact:\n\n<b>Mark
-        Nardone</b>,\nNU’s Director of Information Security.\n<a href="mailto:privacy@neu.edu">privacy@neu.edu</a>\n\nYou
-        may contact anonymously if you wish.\n\nThis study has been reviewed and approved by the
-        Northeastern University Institutional Review Board (#14-08-16).\n\n<b>By clicking the
+        wehe@ccs.neu.edu, and the person mainly responsible for the research will respond.<br><br>If you
+        have any questions about your rights in this research, you may contact:<br><br><b>Nan C.
+        Regina</b>,<br>Director,<br>Human Subject Research Protection,<br>960 Renaissance
+        Park,<br>Northeastern University,<br>Boston, MA 02115.<br><a href="mailto:n.regina@neu.edu">n.regina@neu.edu</a><br><br>If
+        you have any questions regarding electronic privacy, please feel free to contact:<br><br><b>Mark
+        Nardone</b>,<br>NU’s Director of Information Security.<br><a href="mailto:privacy@neu.edu">privacy@neu.edu</a><br><br>You
+        may contact anonymously if you wish.<br><br>This study has been reviewed and approved by the
+        Northeastern University Institutional Review Board (#14-08-16).<br><br><b>By clicking the
         \"Agree\" button below you are indicating that you consent to participate in this study.
         Please print out a copy of this consent form for your records.</b>]]>
     </string>

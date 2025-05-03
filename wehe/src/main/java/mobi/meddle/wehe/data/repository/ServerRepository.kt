@@ -57,10 +57,17 @@ class ServerRepository
         val readyToReturn = booleanArrayOf(false)
         val serverComm = Thread {
             var urlString = url
+
+            // Add client_name parameter for MLab servers
+            if (url.contains("mlab") || url.contains("measurementLab") || url.contains("locate-dot-mlab-staging.appspot.com") || url.contains("locate.measurementlab.net")) {
+                val separator = if (urlString.contains("?")) "&" else "?"
+                urlString += "${separator}client_name=wehe-android"
+            }
+
             if (method.equals("GET", ignoreCase = true)) {
                 if (data != null) {
                     val dataURL = urlEncoder(data)
-                    urlString += "?$dataURL"
+                    urlString += if (urlString.contains("?")) "&$dataURL" else "?$dataURL"
                 }
                 Log.d("Send GET Request", urlString)
 

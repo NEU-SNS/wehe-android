@@ -292,6 +292,7 @@
 package mobi.meddle.wehe.adapter
 
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.TypedValue
@@ -317,9 +318,10 @@ import kotlin.math.min
  * XML layout: list_item_replay.xml; Goes in appsRecyclerView in activity_replay.xml
  */
 class ImageReplayRecyclerViewAdapter(
+    private val context: Context,
     private var dataList: List<ApplicationBean>, //replay activity, to get resources
     private val replayAct: ReplayActivity,
-    private val runPortTests: Boolean
+    private val runPortTests: Boolean,
 ) : RecyclerView.Adapter<ImageReplayRecyclerViewAdapter.ViewHolder>() {
     private var isTomography = false
 
@@ -391,10 +393,10 @@ class ImageReplayRecyclerViewAdapter(
         holder.tvAppSize.visibility = View.VISIBLE
 
         // here we set different color for different results
-        val red = ContextCompat.getColor(this, R.color.red)
-        val green = ContextCompat.getColor(this, R.color.forestGreen)
-        val yellow = ContextCompat.getColor(this, R.color.orange2)
-        val blue = ContextCompat.getColor(this, R.color.blue0)
+        val red = ContextCompat.getColor(context, R.color.red)
+        val green = ContextCompat.getColor(context, R.color.forestGreen)
+        val yellow = ContextCompat.getColor(context, R.color.orange2)
+        val blue = ContextCompat.getColor(context, R.color.blue0)
 
         //load arcep alert button and logo
         if (app.arcepNeedsAlerting) {

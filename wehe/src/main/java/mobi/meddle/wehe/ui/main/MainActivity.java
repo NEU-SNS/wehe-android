@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.Html;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -19,6 +20,11 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
+import android.text.method.LinkMovementMethod;
+import android.view.Window;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
 
 import com.google.android.material.navigation.NavigationView;
 
@@ -152,8 +158,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void consentDialog() {
+        // Create the fixed header text
+        TextView headerView = new TextView(this);
+        headerView.setText(R.string.consent_form_title);
+        headerView.setPadding(32, 32, 32, 16);
+        headerView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+        headerView.setTextColor(getResources().getColor(android.R.color.black, getTheme()));
+
+// Create the scrollable content
+        TextView messageView = new TextView(this);
+        messageView.setText(Html.fromHtml(getString(R.string.consent_form), Html.FROM_HTML_MODE_LEGACY));
+        messageView.setMovementMethod(LinkMovementMethod.getInstance());
+        messageView.setPadding(32, 16, 32, 16);
+
+// Add the scrollable TextView to a ScrollView
+        ScrollView scrollView = new ScrollView(this);
+        scrollView.addView(messageView);
+
+// Create a LinearLayout to hold both views
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.addView(headerView);
+        container.addView(scrollView);
+
         new AlertDialog.Builder(this)
-                .setTitle(R.string.consent_form_title)
+                .setView(container)
                 .setPositiveButton(R.string.accept, (dialog, which) -> {
                     SharedPreferences sharedPrefs =
                             PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -164,21 +193,47 @@ public class MainActivity extends AppCompatActivity {
                     requestLocationPermission();
                 })
                 .setNegativeButton(R.string.decline, (dialog, which) -> {
-                    SharedPreferences sharedPrefs =
+                    SharedPreferences sharedPreferences =
                             PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                    SharedPreferences.Editor editor = sharedPrefs.edit();
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
                     editor.putBoolean("userAgreedNov2018Consent", false);
                     editor.apply();
                     finish();
                 })
-                .setMessage(Html.fromHtml(getString(R.string.consent_form), Html.FROM_HTML_MODE_LEGACY))
                 .show();
     }
 
     private void requestLocationPermission() {
+
+        // Create the fixed header text
+        TextView headerView = new TextView(this);
+        headerView.setText(R.string.dialog_permission_title);
+        headerView.setPadding(32, 32, 32, 16);
+        headerView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+        headerView.setTextColor(getResources().getColor(android.R.color.black, getTheme()));
+
+        // Create a TextView for the message with proper styling
+        TextView messageView = new TextView(this);
+        messageView.setText(getString(R.string.permission_explaination));
+        messageView.setPadding(32, 16, 32, 16); // Add some padding
+
+        // Set text size explicitly
+        messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+        // Ensure text color contrasts with background
+        messageView.setTextColor(getResources().getColor(android.R.color.black, getTheme()));
+
+        // Use a ScrollView to handle potentially long content
+        ScrollView scrollView = new ScrollView(this);
+        scrollView.addView(messageView);
+
+        // Create a LinearLayout to hold both views
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
+        container.addView(headerView);
+        container.addView(scrollView);
+
         new AlertDialog.Builder(this)
-                .setTitle(R.string.dialog_permission_title)
-                .setMessage(R.string.permission_explaination)
+                .setView(container) // Set the scrollable view instead of message
                 .setPositiveButton(android.R.string.ok, (dialog, which) ->
                         requestPermissions(
                                 new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
