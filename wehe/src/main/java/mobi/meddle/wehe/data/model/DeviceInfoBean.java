@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.bean;
+package mobi.meddle.wehe.data.model;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
