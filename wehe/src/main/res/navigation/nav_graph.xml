@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/selectionFragment"
-        android:name="mobi.meddle.wehe.fragment.SelectionFragment"
+        android:name="mobi.meddle.wehe.ui.main.fragments.SelectionFragment"
         android:label="@string/nav_run">
         <argument
             android:name="runPortTest"
@@ -20,26 +20,26 @@
 
     <fragment
         android:id="@+id/resultsFragment"
-        android:name="mobi.meddle.wehe.fragment.ResultsFragment"
-        android:label="Results Fragment" />
+        android:name="mobi.meddle.wehe.ui.main.fragments.ResultsFragment"
+        android:label="Previous Results" />
 
     <fragment
         android:id="@+id/aboutFragment"
-        android:name="mobi.meddle.wehe.fragment.AboutFragment"
-        android:label="About Fragment" />
+        android:name="mobi.meddle.wehe.ui.main.fragments.AboutFragment"
+        android:label="Why Wehe" />
 
     <fragment
         android:id="@+id/functionalityFragment"
-        android:name="mobi.meddle.wehe.fragment.FunctionalityFragment"
-        android:label="Functionality Fragment" />
+        android:name="mobi.meddle.wehe.ui.main.fragments.FunctionalityFragment"
+        android:label="How it Works" />
 
     <fragment
         android:id="@+id/dashboardFragment"
-        android:name="mobi.meddle.wehe.fragment.DashboardFragment"
-        android:label="Dashboard Fragment" />
+        android:name="mobi.meddle.wehe.ui.main.fragments.DashboardFragment"
+        android:label="Online Dashboard" />
 
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="mobi.meddle.wehe.fragment.SettingsFragment"
-        android:label="Settings Fragment" />
+        android:name="mobi.meddle.wehe.ui.main.fragments.SettingsFragment"
+        android:label="Settings" />
 </navigation>

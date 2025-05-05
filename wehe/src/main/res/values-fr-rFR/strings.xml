@@ -106,7 +106,7 @@
     <string name="no_diff">Pas de différenciation</string>
     <string name="has_diff">Différenciation détectée</string>
     <string name="inconclusive">Résultats non concluants, essayez de relancer un test</string>
-    <string name="fcc_alert">Alertez la FCC</string>
+    <string name="fcc_alert">Alertez FCC!</string>
     <string name="tomo_failed">La différenciation de localisation a échoué</string>
     <string name="tomo_succ">La différenciation localisée a réussi</string>
     <string name="waiting">En attente des résultats du test</string>
@@ -152,7 +152,7 @@
     <string name="port_throughput">Débit du port %s</string>
     <string name="server">Serveur</string>
     <string name="carrier">Opérateur</string>
-    <string name="your_carrier">Votre opérateur</string>
+    <string name="your_carrier">votre opérateur</string>
 
     <string name="replay_finished_title">Test terminé</string>
     <string name="pref_summary_threshold_area">Seuil de la différence d\'aire, en % (plus le seuil est faible, plus Wehe sera sensible aux variations de débits)</string>
@@ -292,5 +292,8 @@
     <string name="normal_port_desc">Pour chaque port, le trafic réseau est envoyé depuis un serveur Wehe via le port sélectionné et via le port 443. En comparant les vitesses entre ces deux ports, Wehe détecte si votre fournisseur Internet limite (ralentit) ou donne la priorité (accélère) le trafic circulant. via le port sélectionné par rapport au port 443. Voir la page « Comment ça marche » pour plus de détails.</string>
     <string name="tomography_not_supported">Les tests de tomographie ne sont pas pris en charge sur votre appareil.</string>
     <string name="tomo_test_desc">Pour les tests où une différenciation a été détectée, Wehe pourrait être en mesure de déterminer quel réseau         ou le FAI provoque une telle différenciation en exécutant plusieurs tests en double au niveau du         en même temps sur différents serveurs Wehe et en comparant les résultats. Voir la page \\\"Comment ça marche\\\"         pour plus de détails.</string>
-    <string name="carrier_permission_explanation">L\'autorisation réseau est utilisée uniquement dans le but de collecter des données sur les violations de la neutralité du Net, mais elle n\'est pas requise pour les tests.</string>
+    <string name="unknown_carrier">Transporteur inconnu</string>
+    <string name="ongoing_replay_image">image de rediffusion en cours</string>
+    <string name="replay_header_text">Test: %s sur 2</string>
+    <string name="custom_server_text">Adresse du serveur personnalisé</string>
 </resources>

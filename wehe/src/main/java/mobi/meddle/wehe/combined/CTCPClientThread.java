@@ -8,9 +8,10 @@ import java.io.IOException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
-import mobi.meddle.wehe.bean.RequestSet;
+import mobi.meddle.wehe.data.model.RequestSet;
 import mobi.meddle.wehe.util.Config;
 
 // @@@ Adrian add this
@@ -94,7 +95,7 @@ class CTCPClientThread implements Runnable {
                     byte[] newPayload;
 
                     // check the length of the payload
-                    if (RS.getPayload().length > customInfoByte.length) {
+                    if (Objects.requireNonNull(RS.getPayload()).length > customInfoByte.length) {
                         newPayload = new byte[RS.getPayload().length];
                         Log.i("Sending", "adding header for random replay");
                         System.arraycopy(customInfoByte, 0, newPayload, 0,
@@ -115,7 +116,7 @@ class CTCPClientThread implements Runnable {
                     String customInfo = String.format("\r\nX-rr: %s;%s;%s\r\n",
                             client.publicIP, Config.get(client.replayName), client.CSPair);
 
-                    if (tmp.getBytes().length != RS.getPayload().length) {
+                    if (tmp.getBytes().length != Objects.requireNonNull(RS.getPayload()).length) {
                         Log.e("Sending", "length of new byte array: " + tmp.getBytes().length
                                 + " length of original payload: " + RS.getPayload().length);
                     }
@@ -140,12 +141,12 @@ class CTCPClientThread implements Runnable {
             sendSema.release();
 
             // Notify waiting Queue thread to start processing next packet and receive response
-            if (RS.getResponse_len() > 0) {
+            if (RS.getResponseLen() > 0) {
                 DataInputStream dataInStream = new DataInputStream(client.socket.getInputStream());
 
                 int totalRead = 0;
 
-                byte[] buffer = new byte[RS.getResponse_len()];
+                byte[] buffer = new byte[RS.getResponseLen()];
                 while (totalRead < buffer.length) {
                     // @@@ offset is wrong?
                     int bufSize = 4096;
@@ -184,7 +185,7 @@ class CTCPClientThread implements Runnable {
                 }
 
                 // adrian: manually free buffer
-                Log.d("Finished", "receiving " + RS.getResponse_len() + " bytes " + System.nanoTime());
+                Log.d("Finished", "receiving " + RS.getResponseLen() + " bytes " + System.nanoTime());
             } else {
                 Log.d("Receiving", "skipped " + System.nanoTime());
             }
@@ -192,32 +193,33 @@ class CTCPClientThread implements Runnable {
             Log.w("TCPClientThread", "Socket time out! Nothing has been sent or received"
                     + " for 30 seconds", e);
             synchronized (queue) {
-                queue.ABORT = true;
+                queue.setABORT(true);
                 // make sure that this is not caused by other issues
-                if (queue.abort_reason == null) {
-                    queue.abort_reason = "Replay Aborted: replay socket error";
+                if (queue.getAbort_reason() == null) {
+                    queue.setAbort_reason("Replay Aborted: replay socket error");
                 }
             }
         } catch (SocketException e) {
             Log.w("TCPClientThread", "The maximum time to run a replay may have been"
                     + " reached. However, other reasons exist.", e);
             synchronized (queue) {
-                queue.ABORT = true;
-                if (queue.abort_reason == null) {
-                    queue.abort_reason = "error_proxy";
+                queue.setABORT(true);
+                if (queue.getAbort_reason() == null) {
+                    queue.setAbort_reason("error_proxy");
                 }
             }
         } catch (Exception e) {
             Log.e("TCPClientThread", "something bad happened!", e);
             // abort replay if bad things happened!
             synchronized (queue) {
-                queue.ABORT = true;
-                queue.abort_reason = "Replay Aborted: replay socket error";
+                queue.setABORT(true);
+                queue.setAbort_reason("Replay Aborted: replay socket error");
             }
         } finally {
             recvSema.release();
             synchronized (queue) {
-                --queue.threads;
+                int currentThreads = queue.getThreads();  // Get the current number of threads
+                queue.setThreads(currentThreads - 1);
             }
         }
     }

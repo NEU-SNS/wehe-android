@@ -18,17 +18,26 @@
 * `apps_list.json` contains apps in alphabetical order, followed by small port and large port replays
 
 Replay format:
+name - name of the app, should be in English
+size - size of one replay, in megabytes (MB), should be an integer
+time - time to run one replay, in seconds, should be an integer
+image - image name, without extension
+datafile - original replay file name
+randomdatafile - random replay file name
+category - depends on the tab the app/port is displayed on
+englishOnly - for apps that appear only in the English version
+frenchOnly - for apps that appear only in the French version
 ```json
     {
       "name": "Spotify", 
-      "size": 8, //size of one replay, in megabytes (MB), should be an integer
-      "time": 15, //time to run one replay, in seconds, should be an integer
-      "image": "spotify", //image name, without extension
-      "datafile": "Spotify.pcap_client_all.json", //original replay file name
-      "randomdatafile": "SpotifyRandom_01042019.pcap_client_all.json", //random replay file name
-      "category": <"VIDEO" | "MUSIC" | "CONFERENCING" | "SMALL_PORT" | "LARGE_PORT">, //depends on the tab the app/port is displayed on
-      "englishOnly": true, //for apps that appear only in the English version
-      "frenchOnly": true //for apps that appear only in the French version
+      "size": 8,
+      "time": 15, 
+      "image": "spotify",
+      "datafile": "Spotify.pcap_client_all.json",
+      "randomdatafile": "SpotifyRandom_01042019.pcap_client_all.json", 
+      "category": "VIDEO",
+      "englishOnly": true, 
+      "frenchOnly": true
     }
 ```
 
