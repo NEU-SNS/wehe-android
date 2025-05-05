@@ -23,4 +23,13 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
+    <style name="PreferenceDialogTheme" parent="Theme.AppCompat.DayNight.Dialog">
+        <!-- Ensure text is visible in both light and dark themes -->
+        <item name="android:textColorPrimary">?android:attr/textColorPrimary</item>
+        <item name="android:textColorSecondary">?android:attr/textColorSecondary</item>
+        <item name="android:editTextColor">?android:attr/textColorPrimary</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:windowBackground">?android:attr/colorBackground</item>
+    </style>
+
 </resources>

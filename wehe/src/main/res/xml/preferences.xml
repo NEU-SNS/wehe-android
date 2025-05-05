@@ -1,41 +1,39 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:key="pref_screen">
-    <SwitchPreference
-        android:defaultValue="true"
-        android:key="pref_multiple_tests"
-        android:summary="@string/pref_summary_multiple_tests"
-        android:title="@string/pref_title_multiple_tests" />
-    <SwitchPreference
-        android:defaultValue="true"
-        android:disableDependentsState="true"
-        android:key="pref_switch"
-        android:summary="@string/pref_summary_default"
-        android:title="@string/pref_title_default" />
-    <ListPreference
-        android:defaultValue="wehe4.meddle.mobi"
-        android:entries="@array/server"
-        android:entryValues="@array/server"
-        android:key="@string/pref_server_key"
-        android:summary="@string/pref_cur_server"
-        android:background="?android:attr/colorBackground"
-        android:title="@string/pref_title_server" />
-        app:dependency="pref_switch" />
-    <EditTextPreference
-        android:defaultValue="50"
-        android:dependency="@string/pref_switch_key"
-        android:inputType="number"
-        android:key="@string/pref_area_key"
-        android:singleLine="false"
-        android:background="?android:attr/colorBackground"
-        android:summary="@string/pref_cur_percent"
-        android:title="@string/pref_title_threshold_area" />
-    <EditTextPreference
-        android:defaultValue="1"
-        android:dependency="@string/pref_switch_key"
-        android:inputType="number"
-        android:background="?android:attr/colorBackground"
-        android:key="@string/pref_ks2p_key"
-        android:summary="@string/pref_cur_percent"
-        android:title="@string/pref_title_threshold_ks2p" />
-</PreferenceScreen>
+<?xml version="1.0" encoding="utf-8"?>
+    <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:key="pref_screen">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="pref_multiple_tests"
+            android:summary="@string/pref_summary_multiple_tests"
+            android:title="@string/pref_title_multiple_tests" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:disableDependentsState="true"
+            android:key="pref_switch"
+            android:summary="@string/pref_summary_default"
+            android:title="@string/pref_title_default" />
+        <ListPreference
+            android:defaultValue="wehe4.meddle.mobi"
+            android:entries="@array/server"
+            android:entryValues="@array/server"
+            android:key="@string/pref_server_key"
+            android:summary="@string/pref_cur_server"
+            android:title="@string/pref_title_server"
+            app:dependency="pref_switch" />
+        <EditTextPreference
+            android:defaultValue="50"
+            android:dependency="@string/pref_switch_key"
+            android:inputType="number"
+            android:key="@string/pref_area_key"
+            android:singleLine="false"
+            android:summary="@string/pref_cur_percent"
+            android:title="@string/pref_title_threshold_area" />
+        <EditTextPreference
+            android:defaultValue="1"
+            android:dependency="@string/pref_switch_key"
+            android:inputType="number"
+            android:key="@string/pref_ks2p_key"
+            android:summary="@string/pref_cur_percent"
+            android:title="@string/pref_title_threshold_ks2p" />
+    </PreferenceScreen>
