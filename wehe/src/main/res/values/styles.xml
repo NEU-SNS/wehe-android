@@ -17,19 +17,59 @@
        	<item name="android:textColorHighlight">#00F</item>
        	<item name="colorPrimaryDark">#F00</item> -->
     </style>
-
-    <!-- Application theme. -->
-    <style name="AppTheme" parent="AppBaseTheme">
-        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+    <!-- Main app theme -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Your existing app theme attributes -->
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+<!--        <item name="android:dialogTheme">@style/PreferenceDialogTheme</item>-->
+<!--        <item name="alertDialogTheme">@style/PreferenceDialogTheme</item>-->
     </style>
 
-    <style name="PreferenceDialogTheme" parent="Theme.AppCompat.DayNight.Dialog">
-        <!-- Ensure text is visible in both light and dark themes -->
+    <!-- Theme overlay for preference screens -->
+    <style name="PreferenceThemeOverlay" parent="PreferenceThemeOverlay.v14.Material">
+        <item name="android:background">?android:attr/colorBackground</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+<!--        <item name="editTextPreferenceStyle">@style/AppPreference.EditTextPreference</item>-->
+<!--        <item name="dialogPreferenceStyle">@style/AppPreference.DialogPreference</item>-->
+        <item name="preferenceCategoryStyle">@style/AppPreference.Category</item>
+    </style>
+
+<!--    &lt;!&ndash; Style for EditTextPreference &ndash;&gt;-->
+<!--    <style name="AppPreference.EditTextPreference" parent="Preference.DialogPreference.EditTextPreference.Material">-->
+<!--        <item name="android:dialogLayout">@layout/preference_dialog_edittext</item>-->
+<!--        <item name="android:dialogTheme">@style/PreferenceDialogTheme</item>-->
+<!--    </style>-->
+
+<!--    &lt;!&ndash; Style for DialogPreference &ndash;&gt;-->
+<!--    <style name="AppPreference.DialogPreference" parent="Preference.DialogPreference.Material">-->
+<!--        <item name="android:dialogTheme">@style/PreferenceDialogTheme</item>-->
+<!--    </style>-->
+
+    <!-- Style for PreferenceCategory -->
+    <style name="AppPreference.Category" parent="Preference.Category.Material">
+        <item name="android:textColor">?colorAccent</item>
+    </style>
+
+    <!-- Theme for all preference dialogs -->
+<!--    <style name="PreferenceDialogTheme" parent="ThemeOverlay.AppCompat.Dialog.Alert">-->
+<!--        <item name="colorAccent">?attr/colorAccent</item>-->
+<!--        <item name="android:windowBackground">@drawable/dialog_background</item>-->
+<!--        <item name="android:background">?android:attr/colorBackground</item>-->
+<!--        <item name="android:textColorPrimary">?android:attr/textColorPrimary</item>-->
+<!--        <item name="android:textColorSecondary">?android:attr/textColorSecondary</item>-->
+<!--        <item name="android:windowMinWidthMajor">@dimen/abc_dialog_min_width_major</item>-->
+<!--        <item name="android:windowMinWidthMinor">@dimen/abc_dialog_min_width_minor</item>-->
+<!--        <item name="android:windowIsFloating">true</item>-->
+<!--    </style>-->
+
+    <style name="AlertDialogTheme" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+        <item name="android:background">?android:attr/colorBackground</item>
+        <item name="android:windowBackground">?android:attr/colorBackground</item>
         <item name="android:textColorPrimary">?android:attr/textColorPrimary</item>
         <item name="android:textColorSecondary">?android:attr/textColorSecondary</item>
         <item name="android:editTextColor">?android:attr/textColorPrimary</item>
+        <item name="editTextColor">?android:attr/textColorPrimary</item>
         <item name="android:textColor">?android:attr/textColorPrimary</item>
-        <item name="android:windowBackground">?android:attr/colorBackground</item>
+        <item name="colorAccent">?attr/colorAccent</item>
     </style>
-
 </resources>

@@ -312,5 +312,7 @@
     <string name="ongoing_replay_image">ongoing replay image</string>
     <string name="replay_header_text">Test: %s of 2</string>
     <string name="custom_server_text">Custom Server Address</string>
-
+    <string name="preference_file_key">mobi.meddle.wehe.preferences</string>
+    <string name="preferences_category_title">Settings</string>
+    <string name="custom_server_hint">Enter the custom server address</string>
 </resources>

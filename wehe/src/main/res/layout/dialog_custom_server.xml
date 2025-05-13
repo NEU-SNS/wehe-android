@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/custom_server_text"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="20sp"
+        android:paddingBottom="16dp" />
+
+    <EditText
+        android:id="@+id/edit_custom_server"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints=""
+        android:hint="@string/custom_server_hint"
+        android:inputType="text" />
+
+</LinearLayout>

@@ -36,4 +36,14 @@
     <color name="orange2">#FFAE00</color>
     <color name="blue0">#4682B4</color>
     <color name="black_overlay">#66000000</color>
+
+    <!-- Colors for light theme -->
+    <color name="dialog_background_light">#FFFFFF</color>
+    <color name="text_color_primary_light">#000000</color>
+    <color name="text_color_secondary_light">#757575</color>
+
+    <!-- Colors for dark theme -->
+    <color name="dialog_background_dark">#303030</color>
+    <color name="text_color_primary_dark">#FFFFFF</color>
+    <color name="text_color_secondary_dark">#AAAAAA</color>
 </resources>
