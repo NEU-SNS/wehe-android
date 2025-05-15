@@ -185,16 +185,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 headerView.setPadding(30, 30, 30, 10)
                 headerView.setTextColor(dialogContext.getColorFromAttr(android.R.attr.textColorPrimary))
 
-// Custom server text box with theme-aware styling
-                val customServer = EditText(dialogContext)
-                customServer.setText("")
-                customServer.setTextColor(dialogContext.getColorFromAttr(android.R.attr.textColorPrimary))
-                customServer.setHintTextColor(dialogContext.getColorFromAttr(android.R.attr.textColorHint))
-// Also set background tint to ensure it's visible in all themes
-                customServer.setPadding(30, 30, 30, 20)
-                customServer.hint = getString(R.string.custom_server_hint) // Add a hint string resource if you don't have one
-
                 val dialogView = layoutInflater.inflate(R.layout.dialog_custom_server, null)
+                val customServer = dialogView.findViewById<EditText>(R.id.edit_custom_server)
+
                 // Create dialog with appropriate styling
                 AlertDialog.Builder(dialogContext)
                     .setView(dialogView)
