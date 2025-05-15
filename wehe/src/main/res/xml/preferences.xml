@@ -2,10 +2,8 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:key="pref_screen">
-
     <PreferenceCategory
-        app:iconSpaceReserved="false"
-        app:title="@string/preferences_category_title">
+        app:iconSpaceReserved="false">
 
         <SwitchPreference
             android:defaultValue="true"

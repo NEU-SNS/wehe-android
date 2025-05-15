@@ -296,4 +296,5 @@
     <string name="ongoing_replay_image">image de rediffusion en cours</string>
     <string name="replay_header_text">Test: %s sur 2</string>
     <string name="custom_server_text">Adresse du serveur personnalisé</string>
+    <string name="preference_dialog_edittext_hint">hint</string>
 </resources>

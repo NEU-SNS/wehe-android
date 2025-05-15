@@ -37,6 +37,7 @@
             android:layout_weight="8"
             android:max="100"
             android:progress="0"
+            android:progressTint="@color/wehe_blue"
             android:background="?android:attr/colorBackground"
             android:visibility="gone" />
 

@@ -21,7 +21,7 @@
         <EditText
             android:id="@android:id/edit"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:autofillHints=""
             android:hint="@string/preference_dialog_edittext_hint"
             android:inputType="number"
