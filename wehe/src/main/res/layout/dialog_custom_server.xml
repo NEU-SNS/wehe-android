@@ -16,7 +16,7 @@
     <EditText
         android:id="@+id/edit_custom_server"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:autofillHints=""
         android:hint="@string/custom_server_hint"
         android:inputType="text" />

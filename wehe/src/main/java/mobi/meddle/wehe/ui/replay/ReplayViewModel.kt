@@ -543,7 +543,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
 
         showDialog(
             applicationContext.getString(R.string.replay_finished_title),
-            "",
+            applicationContext.getString(R.string.replay_finished_message),
             false
         )
 

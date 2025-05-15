@@ -297,4 +297,5 @@
     <string name="replay_header_text">Test: %s sur 2</string>
     <string name="custom_server_text">Adresse du serveur personnalisé</string>
     <string name="preference_dialog_edittext_hint">hint</string>
+    <string name="replay_finished_message">All replays have been processed successfully.</string>
 </resources>

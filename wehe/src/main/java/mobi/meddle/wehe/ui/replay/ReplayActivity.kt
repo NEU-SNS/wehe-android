@@ -155,7 +155,7 @@ class ReplayActivity : AppCompatActivity() {
 
         // Observe dialog events
         viewModel.dialogEvent.observe(this) { (title, message, exitReplays) ->
-            AlertDialog.Builder(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+            AlertDialog.Builder(this)
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton(getString(android.R.string.ok)) { _, _ ->

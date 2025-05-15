@@ -316,4 +316,5 @@
     <string name="preferences_category_title">Settings</string>
     <string name="custom_server_hint">Enter the custom server address</string>
     <string name="preference_dialog_edittext_hint">hint</string>
+    <string name="replay_finished_message">All replays have been processed successfully.</string>
 </resources>
