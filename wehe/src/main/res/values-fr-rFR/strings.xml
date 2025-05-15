@@ -297,5 +297,15 @@
     <string name="replay_header_text">Test: %s sur 2</string>
     <string name="custom_server_text">Adresse du serveur personnalisé</string>
     <string name="preference_dialog_edittext_hint">hint</string>
-    <string name="replay_finished_message">All replays have been processed successfully.</string>
+    <string name="replay_finished_message">Tous les replays ont été traités avec succès.</string>
+    <string name="background_test_instructions">Veuillez laisser l\'application fonctionner en arrière-plan. Nous testons les applications sélectionnées pour mesurer les performances du réseau et les éventuels ralentissements imposés par votre opérateur.</string>
+    <string name="apps_selected_for_testing">Applications sélectionnées pour les tests</string>
+    <string name="carrier_network">Réseau de l’opérateur</string>
+    <string name="test_type">Type de test</string>
+    <string name="cancel_test">Annuler le test</string>
+    <string name="test_status">Statut du test</string>
+    <string name="current_testing_app">Application en cours de test</string>
+    <string name="background_replay_header_text">Test en arrière-plan en cours</string>
+    <string name="test_progress">Progression du test</string>
+
 </resources>
