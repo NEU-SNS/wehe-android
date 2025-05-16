@@ -233,7 +233,7 @@ class ReplayActivity : AppCompatActivity() {
                 android.R.anim.slide_in_left, android.R.anim.slide_out_right
             )
         } else {
-            AlertDialog.Builder(this, THEME_DEVICE_DEFAULT_LIGHT_DIALOG)
+            AlertDialog.Builder(this)
                 .setTitle(getString(R.string.interrupt_ongoing_replay_title))
                 .setMessage(getString(R.string.interrupt_ongoing_replay_text))
                 .setPositiveButton(getString(R.string.yes)) { _, _ ->

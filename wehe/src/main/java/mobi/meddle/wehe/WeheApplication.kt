@@ -21,9 +21,4 @@ class WeheApplication : Application(), Configuration.Provider {
             .setWorkerFactory(workerFactory)
             .setMinimumLoggingLevel(Log.INFO)
             .build()
-
-    override fun onCreate() {
-        super.onCreate()
-        // Keep this method for application-wide initialization
-    }
 }

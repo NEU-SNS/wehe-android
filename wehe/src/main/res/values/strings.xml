@@ -235,6 +235,8 @@
     <string name="nav_run_port">Port Tests</string>
     <string name="port_name">Port %s</string>
     <string name="port_test_title">%d MB Port Tests</string>
+    <string name="port_test">Port Tests</string>
+    <string name="diff_test">Differentiation Tests</string>
     <string name="nav_results">Previous Results</string>
     <string name="nav_settings">Settings</string>
     <string name="nav_functionality">How it Works</string>
@@ -326,4 +328,5 @@
     <string name="current_testing_app">Currently Testing</string>
     <string name="background_replay_header_text">Background Test in Progress</string>
     <string name="test_progress">Test Progress</string>
+    <string name="background_tests">Running Background Tests</string>
 </resources>

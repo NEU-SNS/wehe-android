@@ -96,9 +96,10 @@ dependencies {
     implementation "androidx.activity:activity:$activity_version"
     // dependency injection
     implementation 'com.google.dagger:hilt-android:2.51'
+    kapt 'com.google.dagger:hilt-compiler:2.51'
     // Hilt WorkManager integration
     implementation "androidx.hilt:hilt-work:1.0.0"
-    kapt 'com.google.dagger:hilt-compiler:2.51'
+    kapt "androidx.hilt:hilt-compiler:1.0.0"
     // Kotlin
     implementation "androidx.activity:activity-ktx:$activity_version"
     implementation "androidx.activity:activity-compose:1.8.2"

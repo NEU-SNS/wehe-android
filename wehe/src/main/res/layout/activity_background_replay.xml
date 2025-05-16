@@ -150,7 +150,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="0"
+            android:text=""
             android:textSize="14sp" />
 
         <TextView
@@ -190,32 +190,37 @@
 
     <LinearLayout
         android:id="@+id/buttonLayout"
+        style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_gravity="center"
         android:layout_margin="16dp"
         android:orientation="horizontal">
 
         <Button
             android:id="@+id/btnStartTest"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@color/wehe_blue"
             android:text="@string/start_test"
-            android:textColor="@color/black"
-            android:layout_marginEnd="8dp" />
+            android:layout_gravity="center"
+            android:textColor="@color/white"
+            android:layout_marginEnd="4dp" />
 
         <Button
             android:id="@+id/btnCancelTest"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="@color/wehe_blue"
             android:text="@string/cancel_test"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
             android:enabled="false"
-            android:layout_marginStart="8dp" />
+            android:layout_marginStart="4dp" />
     </LinearLayout>
 
 </RelativeLayout>

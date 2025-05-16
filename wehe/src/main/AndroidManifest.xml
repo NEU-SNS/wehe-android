@@ -23,6 +23,8 @@
     <!-- For WorkManager -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <application
         android:name=".WeheApplication"
         android:allowBackup="true"
@@ -65,7 +67,8 @@
             android:exported="false">
             <meta-data
                 android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup" />
+                android:value="androidx.startup"
+                tools:node="remove"/>
         </provider>
     </application>
 
