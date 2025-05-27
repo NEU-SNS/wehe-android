@@ -8,6 +8,7 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
@@ -235,6 +236,18 @@ class BackgroundReplayActivity : AppCompatActivity() {
                     }
                 }
             })
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            replayStop()
+            return if (viewModel.isReplayOngoing.value != true) {
+                super.onKeyDown(keyCode, event)
+            } else {
+                true
+            }
+        }
+        return super.onKeyDown(keyCode, event)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

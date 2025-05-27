@@ -233,6 +233,7 @@
     <string name="text_network_error">Pas de connexion Internet disponible. Essayez après la connexion à Internet.</string>
     <string name="interrupt_ongoing_replay_title">La relecture est en cours !</string>
     <string name="interrupt_ongoing_replay_text">Voulez-vous arrêter le processus?</string>
+    <string name="interrupt_background_ongoing_replay_text">The Replays will continue running in the background. Cancel the tests if you want to stop them.</string>
     <string name="select_at_least_one">Veuillez sélectionner au moins une application.</string>
     <string name="today">Aujourd\'hui, %s</string>
     <string name="throughput">%4.1f Mbit/s</string>

@@ -254,6 +254,7 @@
     <string name="text_network_error">No Internet connection available. Try After connecting to Internet.</string>
     <string name="interrupt_ongoing_replay_title">Replay is ongoing!</string>
     <string name="interrupt_ongoing_replay_text">Do you want to stop the process?</string>
+    <string name="interrupt_background_ongoing_replay_text">The Replays will continue running in the background. Cancel the tests if you want to stop them.</string>
     <string name="select_at_least_one">Please select at least one application.</string>
     <string name="today">Today, %s</string>
     <string name="throughput">%4.1f Mbps</string>

@@ -312,9 +312,9 @@ class BackgroundTestRunner(
                 // Run the test similar to ReplayViewModel.runTest
                 val rerun = runSingleTest(app, false, runPortTests, carrier)
 
-                if (!rerun) {
-                    return@withContext TestResult.ERROR
-                }
+//                if (!rerun) {
+//                    return@withContext TestResult.ERROR
+//                }
 
                 // Run confirmation test if needed
                 if (rerun && confirmationReplays) {
