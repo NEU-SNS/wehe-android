@@ -319,14 +319,14 @@
     <string name="custom_server_hint">Enter the custom server address</string>
     <string name="preference_dialog_edittext_hint">hint</string>
     <string name="replay_finished_message">All replays have been processed successfully.</string>
-    <string name="background_test_instructions">Please keep the app running in the background. We are testing selected apps to measure network performance and potential throttling by your carrier.</string>
+    <string name="background_test_instructions">Please keep the app running in the background. We are testing selected apps to measure potential throttling by your carrier.</string>
     <string name="apps_selected_for_testing">Apps Selected for Testing</string>
     <string name="carrier_network">Carrier Network</string>
     <string name="test_type">Type of Test</string>
     <string name="cancel_test">Cancel Test</string>
     <string name="test_status">Test Status</string>
     <string name="current_testing_app">Currently Testing</string>
-    <string name="background_replay_header_text">Background Test in Progress</string>
+    <string name="background_replay_header_text">Background Tests in Progress</string>
     <string name="test_progress">Test Progress</string>
-    <string name="background_tests">Running Background Tests</string>
+    <string name="background_tests">Background Tests</string>
 </resources>

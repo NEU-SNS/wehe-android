@@ -17,6 +17,7 @@
         android:layout_below="@id/background_replay_bar"
         android:layout_marginTop="16dp"
         android:background="?android:attr/colorBackground"
+        android:visibility="gone"
         android:orientation="vertical">
 
         <ImageView
@@ -47,13 +48,25 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/headerLayout"
         android:visibility="gone"
-        android:padding="16dp">
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp">
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:max="100"
+            android:progress="0" />
 
         <TextView
             android:id="@+id/tvCurrentAppTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/current_testing_app"
+            android:layout_below="@id/progressBar"
             android:textStyle="bold"
             android:textSize="16sp" />
 
@@ -85,35 +98,6 @@
             android:text=""
             android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/tvProgressTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/tvStatus"
-            android:layout_marginTop="16dp"
-            android:text="@string/test_progress"
-            android:textStyle="bold"
-            android:textSize="16sp" />
-
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/tvProgressTitle"
-            android:layout_marginTop="8dp"
-            android:max="100"
-            android:progress="0" />
-
-        <TextView
-            android:id="@+id/tvProgressPercentage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/progressBar"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="4dp"
-            android:text="0%"
-            android:textSize="14sp" />
     </RelativeLayout>
 
     <TextView
@@ -124,69 +108,79 @@
         android:layout_marginTop="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
+        android:textStyle="bold"
         android:text="@string/background_test_instructions"
         android:textSize="16sp" />
 
-    <LinearLayout
-        android:id="@+id/statsLayout"
+    <!-- Scrollable content -->
+    <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_above="@id/buttonLayout"
         android:layout_below="@id/tvInstructions"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:orientation="vertical">
+        android:fillViewport="true">
 
-        <TextView
-            android:id="@+id/tvAppsSelected"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/apps_selected_for_testing"
-            android:textStyle="bold"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/tvAppsCount"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text=""
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/tvCarrierTitle"
+        <LinearLayout
+            android:id="@+id/statsLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="@string/carrier_network"
-            android:textStyle="bold"
-            android:textSize="16sp" />
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvCarrier"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text=""
-            android:textSize="14sp" />
+            <TextView
+                android:id="@+id/tvAppsSelected"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/apps_selected_for_testing"
+                android:textStyle="bold"
+                android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/tvTestTypeTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/test_type"
-            android:textStyle="bold"
-            android:textSize="16sp" />
+            <TextView
+                android:id="@+id/tvAppsCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text=""
+                android:textSize="14sp" />
 
-        <TextView
-            android:id="@+id/tvTestType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text=""
-            android:textSize="14sp" />
-    </LinearLayout>
+            <TextView
+                android:id="@+id/tvCarrierTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/carrier_network"
+                android:textStyle="bold"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvCarrier"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text=""
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvTestTypeTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/test_type"
+                android:textStyle="bold"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvTestType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text=""
+                android:textSize="14sp" />
+        </LinearLayout>
+    </ScrollView>
 
     <LinearLayout
         android:id="@+id/buttonLayout"
@@ -195,7 +189,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_gravity="center"
-        android:layout_margin="16dp"
+        android:layout_margin="8dp"
         android:orientation="horizontal">
 
         <Button
@@ -220,6 +214,7 @@
             android:text="@string/cancel_test"
             android:textColor="@color/white"
             android:enabled="false"
+            android:visibility="gone"
             android:layout_marginStart="4dp" />
     </LinearLayout>
 

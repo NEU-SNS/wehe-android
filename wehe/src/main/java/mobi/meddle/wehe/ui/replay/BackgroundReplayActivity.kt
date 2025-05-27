@@ -35,6 +35,7 @@ class BackgroundReplayActivity : AppCompatActivity() {
     private var replayService: ReplayForegroundService? = null
     private var serviceBound = false
     private lateinit var progressBar: ProgressBar
+    private lateinit var instructionsText: TextView
     private lateinit var currentAppTextView: TextView
     private lateinit var currentStatusTextView: TextView
     private lateinit var currentAppImageView: ImageView
@@ -43,6 +44,7 @@ class BackgroundReplayActivity : AppCompatActivity() {
     private lateinit var tvCarrier: TextView
     private lateinit var tvAppsCount: TextView
     private lateinit var tvTestType: TextView
+    private lateinit var headerLayout: View
     private val doNothing = DialogInterface.OnClickListener { _, _ -> }
 
     // Service connection object
@@ -87,6 +89,8 @@ class BackgroundReplayActivity : AppCompatActivity() {
         currentAppImageView = findViewById(R.id.headerImage)
         btnStartTest = findViewById(R.id.btnStartTest)
         btnCancelTest = findViewById(R.id.btnCancelTest)
+        headerLayout = findViewById(R.id.headerLayout)
+        instructionsText = findViewById(R.id.tvInstructions)
 
         // Setup toolbar
         val mToolbar = findViewById<Toolbar>(R.id.background_replay_bar)
@@ -362,6 +366,11 @@ class BackgroundReplayActivity : AppCompatActivity() {
     private fun updateRunningTestUI(isRunning: Boolean) {
         // Update UI elements based on test status
         findViewById<View>(R.id.progressLayout).visibility = if (isRunning) View.VISIBLE else View.GONE
+        headerLayout.visibility = if (isRunning) View.VISIBLE else View.GONE
+        instructionsText.visibility = if (isRunning) View.VISIBLE else View.GONE
+        btnStartTest.visibility = if (isRunning) View.GONE else View.VISIBLE
+        btnCancelTest.visibility = if (isRunning) View.VISIBLE else View.GONE
+        progressBar.progress = if (isRunning) View.VISIBLE else 0
     }
 
     private fun displayResults(results: Triple<List<ApplicationBean>, List<ApplicationBean>, List<ApplicationBean>>?) {
@@ -371,9 +380,10 @@ class BackgroundReplayActivity : AppCompatActivity() {
 
         // Show results dialog
         val message = buildString {
-            append("Tests completed\n\n")
+            append("Go to Previous Results to get detailed results.\n\n")
             append("Total apps tested: ${allApps.size}\n")
             append("Apps with differentiation: ${diffApps.size}\n")
+            append("Apps without differentiation: ${allApps.size-inconclusiveApps.size-diffApps.size}\n")
             append("Inconclusive tests: ${inconclusiveApps.size}\n")
         }
 
