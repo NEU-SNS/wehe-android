@@ -8,13 +8,16 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import android.view.Gravity
 import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -22,12 +25,14 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.R
+import mobi.meddle.wehe.adapter.ImageReplayRecyclerViewAdapter
 import mobi.meddle.wehe.data.model.ApplicationBean
-
 
 @AndroidEntryPoint
 class BackgroundReplayActivity : AppCompatActivity() {
@@ -36,16 +41,11 @@ class BackgroundReplayActivity : AppCompatActivity() {
     private var replayService: ReplayForegroundService? = null
     private var serviceBound = false
     private lateinit var progressBar: ProgressBar
-    private lateinit var instructionsText: TextView
-    private lateinit var currentAppTextView: TextView
-    private lateinit var currentStatusTextView: TextView
-    private lateinit var currentAppImageView: ImageView
-    private lateinit var btnStartTest: Button
-    private lateinit var btnCancelTest: Button
-    private lateinit var tvCarrier: TextView
-    private lateinit var tvAppsCount: TextView
-    private lateinit var tvTestType: TextView
-    private lateinit var headerLayout: View
+    private lateinit var adapter: ImageReplayRecyclerViewAdapter
+    private lateinit var headerLayout: LinearLayout
+    private lateinit var progressBarLayout: LinearLayout
+    private lateinit var headerImage: ImageView
+    private lateinit var headerText: TextView
     private val doNothing = DialogInterface.OnClickListener { _, _ -> }
 
     // Service connection object
@@ -69,32 +69,10 @@ class BackgroundReplayActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Set the content view
-        setContentView(R.layout.activity_background_replay)
-
-        // Setup UI elements
-        setupUI()
-
-        // Process Intent extras if coming from other activity
-        processIntentExtras()
-
-        // Setup WorkManager observer
-        observeWorkStatus()
-    }
-
-    private fun setupUI() {
-        // Get UI components
-        progressBar = findViewById(R.id.progressBar)
-        currentAppTextView = findViewById(R.id.tvCurrentApp)
-        currentStatusTextView = findViewById(R.id.tvStatus)
-        currentAppImageView = findViewById(R.id.headerImage)
-        btnStartTest = findViewById(R.id.btnStartTest)
-        btnCancelTest = findViewById(R.id.btnCancelTest)
-        headerLayout = findViewById(R.id.headerLayout)
-        instructionsText = findViewById(R.id.tvInstructions)
+        setContentView(R.layout.activity_replay)
 
         // Setup toolbar
-        val mToolbar = findViewById<Toolbar>(R.id.background_replay_bar)
+        val mToolbar = findViewById<Toolbar>(R.id.replay_bar)
         setSupportActionBar(mToolbar)
         supportActionBar?.apply {
             title = getString(R.string.background_tests)
@@ -105,180 +83,141 @@ class BackgroundReplayActivity : AppCompatActivity() {
         // Keep the screen on
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        // Setup start test button
-        btnStartTest.setOnClickListener {
-            if (viewModel.isReplayOngoing.value == true) {
-                Toast.makeText(this, "Test already running", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            startBackgroundTest()
-        }
-
-        // Setup cancel button
-        btnCancelTest.setOnClickListener {
-            cancelBackgroundTest()
-        }
-
-        // Observe ViewModel state
-        viewModel.isReplayOngoing.observe(this) { isRunning ->
-            btnStartTest.isEnabled = !isRunning
-            btnCancelTest.isEnabled = isRunning
-
-            // Update UI to show test status
-            updateRunningTestUI(isRunning)
-        }
-
-        // Observe test progress
-        viewModel.progress.observe(this) { progress ->
-            progressBar.progress = progress
-        }
-
-        // Observe current app
-        viewModel.currentTestingApp.observe(this) { app ->
-            app?.let {
-                currentAppTextView.text = it.name
-                val resourceId = resources.getIdentifier(it.image, "drawable", packageName)
-                if (resourceId != 0) {
-                    currentAppImageView.setImageResource(resourceId)
-                }
-            }
-        }
-
-        // Observe test status
-        viewModel.status.observe(this) { statusPair ->
-            currentStatusTextView.text = "${statusPair.first}: ${statusPair.second}"
-        }
-
-        // Observe test results
-        viewModel.testResults.observe(this) { results ->
-            displayResults(results)
-        }
-    }
-
-    private fun processIntentExtras() {
         // Get extras from intent
         val bundle = intent.extras
         if (bundle != null) {
-            val runPortTests = bundle.getBoolean("runPortTests", false)
+            val runPortTests = bundle.getBoolean("runPortTests")
             val carrier = bundle.getString("carrier")
             val selectedApps = intent.getParcelableArrayListExtra<ApplicationBean>("selectedApps")
-
-            tvCarrier = findViewById(R.id.tvCarrier)
-            tvCarrier.text = carrier
-
-            tvAppsCount = findViewById(R.id.tvAppsCount)
-            tvAppsCount.text = selectedApps?.size.toString()
-
-            tvTestType = findViewById(R.id.tvTestType)
-            tvTestType.text = if (runPortTests) {
-                getString(R.string.port_test)
-            } else {
-                getString(R.string.diff_test)
-            }
 
             if (selectedApps != null) {
                 // Initialize the ViewModel with data
                 viewModel.initializeData(runPortTests, carrier, selectedApps, applicationContext)
-                Log.d(TAG, "Initialized with ${selectedApps.size} apps")
+
+                // Setup RecyclerView
+                adapter = ImageReplayRecyclerViewAdapter(this, selectedApps, this, runPortTests)
+                val appsRecyclerView = findViewById<RecyclerView>(R.id.appsRecyclerView)
+                val layoutManager = LinearLayoutManager(this)
+                appsRecyclerView.layoutManager = layoutManager
+                appsRecyclerView.adapter = adapter
+
+                // Setup progress bar
+                progressBar = findViewById(R.id.prgBar)
 
                 // Check network before starting tests
                 if (viewModel.isNetworkUnavailable(this)) {
-                    Toast.makeText(this, "Network unavailable", Toast.LENGTH_SHORT).show()
+                    viewModel.showNoNetworkDialog()
+                } else {
+                    startBackgroundTest()
                 }
-            } else {
-                Log.e(TAG, "No apps received in intent")
-                Toast.makeText(this, "No apps selected for testing", Toast.LENGTH_SHORT).show()
-            }
-        } else {
-            Log.e(TAG, "No extras in intent")
-        }
-    }
-
-    private fun observeWorkStatus() {
-        WorkManager.getInstance(applicationContext)
-            .getWorkInfosByTagLiveData("replay_test")
-            .observe(this, Observer { workInfoList ->
-                if (workInfoList.isNullOrEmpty()) {
-                    Log.d(TAG, "No work info available")
-                    return@Observer
-                }
-
-                // Process work info state
-                val workInfo = workInfoList[0]
-                Log.d(TAG, "Work state: ${workInfo.state}")
-
-                when (workInfo.state) {
-                    WorkInfo.State.ENQUEUED -> {
-                        Log.d(TAG, "Work enqueued")
-                        viewModel.setReplayOngoing(true)
-                    }
-                    WorkInfo.State.RUNNING -> {
-                        Log.d(TAG, "Work running")
-                        viewModel.setReplayOngoing(true)
-                    }
-                    WorkInfo.State.SUCCEEDED -> {
-                        Log.d(TAG, "WorkManager: Work completed successfully")
-                        // The service should handle the completion
-                    }
-                    WorkInfo.State.FAILED -> {
-                        Log.e(TAG, "Work failed")
-                        viewModel.setReplayOngoing(false)
-                        Toast.makeText(this, "Test failed", Toast.LENGTH_SHORT).show()
-                    }
-                    WorkInfo.State.CANCELLED -> {
-                        Log.d(TAG, "Work cancelled")
-                        viewModel.setReplayOngoing(false)
-                        Toast.makeText(this, "Test cancelled", Toast.LENGTH_SHORT).show()
-                    }
-                    else -> {
-                        Log.d(TAG, "Other work state: ${workInfo.state}")
-                    }
-                }
-            })
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            replayStop()
-            return if (viewModel.isReplayOngoing.value != true) {
-                super.onKeyDown(keyCode, event)
-            } else {
-                true
             }
         }
-        return super.onKeyDown(keyCode, event)
+
+        headerLayout = findViewById(R.id.headerLayout)
+        progressBarLayout = findViewById(R.id.prgBarLayout)
+        headerImage = findViewById(R.id.headerImage)
+        headerText = findViewById(R.id.headerText)
+
+        // Observe LiveData from ViewModel
+        setupObservers()
+
+        // Setup WorkManager observer
+        observeWorkStatus()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home) {
-            replayStop()
+    private fun setupObservers() {
+        // Observe status updates
+        viewModel.statusUpdateEvent.observe(this) { (_, _) ->
+            // Update status of app in adapter
+            adapter.notifyDataSetChanged()
         }
-        return true
-    }
 
-    /**
-     * User wants to leave the replay activity.
-     */
-    private fun replayStop() {
-        if (viewModel.isReplayOngoing.value != true) {
-            finish()
-            overridePendingTransition(
-                android.R.anim.slide_in_left, android.R.anim.slide_out_right
-            )
-        } else {
-            android.app.AlertDialog.Builder(this)
-                .setTitle(getString(R.string.interrupt_ongoing_replay_title))
-                .setMessage(getString(R.string.interrupt_ongoing_replay_text))
-                .setPositiveButton(getString(android.R.string.yes)) { _, _ ->
-                    finish()
-                    overridePendingTransition(
-                        android.R.anim.slide_in_left,
-                        android.R.anim.slide_out_right
-                    )
+        viewModel.currentTestingApp.observe(this) { appInfo ->
+            if (appInfo != null) {
+                val resourceId = resources.getIdentifier(appInfo.image, "drawable", packageName)
+
+                // Update image based on current app
+                if (appInfo.image != null) {
+                    headerImage.setImageResource(resourceId)
+                    headerLayout.visibility = View.VISIBLE
+                    progressBarLayout.visibility = View.VISIBLE
                 }
-                .setNegativeButton(getString(android.R.string.no), doNothing)
-                .show()
+            }
+
+            if (appInfo == null) {
+                headerLayout.visibility = View.GONE
+                progressBarLayout.visibility = View.GONE
+            }
+        }
+
+        viewModel.iteration.observe(this) { iter ->
+            if (iter != null) {
+                headerText.text = getString(R.string.replay_header_text, iter.toString())
+                headerLayout.visibility = View.VISIBLE
+            }
+        }
+
+        // Observe progress updates
+        viewModel.progressUpdateEvent.observe(this) { progress ->
+            if (progressBar.visibility == View.GONE || progressBar.visibility == View.INVISIBLE) {
+                progressBar.visibility = View.VISIBLE
+            }
+            progressBar.progress = progress
+        }
+
+        // Observe progress completion events
+        viewModel.progressCompleteEvent.observe(this) { iteration ->
+            if (iteration == 1) {
+                progressBar.progress = 50
+            } else {
+                progressBar.progress = 100
+                progressBar.visibility = View.GONE
+            }
+        }
+
+        // Observe toast messages
+        viewModel.toastEvent.observe(this) { message ->
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        }
+
+        // Observe dialog events
+        viewModel.dialogEvent.observe(this) { (title, message, exitReplays) ->
+            AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
+                    if (exitReplays) {
+                        replayStop()
+                    } else {
+                        // All tests just finished, check if we need to display rerun buttons
+                        if (viewModel.diffApps.size != 0 || viewModel.inconclusiveApps.size != 0) {
+                            viewModel.showRerunTomoButtonsEvent.value?.let {
+                                if (it) displayRerunTomoButtons()
+                            }
+                        }
+                    }
+                }.show()
+
+            if (exitReplays) {
+                supportActionBar?.setTitle(R.string.simple_error)
+            } else {
+                supportActionBar?.setTitle(R.string.test_results)
+            }
+        }
+
+        // Observe rerun tomography buttons event
+        viewModel.showRerunTomoButtonsEvent.observe(this) { show ->
+            if (show) displayRerunTomoButtons()
+        }
+
+        // update apps list in adapter
+        viewModel.appsList.observe(this) { apps ->
+            adapter.updateApps(ArrayList(apps))
+        }
+
+        // Observe test status
+        viewModel.isReplayOngoing.observe(this) { isRunning ->
+            // Update UI based on replay state if needed
         }
     }
 
@@ -328,6 +267,109 @@ class BackgroundReplayActivity : AppCompatActivity() {
         }
     }
 
+    private fun observeWorkStatus() {
+        WorkManager.getInstance(applicationContext)
+            .getWorkInfosByTagLiveData("replay_test")
+            .observe(this, Observer { workInfoList ->
+                if (workInfoList.isNullOrEmpty()) {
+                    Log.d(TAG, "No work info available")
+                    return@Observer
+                }
+
+                // Process work info state
+                val workInfo = workInfoList[0]
+                Log.d(TAG, "Work state: ${workInfo.state}")
+
+                when (workInfo.state) {
+                    WorkInfo.State.ENQUEUED -> {
+                        Log.d(TAG, "Work enqueued")
+                        viewModel.setReplayOngoing(true)
+                    }
+                    WorkInfo.State.RUNNING -> {
+                        Log.d(TAG, "Work running")
+                        viewModel.setReplayOngoing(true)
+                    }
+                    WorkInfo.State.SUCCEEDED -> {
+                        Log.d(TAG, "WorkManager: Work completed successfully")
+                        // The service should handle the completion
+                    }
+                    WorkInfo.State.FAILED -> {
+                        Log.e(TAG, "Work failed")
+                        viewModel.setReplayOngoing(false)
+                        Toast.makeText(this, "Test failed", Toast.LENGTH_SHORT).show()
+                    }
+                    WorkInfo.State.CANCELLED -> {
+                        Log.d(TAG, "Work cancelled")
+                        viewModel.setReplayOngoing(false)
+                        Toast.makeText(this, "Test cancelled", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {
+                        Log.d(TAG, "Other work state: ${workInfo.state}")
+                    }
+                }
+            })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (viewModel.isReplayOngoing.value == true) {
+            cancelBackgroundTest()
+            Toast.makeText(
+                this, getText(R.string.replay_aborted),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adapter.notifyDataSetChanged()
+    }
+
+    /**
+     * User wants to leave the replay activity.
+     */
+    private fun replayStop() {
+        if (viewModel.isReplayOngoing.value != true) {
+            finish()
+            overridePendingTransition(
+                android.R.anim.slide_in_left, android.R.anim.slide_out_right
+            )
+        } else {
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.interrupt_ongoing_replay_title))
+                .setMessage(getString(R.string.interrupt_ongoing_replay_text))
+                .setPositiveButton(getString(android.R.string.yes)) { _, _ ->
+                    finish()
+                    overridePendingTransition(
+                        android.R.anim.slide_in_left,
+                        android.R.anim.slide_out_right
+                    )
+                }
+                .setNegativeButton(getString(android.R.string.no), doNothing)
+                .show()
+        }
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            replayStop()
+            return if (viewModel.isReplayOngoing.value != true) {
+                super.onKeyDown(keyCode, event)
+            } else {
+                true
+            }
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == android.R.id.home) {
+            replayStop()
+        }
+        return true
+    }
+
     private fun startBackgroundTest() {
         val runPortTests = viewModel.runPortTests
         val carrier = viewModel.carrier
@@ -366,6 +408,8 @@ class BackgroundReplayActivity : AppCompatActivity() {
         if (serviceBound && replayService != null) {
             Log.d(TAG, "Cancelling through service")
             replayService?.cancelTests()
+            unbindService(serviceConnection)
+            serviceBound = false
         } else {
             // Cancel through WorkManager
             Log.d(TAG, "Cancelling through WorkManager")
@@ -376,35 +420,85 @@ class BackgroundReplayActivity : AppCompatActivity() {
         Toast.makeText(this, "Cancelling tests", Toast.LENGTH_SHORT).show()
     }
 
-    private fun updateRunningTestUI(isRunning: Boolean) {
-        // Update UI elements based on test status
-        findViewById<View>(R.id.progressLayout).visibility = if (isRunning) View.VISIBLE else View.GONE
-        headerLayout.visibility = if (isRunning) View.VISIBLE else View.GONE
-        instructionsText.visibility = if (isRunning) View.VISIBLE else View.GONE
-        btnStartTest.visibility = if (isRunning) View.GONE else View.VISIBLE
-        btnCancelTest.visibility = if (isRunning) View.VISIBLE else View.GONE
-        progressBar.progress = if (isRunning) View.VISIBLE else 0
+    /**
+     * Display buttons for rerunning tests or conducting tomography tests
+     */
+    private fun displayRerunTomoButtons() {
+        // Set rerun button to be visible if there are differentiation or inconclusive apps
+        val rerunButton = findViewById<Button>(R.id.rerunButton)
+        rerunButton.visibility = View.VISIBLE
+        rerunButton.setOnClickListener { showRerunDialog() }
+
+        // Rearrange layout so progress bar disappears
+        val params = findViewById<View>(R.id.appsRecyclerView).layoutParams as RelativeLayout.LayoutParams
+        params.addRule(RelativeLayout.ABOVE, R.id.actionBtnsLayout)
+        findViewById<View>(R.id.prgBarLayout).visibility = View.GONE
     }
 
-    private fun displayResults(results: Triple<List<ApplicationBean>, List<ApplicationBean>, List<ApplicationBean>>?) {
-        if (results == null) return
+    /**
+     * Show dialog to rerun tests
+     */
+    private fun showRerunDialog() {
+        val alertDialog = AlertDialog.Builder(this)
+            .setTitle(R.string.rerun_test_title)
+            .setMessage(R.string.rerun_test_descr)
 
-        val (allApps, diffApps, inconclusiveApps) = results
-
-        // Show results dialog
-        val message = buildString {
-            append("Go to Previous Results to get detailed results.\n\n")
-            append("Total apps tested: ${allApps.size}\n")
-            append("Apps with differentiation: ${diffApps.size}\n")
-            append("Apps without differentiation: ${allApps.size-inconclusiveApps.size-diffApps.size}\n")
-            append("Inconclusive tests: ${inconclusiveApps.size}\n")
+        // Rerun tests with differentiation
+        if (viewModel.diffApps.size != 0) {
+            alertDialog.setPositiveButton(R.string.rerun_diff_opt) { _, _ ->
+                prepareForRerun(true)
+            }
         }
 
-        AlertDialog.Builder(this)
-            .setTitle("Test Results")
-            .setMessage(message)
-            .setPositiveButton("OK") { _, _ -> }
-            .show()
+        // Rerun only the inconclusive tests
+        if (viewModel.inconclusiveApps.size != 0) {
+            alertDialog.setNegativeButton(R.string.rerun_incon_opt) { _, _ ->
+                prepareForRerun(false)
+            }
+        }
+
+        alertDialog.setNeutralButton(android.R.string.cancel, doNothing)
+        val dialog = alertDialog.create()
+        dialog.show()
+
+        // Center align buttons
+        if (viewModel.diffApps.size != 0) {
+            centerAlignButton(dialog, AlertDialog.BUTTON_POSITIVE)
+        }
+        if (viewModel.inconclusiveApps.size != 0) {
+            centerAlignButton(dialog, AlertDialog.BUTTON_NEGATIVE)
+        }
+        centerAlignButton(dialog, AlertDialog.BUTTON_NEUTRAL)
+    }
+
+    /**
+     * Prepare UI and ViewModel for rerun tests
+     */
+    private fun prepareForRerun(isRunningDifferentiation: Boolean) {
+        // Change page title
+        supportActionBar?.title = getString(R.string.background_tests)
+
+        // Rearrange layout to hide rerun button
+        val params = findViewById<View>(R.id.appsRecyclerView).layoutParams as RelativeLayout.LayoutParams
+        params.addRule(RelativeLayout.BELOW, R.id.prgBarLayout)
+        findViewById<View>(R.id.rerunButton).visibility = View.GONE
+        findViewById<View>(R.id.localizeDiffButton).visibility = View.GONE
+
+        // Update adapter and prepare viewModel
+        adapter.setTomography(false)
+        val newApps = viewModel.prepareRerunTests(isRunningDifferentiation)
+        adapter.updateApps(newApps)
+        startBackgroundTest()
+    }
+
+    /**
+     * Force alert dialog to center align buttons.
+     */
+    private fun centerAlignButton(dialog: AlertDialog, button: Int) {
+        val b = dialog.getButton(button)
+        val params = b.layoutParams as LinearLayout.LayoutParams
+        params.gravity = Gravity.CENTER
+        b.layoutParams = params
     }
 
     override fun onStart() {
@@ -415,18 +509,19 @@ class BackgroundReplayActivity : AppCompatActivity() {
             Log.d(TAG, "Binding to service on start")
             val serviceIntent = Intent(this, ReplayForegroundService::class.java)
             bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
+            viewModel.startTestExecution()
         }
     }
 
     override fun onStop() {
         super.onStop()
         Log.d(TAG, "onStop")
-        // Unbind from service when activity is not visible
-        if (serviceBound) {
-            Log.d(TAG, "Unbinding from service")
-            unbindService(serviceConnection)
-            serviceBound = false
-        }
+//    // Unbind from service when activity is not visible
+//        if (serviceBound) {
+//            Log.d(TAG, "Unbinding from service")
+//            unbindService(serviceConnection)
+//            serviceBound = false
+//        }
     }
 
     companion object {

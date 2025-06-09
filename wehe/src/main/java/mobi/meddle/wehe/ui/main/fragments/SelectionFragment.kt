@@ -68,7 +68,6 @@ import mobi.meddle.wehe.constant.Consts
 import mobi.meddle.wehe.data.model.ApplicationBean
 import mobi.meddle.wehe.ui.main.viewmodels.SelectionViewModel
 import mobi.meddle.wehe.ui.replay.BackgroundReplayActivity
-import mobi.meddle.wehe.ui.replay.ReplayActivity
 import mobi.meddle.wehe.ui.theme.WEHE_BLUE
 import mobi.meddle.wehe.ui.theme.WeheandroidTheme
 import mobi.meddle.wehe.util.applyLegacyTransition
@@ -428,81 +427,129 @@ class SelectionFragment : Fragment() {
 //        }
 //    }
 
+//    @Composable
+//    fun RunTestsButton() {
+//        val context = LocalContext.current
+//        val currentTabIndex by viewModel.currentTabIndex.collectAsState()
+//
+//        // Add state for showing dialog
+//        val showBackgroundDialog = remember { mutableStateOf(false) }
+//
+//        // Create a list of filtered apps to reuse
+//        val filteredApps = viewModel.getFilteredSelectedApps()
+//
+//        // Background test selection dialog
+//        if (showBackgroundDialog.value) {
+//            AlertDialog(
+//                onDismissRequest = { showBackgroundDialog.value = false },
+//                title = { Text("Test Mode") },
+//                text = { Text("How would you like to run the tests?") },
+//                confirmButton = {
+//                    Button(
+//                        onClick = {
+//                            showBackgroundDialog.value = false
+//                            // Launch background test activity
+//                            val intent = Intent(context, BackgroundReplayActivity::class.java).apply {
+//                                putParcelableArrayListExtra(
+//                                    "selectedApps",
+//                                    ArrayList(filteredApps)
+//                                )
+//                                putExtra("runPortTests", runPortTests)
+//                                putExtra("carrier", viewModel.carrierDisplay.value)
+//                                putExtra("testId", System.currentTimeMillis().toString())
+//                            }
+//                            context.startActivity(intent)
+//                        }
+//                    ) {
+//                        Text("Background")
+//                    }
+//                },
+//                dismissButton = {
+//                    Button(
+//                        onClick = {
+//                            showBackgroundDialog.value = false
+//                            // Original foreground activity launch
+//                            val intent = Intent(context, ReplayActivity::class.java).apply {
+//                                putParcelableArrayListExtra(
+//                                    "selectedApps",
+//                                    ArrayList(filteredApps)
+//                                )
+//                                putExtra("runPortTests", runPortTests)
+//                                putExtra("carrier", viewModel.carrierDisplay.value)
+//                            }
+//                            context.startActivity(intent)
+//                            (context as? Activity)?.overridePendingTransition(
+//                                R.anim.slide_in_right,
+//                                R.anim.slide_out_left
+//                            )
+//                        }
+//                    ) {
+//                        Text("Foreground")
+//                    }
+//                }
+//            )
+//        }
+//
+//        Button(
+//            onClick = {
+//                if (filteredApps.isEmpty()) {
+//                    Toast.makeText(
+//                        context,
+//                        context.getString(R.string.select_at_least_one),
+//                        Toast.LENGTH_LONG
+//                    ).show()
+//                    return@Button
+//                }
+//
+//                // Show dialog to select test mode
+//                showBackgroundDialog.value = true
+//            },
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(60.dp),
+//            shape = RectangleShape,
+//            colors = ButtonDefaults.buttonColors(
+//                containerColor = WEHE_BLUE,
+//                contentColor = Color.White
+//            )
+//        ) {
+//            Text(if (runPortTests) "Run Port Tests" else "Run Differentiation Tests")
+//        }
+//    }
+
+
     @Composable
     fun RunTestsButton() {
         val context = LocalContext.current
 
-        // Add state for showing dialog
-        val showBackgroundDialog = remember { mutableStateOf(false) }
-
-        // Create a list of filtered apps to reuse
-        val filteredApps = viewModel.getFilteredSelectedApps()
-
-        // Background test selection dialog
-        if (showBackgroundDialog.value) {
-            AlertDialog(
-                onDismissRequest = { showBackgroundDialog.value = false },
-                title = { Text("Test Mode") },
-                text = { Text("How would you like to run the tests?") },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            showBackgroundDialog.value = false
-                            // Launch background test activity
-                            val intent = Intent(context, BackgroundReplayActivity::class.java).apply {
-                                putParcelableArrayListExtra(
-                                    "selectedApps",
-                                    ArrayList(filteredApps)
-                                )
-                                putExtra("runPortTests", runPortTests)
-                                putExtra("carrier", viewModel.carrierDisplay.value)
-                                putExtra("testId", System.currentTimeMillis().toString())
-                            }
-                            context.startActivity(intent)
-                        }
-                    ) {
-                        Text("Background")
-                    }
-                },
-                dismissButton = {
-                    Button(
-                        onClick = {
-                            showBackgroundDialog.value = false
-                            // Original foreground activity launch
-                            val intent = Intent(context, ReplayActivity::class.java).apply {
-                                putParcelableArrayListExtra(
-                                    "selectedApps",
-                                    ArrayList(filteredApps)
-                                )
-                                putExtra("runPortTests", runPortTests)
-                                putExtra("carrier", viewModel.carrierDisplay.value)
-                            }
-                            context.startActivity(intent)
-                            (context as? Activity)?.overridePendingTransition(
-                                R.anim.slide_in_right,
-                                R.anim.slide_out_left
-                            )
-                        }
-                    ) {
-                        Text("Foreground")
-                    }
-                }
-            )
-        }
-
         Button(
             onClick = {
+                // Get filtered apps based on test type AND current tab
+                val filteredApps = viewModel.getFilteredSelectedApps()
+
                 if (filteredApps.isEmpty()) {
                     Toast.makeText(
                         context,
-                        context.getString(R.string.select_at_least_one),
+                        getString(R.string.select_at_least_one),
                         Toast.LENGTH_LONG
                     ).show()
                     return@Button
                 }
 
-                // Show dialog to select test mode
-                showBackgroundDialog.value = true
+                val intent = Intent(context, BackgroundReplayActivity::class.java).apply {
+                    putParcelableArrayListExtra(
+                        "selectedApps",
+                        ArrayList(filteredApps)
+                    )
+                    putExtra("runPortTests", runPortTests)
+                    putExtra("carrier", viewModel.carrierDisplay.value)
+                    putExtra("testId", System.currentTimeMillis().toString())
+                }
+                startActivity(intent)
+                requireActivity().overridePendingTransition(
+                    R.anim.slide_in_right,
+                    R.anim.slide_out_left
+                )
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -516,6 +563,8 @@ class SelectionFragment : Fragment() {
             Text(if (runPortTests) "Run Port Tests" else "Run Differentiation Tests")
         }
     }
+
+
 
     private fun getTabItems(): List<TabItem> =
         if (runPortTests) {

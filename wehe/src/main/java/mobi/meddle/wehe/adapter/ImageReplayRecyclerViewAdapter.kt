@@ -309,8 +309,7 @@ import androidx.recyclerview.widget.RecyclerView
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.constant.Consts
 import mobi.meddle.wehe.data.model.ApplicationBean
-import mobi.meddle.wehe.ui.replay.ReplayActivity
-import mobi.meddle.wehe.util.THEME_DEVICE_DEFAULT_LIGHT_DIALOG
+import mobi.meddle.wehe.ui.replay.BackgroundReplayActivity
 import java.util.Locale
 import kotlin.math.min
 
@@ -321,7 +320,7 @@ import kotlin.math.min
 class ImageReplayRecyclerViewAdapter(
     private val context: Context,
     private var dataList: List<ApplicationBean>, //replay activity, to get resources
-    private val replayAct: ReplayActivity,
+    private val replayAct: BackgroundReplayActivity,
     private val runPortTests: Boolean,
 ) : RecyclerView.Adapter<ImageReplayRecyclerViewAdapter.ViewHolder>() {
     private var isTomography = false

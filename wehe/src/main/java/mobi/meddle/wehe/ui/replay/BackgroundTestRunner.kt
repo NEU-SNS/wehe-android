@@ -88,7 +88,7 @@ class BackgroundTestRunner(
 
             // Initialize apps status
             selectedApps.forEach { app ->
-                app.status = "Pending"
+                app.status = applicationContext.getString(R.string.pending) ?: "Waiting to start"
             }
 
             // Run tests for each app
@@ -113,17 +113,18 @@ class BackgroundTestRunner(
                     when (testResult) {
                         TestResult.DIFFERENTIATED -> {
                             diffApps.add(app)
-                            app.status = "Differentiated"
+                            app.status = applicationContext.getString(R.string.has_diff)
                         }
                         TestResult.NOT_DIFFERENTIATED -> {
-                            app.status = "Not Differentiated"
+                            app.status = applicationContext.getString(R.string.no_diff)
                         }
                         TestResult.INCONCLUSIVE -> {
                             inconclusiveApps.add(app)
-                            app.status = "Inconclusive"
+                            app.status = applicationContext.getString(R.string.inconclusive)
                         }
                         TestResult.ERROR -> {
-                            app.status = "Error"
+                            // temporary error message
+                            app.status = applicationContext.getString(R.string.error)
                         }
                     }
 
@@ -132,8 +133,8 @@ class BackgroundTestRunner(
 
                 } catch (e: Exception) {
                     Log.e(TAG, "Error testing app ${app.name}", e)
-                    app.status = "Error"
-                    onStatusUpdate(Pair(app.name ?: "Unknown App", "Error"))
+                    app.status = applicationContext.getString(R.string.error)
+                    onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.error)))
                 }
 
                 // Add delay between tests if needed
@@ -294,18 +295,17 @@ class BackgroundTestRunner(
         return withContext(Dispatchers.IO) {
             try {
                 Log.d(TAG, "Running test for app: ${app.name}")
-
-                onStatusUpdate(Pair(app.name ?: "Unknown App", "Initializing"))
+//                onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.pending) ?: "Waiting to start"))
 
                 // Check network before starting
                 if (isNetworkUnavailable()) {
-                    onError("Network unavailable")
+                    onError(applicationContext.getString(R.string.text_network_error) ?: "No network available")
                     return@withContext TestResult.ERROR
                 }
 
                 // Setup servers if needed
                 if (!setupServersAndCertificates(serverDisplay!!, null)) {
-                    onError("Server unavailable")
+                    onError(applicationContext.getString(R.string.server_unavailable) ?: "Server unavailable")
                     return@withContext TestResult.ERROR
                 }
 
@@ -318,7 +318,7 @@ class BackgroundTestRunner(
 
                 // Run confirmation test if needed
                 if (rerun && confirmationReplays) {
-                    onStatusUpdate(Pair(app.name ?: "Unknown App", "Running confirmation"))
+                    onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.confirmation_replay)))
                     runSingleTest(app, true, runPortTests, carrier)
                 }
 
@@ -328,10 +328,11 @@ class BackgroundTestRunner(
 
                 // Determine result based on app status
                 when {
-                    app.status.contains("Differentiated") || app.status.contains("has diff") -> TestResult.DIFFERENTIATED
-                    app.status.contains("Inconclusive") || app.status.contains("inconclusive") -> TestResult.INCONCLUSIVE
-                    app.status.contains("Error") -> TestResult.ERROR
-                    else -> TestResult.NOT_DIFFERENTIATED
+                    app.status.contains(applicationContext.getString(R.string.has_diff)) || app.status.contains("has diff") -> TestResult.DIFFERENTIATED
+                    app.status.contains(applicationContext.getString(R.string.inconclusive)) || app.status.contains("inconclusive") -> TestResult.INCONCLUSIVE
+                    app.status.contains(applicationContext.getString(R.string.no_diff)) || app.status.contains("no diff") -> TestResult.NOT_DIFFERENTIATED
+                    app.status.contains(applicationContext.getString(R.string.error)) -> TestResult.ERROR
+                    else -> TestResult.ERROR
                 }
 
             } catch (e: Exception) {
@@ -366,13 +367,13 @@ class BackgroundTestRunner(
                     if (!isRunning) return@withContext false
 
                     onIterationUpdate(iteration)
-                    onStatusUpdate(Pair(app.name ?: "Unknown App", "Running ${channel} test"))
+                    onStatusUpdate(Pair(app.name ?: "Unknown App", "Running $channel test"))
 
                     // Load app data for replay
                     val appData = replayRepository.loadAppDataForReplay(app, channel)
 
                     try {
-                        onStatusUpdate(Pair(app.name ?: "Unknown App", "Creating side channel"))
+                        onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.create_side_channel)))
 
                         // Create side channels
                         val (sideChannels, jitterBeans) = replayRepository.setupSideChannels(appData)
@@ -393,6 +394,9 @@ class BackgroundTestRunner(
                         }
 
                         val endOfTest = channel.equals(types[types.size - 1], ignoreCase = true)
+                        if (endOfTest) {
+                            Log.i("Replay", "last replay running ${types[types.size - 1]}!")
+                        }
 
                         // Check port accessibility for TCP tests
                         var replayPort = "80"
@@ -414,7 +418,10 @@ class BackgroundTestRunner(
 
                         if (!isRunning) return@withContext false
 
-                        onStatusUpdate(Pair(app.name ?: "Unknown App", "Requesting permission"))
+                        /*
+                         * Steps 1-4: Initiate test with server
+                         */
+                        onStatusUpdate(Pair(app.name ?: "Unknown App",  applicationContext.getString(R.string.ask4permission)))
 
                         // Initiate test with server
                         val timeSlicesResult = replayRepository.initiateTestWithServer(
@@ -423,33 +430,33 @@ class BackgroundTestRunner(
                         )
 
                         val numOfTimeSlices = timeSlicesResult.getOrElse {
-                            setInconclusive(app, it.message ?: "Unknown error")
+                            setInconclusive(app, it.message ?: applicationContext.getString(R.string.error_unknown))
                             return@withContext false
                         }
 
-                        onStatusUpdate(Pair(app.name ?: "Unknown App", "Getting port mapping"))
+                        onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.receive_server_port_mapping)))
 
                         // Get port mappings
                         val (serverPortsMaps, udpReplayInfoBeans) = replayRepository.getPortMappingFromServer(sideChannels)
 
-                        onStatusUpdate(Pair(app.name ?: "Unknown App", "Creating TCP clients"))
+                        onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.create_tcp_client)))
 
                         // Create TCP clients
                         val CSPairMappings = try {
                             replayRepository.createTCPClients(appData, serverPortsMaps)
                         } catch (e: Exception) {
-                            setInconclusive(app, "No connection")
+                            setInconclusive(app, applicationContext.getString(R.string.error_no_connection))
                             return@withContext false
                         }
 
-                        onStatusUpdate(Pair(app.name ?: "Unknown App", "Creating UDP clients"))
+                        onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.create_udp_client)))
 
                         // Create UDP clients
                         val udpPortMappings = replayRepository.createUDPClients(appData)
 
                         if (!isRunning) return@withContext false
 
-                        onStatusUpdate(Pair(app.name ?: "Unknown App", "Starting notifiers"))
+                        onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.run_notf)))
 
                         // Start notifiers
                         val notifiers = ArrayList<CombinedNotifierThread>()
@@ -462,7 +469,7 @@ class BackgroundTestRunner(
                             notfThreads.add(notfThread)
                         }
 
-                        onStatusUpdate(Pair(app.name ?: "Unknown App", "Starting receivers"))
+                        onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.run_receiver)))
 
                         // Start receivers
                         val analyzerTasks = ArrayList<CombinedAnalyzerTask>()
@@ -488,7 +495,7 @@ class BackgroundTestRunner(
                             rThreads.add(rThread)
                         }
 
-                        onStatusUpdate(Pair(app.name ?: "Unknown App", "Sending packets"))
+                        onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.run_sender)))
 
                         // Extract UDP server mappings
                         val udpServerMappings = ArrayList<HashMap<String, HashMap<String, ServerInstance>>>()
@@ -531,7 +538,7 @@ class BackgroundTestRunner(
 
                         if (!isRunning) return@withContext false
 
-                        onStatusUpdate(Pair(app.name ?: "Unknown App", "Processing results"))
+                        onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.processing_results)))
 
                         // Process test results
                         replayRepository.processTestResults(sideChannels, duration, analyzerTasks)
@@ -551,7 +558,7 @@ class BackgroundTestRunner(
                         return@withContext false
                     } catch (e: IOException) {
                         Log.e(TAG, "IO issue with server", e)
-                        setInconclusive(app, "No connection")
+                        setInconclusive(app, applicationContext.getString(R.string.error_no_connection))
                         return@withContext false
                     }
                 }
@@ -574,7 +581,7 @@ class BackgroundTestRunner(
             inconclusiveApps.add(app)
         }
         app.error = msg
-        app.status = "Inconclusive"
+        app.status = applicationContext.getString(R.string.inconclusive) ?: "Inconclusive"
     }
 
     /**
