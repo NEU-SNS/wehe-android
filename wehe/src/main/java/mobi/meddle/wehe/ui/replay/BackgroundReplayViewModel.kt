@@ -492,5 +492,41 @@ class BackgroundReplayViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Sync with service updates - call this when service is bound
+     */
+    fun syncWithService(service: ReplayForegroundService) {
+        // Mirror service LiveData to ViewModel LiveData
+        service.currentTestingApp.observeForever { app ->
+            _currentTestingApp.postValue(app)
+        }
+
+        service.progressUpdate.observeForever { progress ->
+            _progress.postValue(progress)
+            _progressUpdateEvent.postValue(progress)
+        }
+
+        service.statusUpdate.observeForever { status ->
+            _status.postValue(status)
+            // Update the specific app status in the list
+            selectedApps?.find { it.name == status.first }?.let { app ->
+                updateAppStatus(app, status.second)
+            }
+        }
+
+        service.iteration.observeForever { iter ->
+            _iteration.postValue(iter)
+        }
+
+        service.testResults.observeForever { results ->
+            _testResults.postValue(results)
+            setTestResults(results)
+        }
+
+        service.isReplayOngoing.observeForever { isOngoing ->
+            _isReplayOngoing.postValue(isOngoing)
+        }
+    }
+
 
 }

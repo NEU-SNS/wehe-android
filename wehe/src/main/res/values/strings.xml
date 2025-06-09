@@ -330,6 +330,6 @@
     <string name="background_replay_header_text">Background Tests in Progress</string>
     <string name="test_progress">Test Progress</string>
     <string name="background_tests">Background Tests</string>
-    <string name="error">Some error occured\n</string>
-    <string name="processing_results">Processing Results\n</string>
+    <string name="error">Some error occurred</string>
+    <string name="processing_results">Processing Results</string>
 </resources>

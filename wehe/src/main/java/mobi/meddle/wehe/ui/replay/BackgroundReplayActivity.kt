@@ -127,9 +127,12 @@ class BackgroundReplayActivity : AppCompatActivity() {
 
     private fun setupObservers() {
         // Observe status updates
-        viewModel.statusUpdateEvent.observe(this) { (_, _) ->
-            // Update status of app in adapter
-            adapter.notifyDataSetChanged()
+        viewModel.statusUpdateEvent.observe(this) { (app, status) ->
+            Log.d(TAG, "ViewModel - Status update for ${app.name}: $status")
+            // Force adapter to refresh immediately
+            runOnUiThread {
+                adapter.notifyDataSetChanged()
+            }
         }
 
         viewModel.currentTestingApp.observe(this) { appInfo ->
@@ -225,40 +228,36 @@ class BackgroundReplayActivity : AppCompatActivity() {
         replayService?.let { service ->
             Log.d(TAG, "Setting up service observers")
 
-            // Observe test progress
-            service.isReplayOngoing.observe(this) {
-                Log.d(TAG, "Service replay ongoing: $it")
-                viewModel.setReplayOngoing(it)
-            }
+            // Sync ViewModel with service
+            viewModel.syncWithService(service)
 
-            // Observe current app being tested
+            // Direct service observations for immediate UI updates
             service.currentTestingApp.observe(this) { app ->
-                Log.d(TAG, "Current testing app: ${app?.name}")
-                viewModel.setCurrentTestingApp(app)
+                Log.d(TAG, "Service - Current testing app: ${app?.name}")
+                // ViewModel sync will handle this, but we can add immediate UI updates here if needed
             }
 
-            // Observe test progress
             service.progressUpdate.observe(this) { progress ->
-                Log.d(TAG, "Progress update: $progress")
-                viewModel.setProgress(progress)
+                Log.d(TAG, "Service - Progress update: $progress")
+                // ViewModel sync handles this
             }
 
-            // Observe test status
-            service.statusUpdate.observe(this) { status ->
-                Log.d(TAG, "Status update: ${status.first} ${status.second}")
-                viewModel.setStatus(status)
+            service.statusUpdate.observe(this) { (appName, status) ->
+                Log.d(TAG, "Service - Status update: $appName -> $status")
+                // Force adapter refresh to show status changes
+                runOnUiThread {
+                    adapter.notifyDataSetChanged()
+                }
             }
 
-            // Observe test results
             service.testResults.observe(this) { results ->
-                Log.d(TAG, "Test results received")
-                viewModel.setTestResults(results)
+                Log.d(TAG, "Service - Test results received")
+                // ViewModel sync handles this
             }
 
-            // Observe test errors
             service.errorMessage.observe(this) { errorMsg ->
                 errorMsg?.let {
-                    Log.e(TAG, "Error message: $it")
+                    Log.e(TAG, "Service - Error message: $it")
                     Toast.makeText(this, it, Toast.LENGTH_LONG).show()
                 }
             }
@@ -509,7 +508,6 @@ class BackgroundReplayActivity : AppCompatActivity() {
             Log.d(TAG, "Binding to service on start")
             val serviceIntent = Intent(this, ReplayForegroundService::class.java)
             bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE)
-            viewModel.startTestExecution()
         }
     }
 

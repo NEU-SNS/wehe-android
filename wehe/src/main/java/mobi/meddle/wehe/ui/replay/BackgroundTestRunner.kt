@@ -730,7 +730,7 @@ class BackgroundTestRunner(
             }
             diffApps.add(app)
         } else {
-            app.status = "No Differentiation"
+            app.status = applicationContext.getString(R.string.no_diff) ?: "No differentiation"
         }
 
         onStatusUpdate(Pair(app.name ?: "Unknown App", app.status))
