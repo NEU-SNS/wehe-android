@@ -297,8 +297,8 @@ class ReplayForegroundService : LifecycleService() {
 
                 Log.d(TAG, "Tests completed")
 
-                // Stop service after a delay to ensure results are delivered
-                delay(10000)
+//                // Stop service after a delay to ensure results are delivered
+//                delay(10000)
                 stopSelf()
 
             } catch (e: CancellationException) {

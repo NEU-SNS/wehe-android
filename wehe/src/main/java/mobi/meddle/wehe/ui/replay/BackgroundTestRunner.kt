@@ -82,14 +82,18 @@ class BackgroundTestRunner(
 
             // Initialize test configuration
             if (!initializeTestConfiguration(runPortTests)) {
-                onError("Failed to initialize test configuration")
+                // Initialize apps status
+                selectedApps.forEach { app ->
+                    onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.server_unavailable) ?: "Server unavailable"))
+                }
+                onError(applicationContext.getString(R.string.server_unavailable) ?: "Server unavailable")
                 return
             }
 
-            // Initialize apps status
-            selectedApps.forEach { app ->
-                app.status = applicationContext.getString(R.string.pending) ?: "Waiting to start"
-            }
+//            // Handled in the viewmodel
+//            selectedApps.forEach { app ->
+//                app.status = applicationContext.getString(R.string.pending) ?: "Waiting to start"
+//            }
 
             // Run tests for each app
             for ((index, app) in selectedApps.withIndex()) {

@@ -260,6 +260,9 @@ class BackgroundReplayActivity : AppCompatActivity() {
                 errorMsg?.let {
                     Log.e(TAG, "Service - Error message: $it")
                     Toast.makeText(this, it, Toast.LENGTH_LONG).show()
+                    if (errorMsg.equals(getString(R.string.server_unavailable), ignoreCase = true)) {
+                        supportActionBar?.setTitle(R.string.test_results)
+                    }
                 }
             }
         } ?: run {
