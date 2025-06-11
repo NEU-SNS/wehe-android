@@ -95,7 +95,7 @@ class BackgroundTestRunner(
             for ((index, app) in selectedApps.withIndex()) {
                 if (!isRunning) break // Check if cancelled
 
-                onIterationUpdate(index + 1)
+                onIterationUpdate(1)
                 onCurrentAppUpdate(app)
 
                 // Update progress

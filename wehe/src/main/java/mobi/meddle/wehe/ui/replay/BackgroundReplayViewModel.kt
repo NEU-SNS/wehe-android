@@ -12,10 +12,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.NonCancellable.isActive
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.data.model.ApplicationBean
 import mobi.meddle.wehe.data.repository.ReplayRepository
@@ -156,53 +153,10 @@ class BackgroundReplayViewModel @Inject constructor(
     }
 
     /**
-     * Set test parameters
-     */
-    fun setTestParameters(
-        runPortTests: Boolean,
-        carrier: String?,
-        selectedApps: ArrayList<ApplicationBean>
-    ) {
-        this.runPortTests = runPortTests
-        this.carrier = carrier
-        this.selectedApps = selectedApps
-        _appsList.value = selectedApps
-        allApps = ArrayList(selectedApps)
-    }
-
-    /**
      * Update replay ongoing status
      */
     fun setReplayOngoing(isOngoing: Boolean) {
         _isReplayOngoing.value = isOngoing
-    }
-
-    /**
-     * Update current testing app - This now properly updates iteration and posts to LiveData
-     */
-    fun setCurrentTestingApp(app: ApplicationBean?) {
-        _currentTestingApp.postValue(app)
-
-        // Update iteration when app changes
-        if (app != null) {
-            // Set iteration to 1 when starting a new app
-            _iteration.postValue(1)
-        }
-    }
-
-    /**
-     * Update progress - Enhanced to match ReplayViewModel behavior
-     */
-    fun setProgress(progress: Int) {
-        _progress.postValue(progress)
-        _progressUpdateEvent.postValue(progress)
-    }
-
-    /**
-     * Update status
-     */
-    fun setStatus(status: Pair<String, String>) {
-        _status.postValue(status)
     }
 
     /**
@@ -255,92 +209,13 @@ class BackgroundReplayViewModel @Inject constructor(
         uiUpdateJobs.add(uiJob)
     }
 
-    /**
-     * Update app status by name with iteration - New method to match ReplayViewModel
-     */
-    private fun updateAppStatus(appName: String, status: String, iteration: Int = -1) {
-        val uiJob = viewModelScope.launch(Dispatchers.Main) {
-            var finalStatus = status
-            if (iteration != -1) {
-                finalStatus = "$iteration/2 $status"
-            }
 
-            selectedApps?.forEach { app ->
-                if (app.name == appName) {
-                    app.status = finalStatus
-                    _statusUpdateEvent.value = Pair(app, finalStatus)
-                }
-            }
-
-            // Update the apps list
-            selectedApps?.let { apps ->
-                _appsList.value = ArrayList(apps)
-            }
-        }
-        uiUpdateJobs.add(uiJob)
-    }
-
-    /**
-     * Set current iteration - Enhanced posting
-     */
-    private fun setIteration(iter: Int) {
-        _iteration.postValue(iter)
-    }
-
-    /**
-     * Set progress complete - Enhanced to match ReplayViewModel behavior
-     */
-    fun setProgressComplete(iteration: Int) {
-        _progressCompleteEvent.postValue(iteration)
-    }
-
-    /**
-     * Show toast message
-     */
-    fun showToast(message: String) {
-        _toastEvent.postValue(message)
-    }
-
-    /**
-     * Show dialog
-     */
-    fun showDialog(title: String, message: String, exitReplays: Boolean) {
-        _dialogEvent.postValue(Triple(title, message, exitReplays))
-    }
-
-    /**
-     * Clear progress bar - New method to match ReplayViewModel
-     */
-    private fun clearProgressBar() {
-        _progressCompleteEvent.postValue(0)
-    }
-
-    /**
-     * Update progress with proper coroutine context
-     */
-    private fun updateProgress(progress: Int) {
-        val uiJob = viewModelScope.launch(Dispatchers.Main) {
-            _progressUpdateEvent.value = progress
-        }
-        uiUpdateJobs.add(uiJob)
-    }
-
-    /**
-     * Finish progress for iteration
-     */
-    private fun finishProgress(iteration: Int) {
-        val uiJob = viewModelScope.launch(Dispatchers.Main) {
-            _progressCompleteEvent.value = iteration
-        }
-        uiUpdateJobs.add(uiJob)
-    }
-
-    /**
-     * Show rerun and tomography buttons
-     */
-    fun showRerunTomoButtons() {
-        _showRerunTomoButtonsEvent.postValue(true)
-    }
+//    /**
+//     * Show rerun and tomography buttons
+//     */
+//    fun showRerunTomoButtons() {
+//        _showRerunTomoButtonsEvent.postValue(true)
+//    }
 
     /**
      * Prepare rerun tests
@@ -392,107 +267,6 @@ class BackgroundReplayViewModel @Inject constructor(
 
         // Clear current testing app
         _currentTestingApp.postValue(null)
-    }
-
-    /**
-     * Start test execution - New method to initiate UI updates during testing
-     */
-    fun startTestExecution() {
-        _isReplayOngoing.postValue(true)
-
-        job = viewModelScope.launch(Dispatchers.IO) {
-            try {
-                simulateTestExecution()
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    showToast("Error during test execution: ${e.message}")
-                }
-            } finally {
-                withContext(Dispatchers.Main) {
-                    _isReplayOngoing.value = false
-                }
-            }
-        }
-    }
-
-    /**
-     * Simulate test execution to update UI properly - mirrors ReplayViewModel behavior
-     */
-    private suspend fun simulateTestExecution() {
-        selectedApps?.let { apps ->
-            for ((index, app) in apps.withIndex()) {
-                if (!isActive) return
-
-                // Update current testing app
-                withContext(Dispatchers.Main) {
-                    setCurrentTestingApp(app)
-                    setIteration(1)
-                }
-
-                // Clear progress bar
-                clearProgressBar()
-                updateProgress(0)
-
-                // Update app status to testing
-                updateAppStatus(app.name, applicationContext.getString(R.string.interrupt_ongoing_replay_text) ?: "Testing", 1)
-
-                // Simulate test progress
-                for (progress in 0..100 step 10) {
-                    if (!isActive) return
-                    updateProgress(progress)
-                    kotlinx.coroutines.delay(500) // Simulate work
-                }
-
-                // Finish first iteration
-                finishProgress(1)
-
-                // Start second iteration if needed
-                withContext(Dispatchers.Main) {
-                    setIteration(2)
-                }
-
-                clearProgressBar()
-                updateProgress(0)
-
-                updateAppStatus(app.name, applicationContext.getString(R.string.interrupt_ongoing_replay_text) ?: "Testing", 2)
-
-                // Simulate second iteration progress
-                for (progress in 0..100 step 10) {
-                    if (!isActive) return
-                    updateProgress(progress)
-                    kotlinx.coroutines.delay(500)
-                }
-
-                // Finish second iteration
-                finishProgress(2)
-
-                // Update final status
-                val finalStatus = when {
-                    Math.random() < 0.3 -> {
-                        diffApps.add(app)
-                        "Differentiation detected"
-                    }
-                    Math.random() < 0.6 -> {
-                        inconclusiveApps.add(app)
-                        "Inconclusive"
-                    }
-                    else -> "No differentiation"
-                }
-
-                updateAppStatus(app.name, finalStatus)
-
-                if (!isActive) return
-            }
-
-            // Remove current testing app when done
-            withContext(Dispatchers.Main) {
-                setCurrentTestingApp(null)
-            }
-
-            // Set final results
-            val allTestApps = ArrayList(apps)
-            setTestResults(Triple(allTestApps, diffApps, inconclusiveApps))
-        }
     }
 
     /**
