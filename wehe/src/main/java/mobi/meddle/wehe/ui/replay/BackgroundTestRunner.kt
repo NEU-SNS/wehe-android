@@ -129,12 +129,17 @@ class BackgroundTestRunner(
                     }
 
                     onStatusUpdate(Pair(app.name ?: "Unknown App", app.status))
-                    Log.d(TAG, "Completed test for ${app.name}: ${app.status}")
+
+                    // Update the app with current throughput values immediately
+                    onCurrentAppUpdate(app)
+
+                    Log.d(TAG, "Completed test for ${app.name}: ${app.status}, originalThroughput: ${app.originalThroughput}, randomThroughput: ${app.randomThroughput}")
 
                 } catch (e: Exception) {
                     Log.e(TAG, "Error testing app ${app.name}", e)
                     app.status = applicationContext.getString(R.string.error)
                     onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.error)))
+                    onCurrentAppUpdate(app)
                 }
 
                 // Add delay between tests if needed
@@ -546,6 +551,21 @@ class BackgroundTestRunner(
                         // Set random throughput for port tests
                         if (runPortTests && channel.equals("random", ignoreCase = true)) {
                             app.randomThroughput = analyzerTasks[0].avgThroughput
+                            onCurrentAppUpdate(app)
+                            Log.d(TAG, "Updated randomThroughput for port test ${app.name}: ${app.randomThroughput}")
+                        }
+
+                        // For app tests, update throughput based on channel type
+                        if (!runPortTests) {
+                            if (channel.equals("open", ignoreCase = true)) {
+                                app.originalThroughput = analyzerTasks[0].avgThroughput
+                                onCurrentAppUpdate(app)
+                                Log.d(TAG, "Updated originalThroughput for ${app.name}: ${app.originalThroughput}")
+                            } else if (channel.equals("random", ignoreCase = true)) {
+                                app.randomThroughput = analyzerTasks[0].avgThroughput
+                                onCurrentAppUpdate(app)
+                                Log.d(TAG, "Updated randomThroughput for ${app.name}: ${app.randomThroughput}")
+                            }
                         }
 
                         // Cleanup resources
@@ -704,12 +724,20 @@ class BackgroundTestRunner(
             return true
         }
 
-        // Set app properties
+        // Set app properties with updated throughput values from analysis
         app.area_test = analysis.area_test
         app.ks2pVal = analysis.ks2pVal
         app.ks2pRatio = analysis.ks2RatioTest
+
+        // Update throughput values from analysis results
         app.originalThroughput = analysis.xputOriginal
-        app.randomThroughput = analysis.xputTest
+        if (analysis.xputTest > 0) { // Only update if we have a valid test throughput
+            app.randomThroughput = analysis.xputTest
+        }
+
+        onCurrentAppUpdate(app)
+
+        Log.d(TAG, "Final throughput values for ${app.name} - original: ${app.originalThroughput}, random: ${app.randomThroughput}")
 
         // Set status based on analysis
         if (isTomography) {

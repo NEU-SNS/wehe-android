@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -207,7 +208,7 @@ class BackgroundReplayViewModel @Inject constructor(
     /**
      * Set test results
      */
-    fun setTestResults(results: Triple<List<ApplicationBean>, List<ApplicationBean>, List<ApplicationBean>>) {
+    private fun setTestResults(results: Triple<List<ApplicationBean>, List<ApplicationBean>, List<ApplicationBean>>) {
         _testResults.postValue(results)
 
         val (allTestApps, diffTestApps, inconclusiveTestApps) = results
@@ -219,14 +220,16 @@ class BackgroundReplayViewModel @Inject constructor(
 
         // Show completion dialog
         val message = buildString {
-            append("Background tests completed!\n\n")
-            append("Total apps tested: ${allTestApps.size}\n")
-            append("Apps with differentiation: ${diffTestApps.size}\n")
-            append("Apps without differentiation: ${allTestApps.size - inconclusiveTestApps.size - diffTestApps.size}\n")
-            append("Inconclusive tests: ${inconclusiveTestApps.size}\n")
+            append("Background tests completed!")
+            // Uncomment if you want to show detailed results
+//            append("Background tests completed!\n\n")
+//            append("Total apps tested: ${allTestApps.size}\n")
+//            append("Apps with differentiation: ${diffTestApps.size}\n")
+//            append("Apps without differentiation: ${allTestApps.size - inconclusiveTestApps.size - diffTestApps.size}\n")
+//            append("Inconclusive tests: ${inconclusiveTestApps.size}\n")
         }
 
-        _dialogEvent.postValue(Triple("Test Results", message, false))
+        _dialogEvent.postValue(Triple("Replays Finished!", message, false))
 
         // Show rerun buttons if needed
         if (diffTestApps.isNotEmpty() || inconclusiveTestApps.isNotEmpty()) {
@@ -237,7 +240,7 @@ class BackgroundReplayViewModel @Inject constructor(
     /**
      * Update status for specific app - Enhanced to match ReplayViewModel behavior
      */
-    fun updateAppStatus(app: ApplicationBean, status: String) {
+    private fun updateAppStatus(app: ApplicationBean, status: String) {
         // Create a UI update job like in ReplayViewModel
         val uiJob = viewModelScope.launch(Dispatchers.Main) {
             app.status = status
@@ -308,7 +311,7 @@ class BackgroundReplayViewModel @Inject constructor(
     /**
      * Clear progress bar - New method to match ReplayViewModel
      */
-    fun clearProgressBar() {
+    private fun clearProgressBar() {
         _progressCompleteEvent.postValue(0)
     }
 
@@ -499,6 +502,26 @@ class BackgroundReplayViewModel @Inject constructor(
         // Mirror service LiveData to ViewModel LiveData
         service.currentTestingApp.observeForever { app ->
             _currentTestingApp.postValue(app)
+
+            app?.let { updatedApp ->
+                selectedApps?.let { apps ->
+                    val appIndex = apps.indexOfFirst { it.name == updatedApp.name }
+                    if (appIndex != -1) {
+                        // Update the app in the list with the new throughput values
+                        apps[appIndex] = updatedApp
+
+                        // Also update the status if it's provided
+                        if (updatedApp.status.isNotEmpty()) {
+                            updateAppStatus(updatedApp, updatedApp.status)
+                        }
+
+                        // Post the updated list to trigger UI refresh
+                        _appsList.postValue(ArrayList(apps))
+
+                        Log.d(TAG, "Updated app ${updatedApp.name} with throughput - original: ${updatedApp.originalThroughput}, random: ${updatedApp.randomThroughput}")
+                    }
+                }
+            }
         }
 
         service.progressUpdate.observeForever { progress ->
@@ -528,5 +551,8 @@ class BackgroundReplayViewModel @Inject constructor(
         }
     }
 
+    companion object {
+        private const val TAG = "BackgroundReplayViewModel"
+    }
 
 }

@@ -33,6 +33,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.adapter.ImageReplayRecyclerViewAdapter
 import mobi.meddle.wehe.data.model.ApplicationBean
+import mobi.meddle.wehe.ui.main.MainActivity
 
 @AndroidEntryPoint
 class BackgroundReplayActivity : AppCompatActivity() {
@@ -75,7 +76,7 @@ class BackgroundReplayActivity : AppCompatActivity() {
         val mToolbar = findViewById<Toolbar>(R.id.replay_bar)
         setSupportActionBar(mToolbar)
         supportActionBar?.apply {
-            title = getString(R.string.background_tests)
+            title = getString(R.string.replay_page_title)
             setHomeButtonEnabled(true)
             setDisplayHomeAsUpEnabled(true)
         }
