@@ -188,13 +188,27 @@ class ReplayForegroundService : LifecycleService() {
      * Create notification for foreground service
      */
     private fun createNotification(contentText: String): Notification {
-        // Intent to open main activity when notification is tapped
-        val pendingIntent = Intent(this, MainActivity::class.java).let { notificationIntent ->
-            PendingIntent.getActivity(
-                this, 0, notificationIntent,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
-            )
+//        // Intent to open main activity when notification is tapped
+//        val pendingIntent = Intent(this, MainActivity::class.java).let { notificationIntent ->
+//            PendingIntent.getActivity(
+//                this, 0, notificationIntent,
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+//            )
+//        }
+        val notificationIntent = Intent(this, BackgroundReplayActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            notificationIntent,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            else
+                PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
 
         // Create cancel action
         val cancelIntent = Intent(this, ReplayForegroundService::class.java).apply {

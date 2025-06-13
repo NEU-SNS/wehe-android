@@ -37,7 +37,8 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".ui.replay.BackgroundReplayActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:launchMode="singleTop" />
         <activity
             android:name=".ui.main.MainActivity"
             android:exported="true"
@@ -49,10 +50,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.replay.ReplayActivity"
-            android:label="Replay"
-            android:screenOrientation="portrait" />
+<!--        <activity-->
+<!--            android:name=".ui.replay.ReplayActivity"-->
+<!--            android:label="Replay"-->
+<!--            android:screenOrientation="portrait" />-->
         <!-- Foreground Service -->
         <service
             android:name=".ui.replay.ReplayForegroundService"

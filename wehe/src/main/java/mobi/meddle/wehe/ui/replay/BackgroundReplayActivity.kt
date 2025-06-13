@@ -515,6 +515,12 @@ class BackgroundReplayActivity : AppCompatActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        // Handle updates if needed (optional)
+    }
+
     override fun onStop() {
         super.onStop()
         Log.d(TAG, "onStop")
