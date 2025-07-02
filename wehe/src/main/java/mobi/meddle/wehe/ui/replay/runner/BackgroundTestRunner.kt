@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.ui.replay
+package mobi.meddle.wehe.ui.replay.runner
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -14,7 +14,6 @@ import mobi.meddle.wehe.combined.CombinedQueue
 import mobi.meddle.wehe.combined.CombinedReceiverThread
 import mobi.meddle.wehe.constant.Consts
 import mobi.meddle.wehe.data.model.ApplicationBean
-import mobi.meddle.wehe.data.model.CombinedAppJSONInfoBean
 import mobi.meddle.wehe.data.model.ServerInstance
 import mobi.meddle.wehe.data.model.UpdateUIBean
 import mobi.meddle.wehe.data.repository.ReplayRepository
@@ -28,7 +27,7 @@ import kotlin.collections.ArrayList
 
 /**
  * Background test runner that doesn't rely on LiveData/ViewModel pattern
- * Designed specifically for background service execution
+ * Designed specifically for background service execution to run the replay tests in the background
  */
 class BackgroundTestRunner(
     private val replayRepository: ReplayRepository,
@@ -84,9 +83,9 @@ class BackgroundTestRunner(
             if (!initializeTestConfiguration(runPortTests)) {
                 // Initialize apps status
                 selectedApps.forEach { app ->
-                    onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.server_unavailable) ?: "Server unavailable"))
+                    onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.server_unavailable)))
                 }
-                onError(applicationContext.getString(R.string.server_unavailable) ?: "Server unavailable")
+                onError(applicationContext.getString(R.string.server_unavailable))
                 return
             }
 
@@ -191,8 +190,8 @@ class BackgroundTestRunner(
                 sharedPrefs.let {
                     confirmationReplays = it.getBoolean("pref_multiple_tests", true)
                     useDefaultThresholds = it.getBoolean("pref_switch", true)
-                    a_threshold = it.getString("pref_threshold_area", "10")?.toInt() ?: 10
-                    ks2pvalue_threshold = it.getString("pref_threshold_ks2p", "5")?.toInt() ?: 5
+                    a_threshold = it.getString("pref_threshold_area", "10")?.toIntOrNull() ?: 10
+                    ks2pvalue_threshold = it.getString("pref_threshold_ks2p", "5")?.toIntOrNull() ?: 5
                 }
 
                 serverDisplay = sharedPrefs.getString(
@@ -203,7 +202,7 @@ class BackgroundTestRunner(
                 metadataServer = Consts.METADATA_SERVER
 
                 if (!setupServersAndCertificates(serverDisplay!!, metadataServer)) {
-                    onError("Server unavailable")
+                    onError(applicationContext.getString(R.string.server_unavailable))
                     return@withContext false
                 }
 
@@ -250,7 +249,7 @@ class BackgroundTestRunner(
                 Log.d(TAG, "public IP: $publicIP")
 
                 if (publicIP == "-1") {
-                    onError("No connection to server")
+                    onError(applicationContext.getString(R.string.error_no_connection))
                     return@withContext false
                 }
 
@@ -268,7 +267,7 @@ class BackgroundTestRunner(
     private suspend fun setupServersAndCertificates(server: String, metadataServer: String?): Boolean {
         return withContext(Dispatchers.IO) {
             if (isNetworkUnavailable()) {
-                onError("Network unavailable")
+                onError(applicationContext.getString(R.string.text_network_error))
                 return@withContext false
             }
             val result = replayRepository.setupServersAndCertificates(server, metadataServer, 1, false)
@@ -308,13 +307,13 @@ class BackgroundTestRunner(
 
                 // Check network before starting
                 if (isNetworkUnavailable()) {
-                    onError(applicationContext.getString(R.string.text_network_error) ?: "No network available")
+                    onError(applicationContext.getString(R.string.text_network_error))
                     return@withContext TestResult.ERROR
                 }
 
                 // Setup servers if needed
                 if (!setupServersAndCertificates(serverDisplay!!, null)) {
-                    onError(applicationContext.getString(R.string.server_unavailable) ?: "Server unavailable")
+                    onError(applicationContext.getString(R.string.server_unavailable))
                     return@withContext TestResult.ERROR
                 }
 
@@ -552,9 +551,15 @@ class BackgroundTestRunner(
                         // Process test results
                         replayRepository.processTestResults(sideChannels, duration, analyzerTasks)
 
+                        // There is one analyzer task per side channel, so this is normally
+                        // populated. Guard anyway: a server that hands back no side channels used
+                        // to turn this into an IndexOutOfBoundsException that surfaced to the user
+                        // as a generic "error" instead of a throughput-less result.
+                        val avgThroughput = analyzerTasks.firstOrNull()?.avgThroughput
+
                         // Set random throughput for port tests
                         if (runPortTests && channel.equals("random", ignoreCase = true)) {
-                            app.randomThroughput = analyzerTasks[0].avgThroughput
+                            avgThroughput?.let { app.randomThroughput = it }
                             onCurrentAppUpdate(app)
                             Log.d(TAG, "Updated randomThroughput for port test ${app.name}: ${app.randomThroughput}")
                         }
@@ -562,11 +567,11 @@ class BackgroundTestRunner(
                         // For app tests, update throughput based on channel type
                         if (!runPortTests) {
                             if (channel.equals("open", ignoreCase = true)) {
-                                app.originalThroughput = analyzerTasks[0].avgThroughput
+                                avgThroughput?.let { app.originalThroughput = it }
                                 onCurrentAppUpdate(app)
                                 Log.d(TAG, "Updated originalThroughput for ${app.name}: ${app.originalThroughput}")
                             } else if (channel.equals("random", ignoreCase = true)) {
-                                app.randomThroughput = analyzerTasks[0].avgThroughput
+                                avgThroughput?.let { app.randomThroughput = it }
                                 onCurrentAppUpdate(app)
                                 Log.d(TAG, "Updated randomThroughput for ${app.name}: ${app.randomThroughput}")
                             }
@@ -601,11 +606,10 @@ class BackgroundTestRunner(
      * Set app status to inconclusive
      */
     private fun setInconclusive(app: ApplicationBean, msg: String) {
-        if (!inconclusiveApps.contains(app)) {
-            inconclusiveApps.add(app)
-        }
+        // List membership is owned by runTests(), which files the app based on the status set
+        // here; adding it again from this side produced duplicate entries in inconclusiveApps.
         app.error = msg
-        app.status = applicationContext.getString(R.string.inconclusive) ?: "Inconclusive"
+        app.status = applicationContext.getString(R.string.inconclusive)
     }
 
     /**
@@ -620,28 +624,36 @@ class BackgroundTestRunner(
     ): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                var currentPortBlocked = portBlocked
                 var response = JSONObject()
 
                 if (!isRunning) return@withContext false
 
                 if (isNetworkUnavailable()) {
-                    onError("Network unavailable")
+                    onError(applicationContext.getString(R.string.text_network_error))
                     return@withContext false
                 }
 
-                if (!currentPortBlocked) {
+                if (!portBlocked) {
                     // Request analysis
                     val analysisResult = randomID?.let {
                         replayRepository.requestAnalysis(it, app.historyCount)
                     }
 
                     if (analysisResult?.isFailure == true) {
-                        setInconclusive(app, analysisResult.exceptionOrNull()?.message ?: "Analysis failed")
+                        setInconclusive(
+                            app,
+                            analysisResult.exceptionOrNull()?.message
+                                ?: applicationContext.getString(R.string.error_analysis_fail)
+                        )
                         return@withContext false
                     }
 
-                    onStatusUpdate(Pair(app.name ?: "Unknown App", "Waiting for results"))
+                    onStatusUpdate(
+                        Pair(
+                            app.name ?: "Unknown App",
+                            applicationContext.getString(R.string.waiting)
+                        )
+                    )
 
                     if (app.historyCount < 0) {
                         Log.e(TAG, "historyCount value not correct!")
@@ -656,17 +668,25 @@ class BackgroundTestRunner(
                     }
 
                     if (resultsRetrieved?.isFailure == true) {
-                        setInconclusive(app, resultsRetrieved.exceptionOrNull()?.message ?: "Failed to retrieve results")
+                        setInconclusive(
+                            app,
+                            resultsRetrieved.exceptionOrNull()?.message
+                                ?: applicationContext.getString(R.string.error_analysis_fail)
+                        )
                         return@withContext false
                     }
 
                     val retrievedResults = resultsRetrieved?.getOrNull() ?: emptyList()
 
                     if (retrievedResults.isEmpty() && runPortTests) {
-                        currentPortBlocked = true
+                        // Nothing came back for a port test, so the tested port is blocked. The
+                        // analysis below still runs and reports on what was measured.
                         Log.i(TAG, "Can't retrieve result, port blocked")
                     } else if (retrievedResults.isEmpty()) {
-                        setInconclusive(app, "Not all TCP packets sent")
+                        setInconclusive(
+                            app,
+                            applicationContext.getString(R.string.not_all_tcp_sent_text)
+                        )
                         return@withContext false
                     } else {
                         response = retrievedResults[0].getJSONObject("response")
@@ -688,7 +708,11 @@ class BackgroundTestRunner(
                 }
 
                 if (analysisResult?.isFailure == true) {
-                    setInconclusive(app, analysisResult.exceptionOrNull()?.message ?: "Result analysis failed")
+                    setInconclusive(
+                        app,
+                        analysisResult.exceptionOrNull()?.message
+                            ?: applicationContext.getString(R.string.error_result)
+                    )
                     return@withContext false
                 }
 
@@ -714,7 +738,8 @@ class BackgroundTestRunner(
         isTomography: Boolean,
         carrier: String
     ): Boolean {
-        val current = applicationContext.resources?.configuration?.locale
+        // Configuration.locale is deprecated; locales is the supported accessor from API 24 on.
+        val current = applicationContext.resources?.configuration?.locales?.get(0)
         val country = current?.country
 
         // Determine if confirmation test is needed
@@ -748,10 +773,13 @@ class BackgroundTestRunner(
             app.differentiationNetwork = if (analysis.differentiation) carrier else ""
             app.status = if (analysis.differentiation) "Tomo Success" else "Tomo Failed"
         } else if (analysis.inconclusive) {
-            app.status = "Inconclusive"
-            inconclusiveApps.add(app)
+            // Must be the R.string value: runTestForApp() classifies the result by matching
+            // app.status against these resources, and runTests() is what files the app into
+            // inconclusiveApps/diffApps. A hardcoded literal here failed to match and got the
+            // app reported to the user as a generic error instead.
+            app.status = applicationContext.getString(R.string.inconclusive)
         } else if (analysis.differentiation) {
-            app.status = "Has Differentiation"
+            app.status = applicationContext.getString(R.string.has_diff)
             app.error = analysis.errorMessage
 
             // Add country-specific alert buttons
@@ -760,9 +788,8 @@ class BackgroundTestRunner(
             } else if (country == "US") {
                 app.isAlertFCC = true
             }
-            diffApps.add(app)
         } else {
-            app.status = applicationContext.getString(R.string.no_diff) ?: "No differentiation"
+            app.status = applicationContext.getString(R.string.no_diff)
         }
 
         onStatusUpdate(Pair(app.name ?: "Unknown App", app.status))

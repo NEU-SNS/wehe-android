@@ -1,6 +1,5 @@
 package mobi.meddle.wehe.ui.main.fragments
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -29,7 +28,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -46,8 +44,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,12 +63,21 @@ import mobi.meddle.wehe.R
 import mobi.meddle.wehe.constant.Consts
 import mobi.meddle.wehe.data.model.ApplicationBean
 import mobi.meddle.wehe.ui.main.viewmodels.SelectionViewModel
-import mobi.meddle.wehe.ui.replay.BackgroundReplayActivity
+import mobi.meddle.wehe.ui.replay.activity.BackgroundReplayActivity
 import mobi.meddle.wehe.ui.theme.WEHE_BLUE
 import mobi.meddle.wehe.ui.theme.WeheandroidTheme
 import mobi.meddle.wehe.util.applyLegacyTransition
 import java.util.Locale
 
+/**
+ * SelectionFragment is responsible for displaying the app selection UI
+ * and managing the apps for test selection process.
+ *
+ * It uses a ViewModel to handle the state and data loading,
+ * and provides a grid view of applications with toggle switches.
+ *
+ * The fragment also checks network connectivity and displays appropriate messages.
+ */
 @AndroidEntryPoint
 class SelectionFragment : Fragment() {
     private val viewModel: SelectionViewModel by activityViewModels()
@@ -546,7 +551,8 @@ class SelectionFragment : Fragment() {
                     putExtra("testId", System.currentTimeMillis().toString())
                 }
                 startActivity(intent)
-                requireActivity().overridePendingTransition(
+                // API 34+ takes these animations from ReplayActivity.registerTransitions().
+                requireActivity().applyLegacyTransition(
                     R.anim.slide_in_right,
                     R.anim.slide_out_left
                 )

@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.ui.replay
+package mobi.meddle.wehe.ui.replay.service
 
 import android.app.*
 import android.content.Context
@@ -17,11 +17,28 @@ import kotlinx.coroutines.*
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.data.model.ApplicationBean
 import mobi.meddle.wehe.data.repository.ReplayRepository
-import mobi.meddle.wehe.ui.main.MainActivity
+import mobi.meddle.wehe.ui.replay.receiver.CancelReceiver
+import mobi.meddle.wehe.ui.replay.activity.BackgroundReplayActivity
+import mobi.meddle.wehe.ui.replay.runner.BackgroundTestRunner
 import javax.inject.Inject
 
 /**
- * Foreground Service to run replay tests in the background
+ * [ReplayForegroundService] is an Android Foreground Service responsible for running
+ * replay tests in the background while keeping the service alive with a persistent notification.
+ *
+ * This service:
+ * - Accepts test parameters (like selected apps and carrier) via Intent
+ * - Runs network replay tests using a background coroutine
+ * - Manages wake locks to prevent device sleep during testing
+ * - Posts updates to LiveData for UI observation
+ * - Sends system notifications about test progress/status
+ * - Supports test cancellation via broadcast or notification action
+ *
+ * Dependencies:
+ * - Uses Hilt for dependency injection
+ * - Relies on [ReplayRepository] and [BackgroundTestRunner] for test run logic
+ *
+ * @constructor Default LifecycleService constructor
  */
 @AndroidEntryPoint
 class ReplayForegroundService : LifecycleService() {

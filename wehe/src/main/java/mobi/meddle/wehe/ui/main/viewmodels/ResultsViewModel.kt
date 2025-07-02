@@ -17,6 +17,17 @@ import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * ViewModel for managing and displaying results of previous tests.
+ *
+ * Responsibilities:
+ * - Load results from shared preferences.
+ * - Parse results into a list of Result objects.
+ * - Format dates for display.
+ *
+ * Usage:
+ * - Use this ViewModel in the ResultsFragment to observe and display test results.
+ */
 class ResultsViewModel : ViewModel() {
     private val _results = MutableLiveData<List<Result>>()
     val results: LiveData<List<Result>> = _results

@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.model.Statement;
 
 import mobi.meddle.wehe.R;
-import mobi.meddle.wehe.ui.main.MainActivity;
+import mobi.meddle.wehe.ui.main.activity.MainActivity;
 
 import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObject;

@@ -1,10 +1,11 @@
-package mobi.meddle.wehe.ui.replay
+package mobi.meddle.wehe.ui.replay.activity
 
 import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.ServiceConnection
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -33,8 +34,18 @@ import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.adapter.ImageReplayRecyclerViewAdapter
 import mobi.meddle.wehe.data.model.ApplicationBean
-import mobi.meddle.wehe.ui.main.MainActivity
+import mobi.meddle.wehe.ui.replay.service.ReplayForegroundService
+import mobi.meddle.wehe.ui.replay.viewmodel.BackgroundReplayViewModel
+import mobi.meddle.wehe.ui.replay.worker.ReplayWorker
+import mobi.meddle.wehe.util.THEME_DEVICE_DEFAULT_LIGHT_DIALOG
+import mobi.meddle.wehe.util.applyLegacyTransition
+import mobi.meddle.wehe.util.registerTransitions
 
+
+/**
+ * Activity for the background replay tests, which allows users to run tests on selected applications
+ * in the background.
+ */
 @AndroidEntryPoint
 class BackgroundReplayActivity : AppCompatActivity() {
 
@@ -72,6 +83,15 @@ class BackgroundReplayActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_replay)
 
+        // Slide animations for entering from and returning to the selection page. Only has an
+        // effect on API 34+; older platforms set them at the point of the transition instead.
+        registerTransitions(
+            openEnterAnim = R.anim.slide_in_right,
+            openExitAnim = R.anim.slide_out_left,
+            closeEnterAnim = android.R.anim.slide_in_left,
+            closeExitAnim = android.R.anim.slide_out_right,
+        )
+
         // Setup toolbar
         val mToolbar = findViewById<Toolbar>(R.id.replay_bar)
         setSupportActionBar(mToolbar)
@@ -89,7 +109,12 @@ class BackgroundReplayActivity : AppCompatActivity() {
         if (bundle != null) {
             val runPortTests = bundle.getBoolean("runPortTests")
             val carrier = bundle.getString("carrier")
-            val selectedApps = intent.getParcelableArrayListExtra<ApplicationBean>("selectedApps")
+            val selectedApps = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableArrayListExtra("selectedApps", ApplicationBean::class.java)
+            } else {
+                @Suppress("DEPRECATION") // typed overload only exists on API 33+
+                intent.getParcelableArrayListExtra<ApplicationBean>("selectedApps")
+            }
 
             if (selectedApps != null) {
                 // Initialize the ViewModel with data
@@ -335,21 +360,21 @@ class BackgroundReplayActivity : AppCompatActivity() {
     private fun replayStop() {
         if (viewModel.isReplayOngoing.value != true) {
             finish()
-            overridePendingTransition(
+            applyLegacyTransition(
                 android.R.anim.slide_in_left, android.R.anim.slide_out_right
             )
         } else {
-            AlertDialog.Builder(this)
+            AlertDialog.Builder(this, THEME_DEVICE_DEFAULT_LIGHT_DIALOG)
                 .setTitle(getString(R.string.interrupt_ongoing_replay_title))
                 .setMessage(getString(R.string.interrupt_ongoing_replay_text))
-                .setPositiveButton(getString(android.R.string.yes)) { _, _ ->
+                .setPositiveButton(getString(R.string.yes)) { _, _ ->
                     finish()
-                    overridePendingTransition(
+                    applyLegacyTransition(
                         android.R.anim.slide_in_left,
                         android.R.anim.slide_out_right
                     )
                 }
-                .setNegativeButton(getString(android.R.string.no), doNothing)
+                .setNegativeButton(getString(R.string.no), doNothing)
                 .show()
         }
     }
@@ -442,7 +467,7 @@ class BackgroundReplayActivity : AppCompatActivity() {
      * Show dialog to rerun tests
      */
     private fun showRerunDialog() {
-        val alertDialog = AlertDialog.Builder(this)
+        val alertDialog = AlertDialog.Builder(this, THEME_DEVICE_DEFAULT_LIGHT_DIALOG)
             .setTitle(R.string.rerun_test_title)
             .setMessage(R.string.rerun_test_descr)
 

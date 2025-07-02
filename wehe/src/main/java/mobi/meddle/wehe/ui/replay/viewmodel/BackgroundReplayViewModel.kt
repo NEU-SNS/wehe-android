@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.ui.replay
+package mobi.meddle.wehe.ui.replay.viewmodel
 
 import android.app.Application
 import android.content.Context
@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.data.model.ApplicationBean
 import mobi.meddle.wehe.data.repository.ReplayRepository
+import mobi.meddle.wehe.ui.replay.service.ReplayForegroundService
 import javax.inject.Inject
 
 /**
@@ -146,8 +147,8 @@ class BackgroundReplayViewModel @Inject constructor(
      */
     fun showNoNetworkDialog() {
         _dialogEvent.value = Triple(
-            "Network Error",
-            "No network connection available. Please check your internet connection and try again.",
+            applicationContext.getString(R.string.network_error),
+            applicationContext.getString(R.string.text_network_error),
             true
         )
     }
@@ -183,7 +184,9 @@ class BackgroundReplayViewModel @Inject constructor(
 //            append("Inconclusive tests: ${inconclusiveTestApps.size}\n")
         }
 
-        _dialogEvent.postValue(Triple("Replays Finished!", message, false))
+        _dialogEvent.postValue(
+            Triple(applicationContext.getString(R.string.replay_finished_title), message, false)
+        )
 
         // Show rerun buttons if needed
         if (diffTestApps.isNotEmpty() || inconclusiveTestApps.isNotEmpty()) {

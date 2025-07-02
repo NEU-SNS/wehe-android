@@ -1,6 +1,9 @@
 package mobi.meddle.wehe.data.model
 
-// SelectionUiState.kt
+
+/**
+ * Represents the UI state for the selection screen, which includes a list of applications,
+ */
 data class SelectionUiState(
     val isLoading: Boolean = true,
     val apps: List<ApplicationBean> = emptyList(),

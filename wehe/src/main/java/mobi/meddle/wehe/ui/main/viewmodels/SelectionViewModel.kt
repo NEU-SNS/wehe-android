@@ -21,6 +21,18 @@ import androidx.lifecycle.SavedStateHandle
 import mobi.meddle.wehe.data.model.SelectionUiState
 import javax.inject.Inject
 
+/**
+ * ViewModel for managing the selection of applications for testing.
+ *
+ * This ViewModel handles the logic for selecting applications, calculating payload sizes,
+ * and managing the state of the UI related to application selection.
+ *
+ * Responsibilities:
+ * - Load and parse application data from JSON.
+ * - Manage selected applications and their toggle states.
+ * - Calculate payload size based on selected applications.
+ * - Handle carrier display and test type (port vs differentiation).
+ */
 class SelectionViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {

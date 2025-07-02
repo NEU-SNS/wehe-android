@@ -1,5 +1,9 @@
 package mobi.meddle.wehe.constant;
 
+/**
+ * Contains constants used throughout the Wehe app.
+ * These constants include file names, server URLs, and various thresholds.
+ */
 public class Consts {
     public static final String APPS_FILENAME = "apps_list.json";
     public static final String CONFIG_FILE = "configuration.properties";

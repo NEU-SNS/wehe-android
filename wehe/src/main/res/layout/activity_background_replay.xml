@@ -4,7 +4,7 @@
     android:id="@+id/background_replay_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.replay.BackgroundReplayActivity">
+    tools:context=".ui.replay.activity.BackgroundReplayActivity">
 
     <include
         android:id="@+id/background_replay_bar"

@@ -36,11 +36,12 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".ui.replay.BackgroundReplayActivity"
+            android:name=".ui.replay.activity.BackgroundReplayActivity"
             android:exported="false"
-            android:launchMode="singleTop" />
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"/>
         <activity
-            android:name=".ui.main.MainActivity"
+            android:name=".ui.main.activity.MainActivity"
             android:exported="true"
             android:label="Wehe"
             android:launchMode="singleTop"
@@ -57,7 +58,7 @@
 <!--            android:screenOrientation="portrait" />-->
         <!-- Foreground Service -->
         <service
-            android:name=".ui.replay.ReplayForegroundService"
+            android:name=".ui.replay.service.ReplayForegroundService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
@@ -72,6 +73,6 @@
                 android:value="androidx.startup"
                 tools:node="remove"/>
         </provider>
-        <receiver android:name=".ui.replay.CancelReceiver" android:exported="true"/>
+        <receiver android:name=".ui.replay.receiver.CancelReceiver" android:exported="true"/>
     </application>
 </manifest>

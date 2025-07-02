@@ -13,6 +13,18 @@ import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.adapter.ResultsAdapter
 import mobi.meddle.wehe.ui.main.viewmodels.ResultsViewModel
+
+/**
+ * ResultsFragment displays the results of previous tests.
+ * It uses a ViewModel to manage the data and an adapter to display it in a ListView.
+ *
+ * Responsibilities:
+ * - Inflate the results fragment layout.
+ * - Initialize the ViewModel and adapter.
+ * - Observe changes in the results data and update the UI accordingly.
+ * - Set up navigation selection for the results item in the navigation drawer.
+ */
+
 @AndroidEntryPoint
 class ResultsFragment : Fragment() {
     private lateinit var viewModel: ResultsViewModel

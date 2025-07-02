@@ -1,4 +1,4 @@
-package mobi.meddle.wehe.ui.main;
+package mobi.meddle.wehe.ui.main.activity;
 
 import android.Manifest;
 import android.content.Intent;
@@ -22,7 +22,6 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.preference.PreferenceManager;
 import android.text.method.LinkMovementMethod;
-import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -32,6 +31,26 @@ import com.google.android.material.navigation.NavigationView;
 import dagger.hilt.android.AndroidEntryPoint;
 import mobi.meddle.wehe.R;
 import mobi.meddle.wehe.constant.Consts;
+
+
+/**
+ * MainActivity serves as the central activity for the Wehe application.
+ * It manages the main user interface components including the navigation drawer,
+ * toolbar, and navigation controller. This activity handles user navigation across
+ * multiple fragments such as selection, results, about, functionality, dashboard,
+ * and settings.
+ * <p>
+ * Key Responsibilities:
+ * - Initialize and configure the navigation drawer and toolbar.
+ * - Set up navigation with NavController and handle navigation item selections.
+ * - Display a user consent dialog on first launch to comply with privacy requirements.
+ * - Request location permission from the user with a clear explanation dialog.
+ * - Maintain navigation UI state and handle configuration changes.
+ * <p>
+ * This class uses Dagger Hilt for dependency injection and AndroidX Navigation components
+ * for smooth fragment transitions. It also manages user preferences related to consent
+ * and permission.
+ */
 
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity {
