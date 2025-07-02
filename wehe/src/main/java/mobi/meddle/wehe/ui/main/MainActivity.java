@@ -1,6 +1,7 @@
 package mobi.meddle.wehe.ui.main;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -251,5 +252,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        // Handle any UI reset or refresh logic here if needed
     }
 }

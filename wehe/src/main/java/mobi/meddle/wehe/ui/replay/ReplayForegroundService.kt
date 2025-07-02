@@ -210,13 +210,22 @@ class ReplayForegroundService : LifecycleService() {
         )
 
 
-        // Create cancel action
-        val cancelIntent = Intent(this, ReplayForegroundService::class.java).apply {
-            action = ACTION_CANCEL_TEST
-        }
-        val cancelPendingIntent = PendingIntent.getService(
+//        // Create cancel action
+//        val cancelIntent = Intent(this, ReplayForegroundService::class.java).apply {
+//            action = ACTION_CANCEL_TEST
+//        }
+//        val cancelPendingIntent = PendingIntent.getService(
+//            this, 1, cancelIntent,
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+//        )
+
+        val cancelIntent = Intent(this, CancelReceiver::class.java)
+        val cancelPendingIntent = PendingIntent.getBroadcast(
             this, 1, cancelIntent,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            else
+                PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         // Create notification

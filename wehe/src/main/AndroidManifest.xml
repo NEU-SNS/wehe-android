@@ -43,6 +43,7 @@
             android:name=".ui.main.MainActivity"
             android:exported="true"
             android:label="Wehe"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -71,6 +72,6 @@
                 android:value="androidx.startup"
                 tools:node="remove"/>
         </provider>
+        <receiver android:name=".ui.replay.CancelReceiver" android:exported="true"/>
     </application>
-
 </manifest>
