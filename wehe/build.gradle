@@ -13,7 +13,7 @@ android {
         targetSdkVersion 35
 //        multiDexEnabled true
         versionCode 57
-        versionName "3.8.2"
+        versionName "3.8.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
