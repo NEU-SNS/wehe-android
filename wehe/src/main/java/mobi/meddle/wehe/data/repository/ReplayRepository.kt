@@ -159,7 +159,7 @@ class ReplayRepository @Inject constructor(private val context: Context) {
             var i = 0
             while (wsConns.size < numTests && i < mLabServers.length()) {
                 try {
-                    i++
+//                    i++
                     wsID = wsConns.size
                     numTries++
                     val serverObj = mLabServers[i] as JSONObject
