@@ -8,12 +8,12 @@ android {
 
     defaultConfig {
         applicationId "mobi.meddle.wehe"
-        compileSdk 35
+        compileSdk 36
         minSdkVersion 24
-        targetSdkVersion 35
+        targetSdkVersion 36
 //        multiDexEnabled true
-        versionCode 57
-        versionName "3.8.3"
+        versionCode 58
+        versionName "3.8.4"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
