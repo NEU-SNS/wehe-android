@@ -1,0 +1,22 @@
+default_platform(:android)
+
+platform :android do
+  desc "Assemble a signed release AAB and upload it to the Play Store internal testing track"
+  lane :deploy_internal do
+    gradle(task: "bundle", build_type: "Release")
+
+    aab_path = Dir.glob("wehe/build/outputs/bundle/release/*.aab").last
+    UI.user_error!("No release AAB found under wehe/build/outputs/bundle/release/") unless aab_path
+
+    upload_to_play_store(
+      track: "internal",
+      aab: aab_path,
+      # The fastlane/metadata directory here is maintained for F-Droid; skip
+      # syncing it to Play so this lane only ever does one thing: ship the binary.
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true
+    )
+  end
+end

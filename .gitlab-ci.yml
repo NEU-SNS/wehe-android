@@ -1,0 +1,76 @@
+image: eclipse-temurin:17-jdk-jammy
+
+variables:
+  ANDROID_SDK_TOOLS_VERSION: "11076708"
+  ANDROID_HOME: "$CI_PROJECT_DIR/.android-sdk"
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+stages:
+  - build
+  - test
+  - deploy
+
+default:
+  cache:
+    key: android-sdk-and-gradle
+    paths:
+      - .android-sdk/
+      - .gradle/wrapper
+      - .gradle/caches
+
+.android_setup:
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq unzip wget > /dev/null
+    - |
+      if [ ! -d "$ANDROID_HOME/cmdline-tools/latest" ]; then
+        mkdir -p "$ANDROID_HOME/cmdline-tools"
+        wget -q "https://dl.google.com/android/repo/commandlinetools-linux-${ANDROID_SDK_TOOLS_VERSION}_latest.zip" -O /tmp/cmdline-tools.zip
+        unzip -q /tmp/cmdline-tools.zip -d "$ANDROID_HOME/cmdline-tools"
+        mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+      fi
+    - export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
+    - yes | sdkmanager --licenses > /dev/null 2>&1 || true
+    - chmod +x ./gradlew
+
+build:
+  stage: build
+  extends: .android_setup
+  script:
+    - ./gradlew assembleDebug --stacktrace
+  artifacts:
+    paths:
+      - wehe/build/outputs/apk/debug/
+    expire_in: 1 week
+
+unit_test:
+  stage: test
+  extends: .android_setup
+  script:
+    - ./gradlew testDebugUnitTest --stacktrace
+  artifacts:
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: wehe/build/test-results/testDebugUnitTest/*.xml
+    paths:
+      - wehe/build/reports/tests/
+
+deploy_play_store_internal:
+  stage: deploy
+  extends: .android_setup
+  before_script:
+    - !reference [.android_setup, before_script]
+    - apt-get install -y -qq ruby-full build-essential libffi-dev zlib1g-dev > /dev/null
+    - gem install fastlane --no-document
+    - echo "$RELEASE_KEYSTORE_BASE64" | base64 -d > "$CI_PROJECT_DIR/release.keystore"
+  script:
+    - export RELEASE_KEYSTORE_PATH="$CI_PROJECT_DIR/release.keystore"
+    - fastlane deploy_internal
+  after_script:
+    - rm -f "$CI_PROJECT_DIR/release.keystore"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: manual
+  environment:
+    name: play-store/internal
