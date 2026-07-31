@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
+    id 'jacoco'
 }
 android {
 
@@ -65,6 +66,12 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            returnDefaultValues = true
+        }
+    }
 }
 
 
@@ -113,6 +120,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-android:4.5.1'
     testImplementation 'org.mockito:mockito-core:5.8.0'
     testImplementation 'org.mockito:mockito-inline:5.1.1'
+    testImplementation 'org.robolectric:robolectric:4.14.1'
     debugImplementation 'androidx.compose.ui:ui-test-manifest:1.7.7'
 
     // Instrumentation tests
@@ -146,4 +154,35 @@ dependencies {
 }
 kapt {
     correctErrorTypes true
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+tasks.register('jacocoTestReport', JacocoReport) {
+    dependsOn 'testDebugUnitTest'
+    reports {
+        xml.required = true
+        html.required = true
+    }
+    def fileFilter = [
+            '**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*',
+            '**/*Test*.*', 'android/**/*.*', '**/*_Factory.*', '**/*_MembersInjector.*',
+            '**/Hilt_*.*', '**/*_HiltModules*.*', '**/*Dagger*.*', '**/*_Provide*Factory.*',
+            '**/databinding/**', '**/generated/**'
+    ]
+    // Both Kotlin and Java classes end up merged here after Hilt's ASM transform runs;
+    // that's the bytecode actually loaded at test time, so it's what must be analyzed
+    // (the pre-transform tmp/kotlin-classes/debug output has mismatching class IDs
+    // and silently reports 0% coverage for every Kotlin class).
+    def classesTree = fileTree(dir: "${project.layout.buildDirectory.get()}/intermediates/classes/debug/transformDebugClassesWithAsm/dirs", excludes: fileFilter)
+    def mainSrc = "${project.projectDir}/src/main/java"
+
+    sourceDirectories.setFrom(files([mainSrc]))
+    classDirectories.setFrom(files([classesTree]))
+    executionData.setFrom(fileTree(dir: project.layout.buildDirectory.get(), includes: [
+            'outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec',
+            'jacoco/testDebugUnitTest.exec'
+    ]))
 }
