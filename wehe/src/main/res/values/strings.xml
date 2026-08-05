@@ -77,7 +77,7 @@
     <string name="default_settings">Use default values for thresholds</string>
     <string name="force_add_header">Check me to enable special identification header in all networks</string>
     <string name="replay_finished_title">Replays Finished!</string>
-    <string name="replay_size">Size: %d x %d MB</string>
+    <string name="replay_size">Size: %1$d x %2$d MB</string>
     <string name="replay_time">Time: %d seconds</string>
     <string name="install_cert_label">Click the button below if you want to reinstall the credential. Please leave the password field empty and click "OK"!</string>
     <string name="install_cert_button">Reinstall credential</string>

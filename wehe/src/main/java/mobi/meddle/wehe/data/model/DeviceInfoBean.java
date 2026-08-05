@@ -2,11 +2,11 @@ package mobi.meddle.wehe.data.model;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.os.Build;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -55,7 +55,6 @@ public class DeviceInfoBean {
         ConnectivityManager connectivityManager;
         LocationManager locationManager = null;
         String locationProviderName = "NoPermission";
-        Criteria criteriaCoarse;
 
         telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 
@@ -68,18 +67,8 @@ public class DeviceInfoBean {
                 == PackageManager.PERMISSION_GRANTED) {
             // initialize location manager
             locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-            criteriaCoarse = new Criteria();
-            /*
-             * "Coarse" accuracy means "no need to use GPS". Typically a gShots phone would be
-             * located in a building, and GPS may not be able to acquire a location. We only
-             * care nav_about the location to determine the country, so we don't need a super
-             * accurate location, cell/wifi is good enough.
-             */
-            criteriaCoarse.setAccuracy(Criteria.ACCURACY_COARSE);
-            criteriaCoarse.setPowerRequirement(Criteria.POWER_LOW);
             assert locationManager != null;
-            locationProviderName = locationManager.getBestProvider(
-                    criteriaCoarse, true);
+            locationProviderName = selectCoarseProvider(locationManager);
             Log.d("GetLocation", "Location provider: " + locationProviderName);
         }
 
@@ -107,10 +96,8 @@ public class DeviceInfoBean {
         this.carrierName = telephonyManager.getNetworkOperatorName();
 
         // get network type
-        //TODO: Swtich to non-deprecated library without increasing minSDK?
         assert connectivityManager != null;
-        NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (networkInfo != null && networkInfo.getState() == NetworkInfo.State.CONNECTED) {
+        if (isOnWifi(connectivityManager)) {
             this.networkType = "WIFI";
         } else {
             try {
@@ -163,6 +150,47 @@ public class DeviceInfoBean {
             Log.d("Location", "We don't have location, Just proceed without it");
             this.location = new Location("unknown");
         }
+    }
+
+    /**
+     * Checks whether the device is currently connected over WiFi. Replaces the deprecated
+     * NetworkInfo/TYPE_WIFI pair with the transport of the active network.
+     *
+     * @param connectivityManager manager used to inspect the active network
+     * @return true if the active network is a WiFi network; false otherwise
+     */
+    private static boolean isOnWifi(@NonNull ConnectivityManager connectivityManager) {
+        Network activeNetwork = connectivityManager.getActiveNetwork();
+        if (activeNetwork == null) {
+            return false;
+        }
+        NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(activeNetwork);
+        return capabilities != null
+                && capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI);
+    }
+
+    /**
+     * Picks a location provider that does not need GPS. "Coarse" accuracy means "no need to use
+     * GPS". Typically a gShots phone would be located in a building, and GPS may not be able to
+     * acquire a location. We only care nav_about the location to determine the country, so we
+     * don't need a super accurate location, cell/wifi is good enough. This replaces the
+     * deprecated Criteria-based getBestProvider() call.
+     *
+     * @param locationManager manager used to look up the enabled providers
+     * @return the name of a provider to use, or null if none are enabled
+     */
+    private static String selectCoarseProvider(@NonNull LocationManager locationManager) {
+        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            return LocationManager.NETWORK_PROVIDER;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && locationManager.isProviderEnabled(LocationManager.FUSED_PROVIDER)) {
+            return LocationManager.FUSED_PROVIDER;
+        }
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            return LocationManager.GPS_PROVIDER;
+        }
+        return null;
     }
 }
 

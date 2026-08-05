@@ -3,7 +3,7 @@ package mobi.meddle.wehe.ui.main.fragments
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.telephony.TelephonyManager
 import android.util.Log
@@ -66,6 +66,7 @@ import mobi.meddle.wehe.ui.main.viewmodels.SelectionViewModel
 import mobi.meddle.wehe.ui.replay.ReplayActivity
 import mobi.meddle.wehe.ui.theme.WEHE_BLUE
 import mobi.meddle.wehe.ui.theme.WeheandroidTheme
+import mobi.meddle.wehe.util.applyLegacyTransition
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -133,11 +134,16 @@ class SelectionFragment : Fragment() {
                 return
             }
 
-            val networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
+            // NetworkInfo/TYPE_WIFI are deprecated; the active network's transport is the
+            // supported way to tell whether the device is on WiFi.
+            val capabilities = connectivityManager.activeNetwork
+                ?.let { connectivityManager.getNetworkCapabilities(it) }
+            val onWifi = capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+
             val carrierName = telephonyManager.networkOperatorName.takeIf { it.isNotEmpty() }
                 ?: getString(R.string.unknown_carrier)
 
-            if (networkInfo?.state == NetworkInfo.State.CONNECTED) {
+            if (onWifi) {
                 viewModel.setCarrierDisplay("WiFi")
                 showWifiToast(carrierName)
             } else {
@@ -374,7 +380,6 @@ class SelectionFragment : Fragment() {
     @Composable
     fun RunTestsButton() {
         val context = LocalContext.current
-        val currentTabIndex by viewModel.currentTabIndex.collectAsState()
 
         Button(
             onClick = {
@@ -399,7 +404,8 @@ class SelectionFragment : Fragment() {
                     putExtra("carrier", viewModel.carrierDisplay.value)
                 }
                 startActivity(intent)
-                requireActivity().overridePendingTransition(
+                // API 34+ takes these animations from ReplayActivity.registerTransitions().
+                requireActivity().applyLegacyTransition(
                     R.anim.slide_in_right,
                     R.anim.slide_out_left
                 )

@@ -40,7 +40,6 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLContext
-import javax.net.ssl.SSLSession
 import javax.net.ssl.TrustManagerFactory
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
@@ -232,8 +231,9 @@ class ReplayRepository @Inject constructor(private val context: Context) {
             context.init(null, tmf.trustManagers, null)
             if (main) {
                 serverRepository.sslSocketFactory = context.socketFactory
-                serverRepository.hostnameVerifier =
-                    HostnameVerifier { hostname: String?, session: SSLSession? -> true }
+                // Wehe servers present a certificate for their IP rather than a hostname, so the
+                // hostname is intentionally not verified here; trust comes from the pinned CA above.
+                serverRepository.hostnameVerifier = HostnameVerifier { _, _ -> true }
             }
         } catch (e: Exception) {
             Log.e("Certificates", "Error generating certificates", e)

@@ -63,7 +63,13 @@ fun WeheandroidTheme(
             val activity = view.context as? Activity
             activity?.let{
                 val window = it.window
-                window.statusBarColor = colorScheme.primary.toArgb()
+                // Window.setStatusBarColor() was deprecated in API 35, where the platform ignores
+                // it and draws the status bar transparently over the app instead. Older platforms
+                // still need it to tint the bar with the theme colour.
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                    @Suppress("DEPRECATION")
+                    window.statusBarColor = colorScheme.primary.toArgb()
+                }
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
             }
         }

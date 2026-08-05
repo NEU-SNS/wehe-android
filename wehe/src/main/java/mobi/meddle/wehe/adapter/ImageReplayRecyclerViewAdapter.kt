@@ -310,6 +310,7 @@ import mobi.meddle.wehe.R
 import mobi.meddle.wehe.constant.Consts
 import mobi.meddle.wehe.data.model.ApplicationBean
 import mobi.meddle.wehe.ui.replay.ReplayActivity
+import mobi.meddle.wehe.util.THEME_DEVICE_DEFAULT_LIGHT_DIALOG
 import java.util.Locale
 import kotlin.math.min
 
@@ -534,12 +535,12 @@ class ImageReplayRecyclerViewAdapter(
      * @param msg   the message to display to the user
      */
     private fun makeInfoBox(title: String, msg: String) {
-        AlertDialog.Builder(replayAct, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+        AlertDialog.Builder(replayAct, THEME_DEVICE_DEFAULT_LIGHT_DIALOG)
             .setTitle(title)
             .setMessage(msg)
             .setNeutralButton(
                 android.R.string.ok
-            ) { dialog, which ->
+            ) { _, _ ->
                 // do nothing
             }.show()
     }

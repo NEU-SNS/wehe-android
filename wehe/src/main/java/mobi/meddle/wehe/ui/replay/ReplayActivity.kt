@@ -1,6 +1,7 @@
 package mobi.meddle.wehe.ui.replay
 
 import android.content.DialogInterface
+import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.KeyEvent
@@ -24,6 +25,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import mobi.meddle.wehe.R
 import mobi.meddle.wehe.adapter.ImageReplayRecyclerViewAdapter
 import mobi.meddle.wehe.data.model.ApplicationBean
+import mobi.meddle.wehe.util.THEME_DEVICE_DEFAULT_LIGHT_DIALOG
+import mobi.meddle.wehe.util.applyLegacyTransition
+import mobi.meddle.wehe.util.registerTransitions
 
 @AndroidEntryPoint
 class ReplayActivity : AppCompatActivity() {
@@ -40,6 +44,15 @@ class ReplayActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_replay)
+
+        // Slide animations for entering from and returning to the selection page. Only has an
+        // effect on API 34+; older platforms set them at the point of the transition instead.
+        registerTransitions(
+            openEnterAnim = R.anim.slide_in_right,
+            openExitAnim = R.anim.slide_out_left,
+            closeEnterAnim = android.R.anim.slide_in_left,
+            closeExitAnim = android.R.anim.slide_out_right,
+        )
 
         // Setup toolbar
         val mToolbar = findViewById<Toolbar>(R.id.replay_bar)
@@ -58,7 +71,12 @@ class ReplayActivity : AppCompatActivity() {
         if (bundle != null) {
             val runPortTests = bundle.getBoolean("runPortTests")
             val carrier = bundle.getString("carrier")
-            val selectedApps = intent.getParcelableArrayListExtra<ApplicationBean>("selectedApps")
+            val selectedApps = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableArrayListExtra("selectedApps", ApplicationBean::class.java)
+            } else {
+                @Suppress("DEPRECATION") // typed overload only exists on API 33+
+                intent.getParcelableArrayListExtra<ApplicationBean>("selectedApps")
+            }
 
             if (selectedApps != null) {
                 // Initialize the ViewModel with data
@@ -211,21 +229,21 @@ class ReplayActivity : AppCompatActivity() {
     private fun replayStop() {
         if (viewModel.isReplayOngoing.value != true) {
             finish()
-            overridePendingTransition(
+            applyLegacyTransition(
                 android.R.anim.slide_in_left, android.R.anim.slide_out_right
             )
         } else {
-            AlertDialog.Builder(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+            AlertDialog.Builder(this, THEME_DEVICE_DEFAULT_LIGHT_DIALOG)
                 .setTitle(getString(R.string.interrupt_ongoing_replay_title))
                 .setMessage(getString(R.string.interrupt_ongoing_replay_text))
-                .setPositiveButton(getString(android.R.string.yes)) { _, _ ->
+                .setPositiveButton(getString(R.string.yes)) { _, _ ->
                     finish()
-                    overridePendingTransition(
+                    applyLegacyTransition(
                         android.R.anim.slide_in_left,
                         android.R.anim.slide_out_right
                     )
                 }
-                .setNegativeButton(getString(android.R.string.no), doNothing)
+                .setNegativeButton(getString(R.string.no), doNothing)
                 .show()
         }
     }
@@ -275,7 +293,7 @@ class ReplayActivity : AppCompatActivity() {
      * Show dialog to rerun tests
      */
     private fun showRerunDialog() {
-        val alertDialog = AlertDialog.Builder(this, AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+        val alertDialog = AlertDialog.Builder(this, THEME_DEVICE_DEFAULT_LIGHT_DIALOG)
             .setTitle(R.string.rerun_test_title)
             .setMessage(R.string.rerun_test_descr)
 

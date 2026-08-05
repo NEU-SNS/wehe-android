@@ -257,7 +257,7 @@ class CombinedQueue(//packets to send to server
         analyzerTask: CombinedAnalyzerTask
     ) {
         // package this TCPClient into a TCPClientThread, then put it into a thread
-        var timeLeft = timeLeft
+        var timeoutSeconds = timeLeft
         val clientThread = CTCPClientThread(
             client, rs, this,
             sendSema, recvSema, 100, analyzerTask
@@ -269,9 +269,9 @@ class CombinedQueue(//packets to send to server
             val expectedTime = timeOrigin + rs.timestamp * 1000000000
             if (System.nanoTime() < expectedTime) {
                 val waitTime = (Math.round(expectedTime - System.nanoTime()) / 1000000).toInt() //ms
-                timeLeft -= (waitTime / 1000)
-                if (timeLeft <= 0) {
-                    timeLeft = 1
+                timeoutSeconds -= (waitTime / 1000)
+                if (timeoutSeconds <= 0) {
+                    timeoutSeconds = 1
                 }
                 // Log.d("Time", String.valueOf(waitTime));
                 if (waitTime > 0) {
@@ -290,7 +290,7 @@ class CombinedQueue(//packets to send to server
             override fun run() { //set timer to timeout the thread if max time has been reached for replay
                 clientThread.timeout()
             }
-        }, timeLeft * 1000L)
+        }, timeoutSeconds * 1000L)
         ++threads
         // Log.d("nextTCP", "number of thread: " + String.valueOf(threads));
         cThreadList.add(cThread)

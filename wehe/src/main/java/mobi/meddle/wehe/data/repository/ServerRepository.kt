@@ -236,18 +236,20 @@ class ServerRepository
      * @return the IP of the host; empty string if there is an error doing so.
      */
     suspend fun getServerIP(server: String): String = withContext(Dispatchers.IO) {
-        var server = server
-        Log.d("getServerIP", "Server hostname: $server")
+        var host = server
+        Log.d("getServerIP", "Server hostname: $host")
         var address: InetAddress?
         for (i in 0..4) { //5 attempts to lookup the IP
             try {
-                server = InetAddress.getByName(server).hostAddress //DNS lookup
-                address = InetAddress.getByName(server)
+                //DNS lookup; hostAddress is null when the address cannot be resolved
+                host = InetAddress.getByName(host).hostAddress
+                    ?: throw UnknownHostException("No IP address for $host")
+                address = InetAddress.getByName(host)
                 if (address is Inet4Address) {
-                    return@withContext server
+                    return@withContext host
                 }
                 if (address is Inet6Address) {
-                    return@withContext "[$server]"
+                    return@withContext "[$host]"
                 }
             } catch (e: UnknownHostException) {
                 if (i == 4) {

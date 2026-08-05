@@ -17,10 +17,9 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.NonCancellable.isActive
-import kotlinx.coroutines.NonCancellable.isCancelled
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mobi.meddle.wehe.R
@@ -40,7 +39,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.util.Date
-import java.util.Objects
 import java.util.Timer
 import javax.inject.Inject
 import kotlin.coroutines.coroutineContext
@@ -159,7 +157,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
 
         selectedApps?.let {
             for (app in it) {
-                app.status = context.getString(R.string.pending) ?: "Waiting to start"
+                app.status = context.getString(R.string.pending)
             }
         }
     }
@@ -171,23 +169,15 @@ class ReplayViewModel @Inject constructor(application : Application, private val
         val connectivityManager =
             context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-        // Check if connectivityManager is not null
-        if (connectivityManager != null) {
-            // Get the active network
-            val activeNetwork = connectivityManager.activeNetwork ?: return true
-            // If there is no active network, the network is unavailable
+        // If there is no active network, the network is unavailable
+        val activeNetwork = connectivityManager.activeNetwork ?: return true
 
-            // Get network capabilities and check for connectivity
-            val networkCapabilities =
-                connectivityManager.getNetworkCapabilities(activeNetwork)
-            // Check if the network is connected to Wi-Fi or mobile data
-            if (networkCapabilities != null) {
-                // Return true if the network is connected to the internet (either Wi-Fi or mobile data)
-                return !networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            }
-        }
-        // If the connectivityManager is null, consider the network unavailable
-        return true
+        // Get network capabilities and check for connectivity
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+            ?: return true // No capabilities known, consider the network unavailable
+
+        // The network is available if it can reach the internet (either Wi-Fi or mobile data)
+        return !networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     /**
@@ -195,8 +185,8 @@ class ReplayViewModel @Inject constructor(application : Application, private val
      */
     fun showNoNetworkDialog() {
         _dialogEvent.value = Triple(
-            applicationContext.getString(R.string.network_error) ?: "Network Error",
-            applicationContext.getString(R.string.text_network_error) ?: "No network available",
+            applicationContext.getString(R.string.network_error),
+            applicationContext.getString(R.string.text_network_error),
             true
         )
     }
@@ -218,7 +208,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
             app.isTomography = false
             app.arcepNeedsAlerting = false
             app.isAlertFCC = false
-            app.status = applicationContext.getString(R.string.pending) ?: "Pending"
+            app.status = applicationContext.getString(R.string.pending)
         }
 
         inconclusiveApps.clear()
@@ -251,21 +241,18 @@ class ReplayViewModel @Inject constructor(application : Application, private val
      * Update app status
      */
     private suspend fun updateAppStatus(appName: String, status: String, iteration: Int = -1) {
-        var status = status
-        if (iteration != -1) {
-           status = "$iteration/2 $status"
-        }
+        val displayedStatus = if (iteration != -1) "$iteration/2 $status" else status
         if (app?.name == appName) {
-            app?.status = status
+            app?.status = displayedStatus
         } else {
             selectedApps?.forEach { app ->
                 if (app.name == appName) {
-                    app.status = status
+                    app.status = displayedStatus
                 }
             }
         }
         withContext(Dispatchers.Main) {
-            _statusUpdateEvent.value = Pair(appName, status)
+            _statusUpdateEvent.value = Pair(appName, displayedStatus)
         }
     }
 
@@ -346,7 +333,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
         }
 
         // Keep checking if the job was cancelled
-        if (!isActive) {
+        if (!coroutineContext.isActive) {
             return
         }
 
@@ -368,12 +355,8 @@ class ReplayViewModel @Inject constructor(application : Application, private val
         sharedPrefs.let {
             confirmationReplays = it.getBoolean("pref_multiple_tests", true)
             useDefaultThresholds = it.getBoolean("pref_switch", true)
-            a_threshold = Objects.requireNonNull(
-                it.getString("pref_threshold_area", "10")
-            )?.toInt() ?: 10
-            ks2pvalue_threshold = Objects.requireNonNull(
-                it.getString("pref_threshold_ks2p", "5")
-            )?.toInt() ?: 5
+            a_threshold = it.getString("pref_threshold_area", "10")?.toIntOrNull() ?: 10
+            ks2pvalue_threshold = it.getString("pref_threshold_ks2p", "5")?.toIntOrNull() ?: 5
         }
 
         serverDisplay =
@@ -451,7 +434,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
             return
         }
 
-        if (!isActive) {
+        if (!coroutineContext.isActive) {
             return
         }
 
@@ -467,7 +450,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
         selectedApps?.let { apps ->
             for ((index, app) in apps.withIndex()) {
                 updateCurrentTestingApp(app)
-                if (!isActive) {
+                if (!coroutineContext.isActive) {
                     return@let
                 }
 
@@ -486,7 +469,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
                 this.app!!.arcepNeedsAlerting = false
                 this.app!!.isAlertFCC = false
 
-                if (!isActive) {
+                if (!coroutineContext.isActive) {
                     return@let
                 }
 
@@ -521,7 +504,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
 
                 firstApp = false
 
-                if (!isActive) {
+                if (!coroutineContext.isActive) {
                     return@let
                 }
             }
@@ -537,7 +520,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
             Log.i("Result Channel", "Storing results")
             repository.saveResults(results, sharedPrefs)
         }
-        if (!isActive) {
+        if (!coroutineContext.isActive) {
             return
         }
 
@@ -604,7 +587,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
             _iteration.postValue(iteration)
             logWebSocketConnections("Before running test ")
 
-            if (!isActive) { //user cancels running tests
+            if (!coroutineContext.isActive) { //user cancels running tests
                 return false
             }
             if (isNetworkUnavailable(applicationContext)) {
@@ -666,7 +649,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
                 // Set test ID based on channel type
                 testId = if (channel.equals("open", ignoreCase = true)) 0 else 1
 
-                if (isCancelled) {
+                if (!coroutineContext.isActive) {
                     return false
                 }
                 if (isNetworkUnavailable(applicationContext)) {
@@ -723,7 +706,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
                 // Create UDP clients
                 val udpPortMappings = repository.createUDPClients(appData!!)
 
-                if (isCancelled) {
+                if (!coroutineContext.isActive) {
                     return false
                 }
                 if (isNetworkUnavailable(applicationContext)) {
@@ -846,7 +829,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
                     Log.i("UpdateUI", "completed!")
                 }
 
-                if (isCancelled) {
+                if (!coroutineContext.isActive) {
                     return false
                 }
                 if (isNetworkUnavailable(applicationContext)) {
@@ -905,7 +888,8 @@ class ReplayViewModel @Inject constructor(application : Application, private val
         carrier: String
 //        results: JSONArray
     ): ResultState {
-        val current = applicationContext.resources?.configuration?.locale
+        // Configuration.locale is deprecated; locales is the supported accessor from API 24 on.
+        val current = applicationContext.resources?.configuration?.locales?.get(0)
         val country = current?.country
 
         // Determine if confirmation test is needed
@@ -1015,12 +999,11 @@ class ReplayViewModel @Inject constructor(application : Application, private val
      * @return true if confirmation test needs to be run; false otherwise
      */
     private suspend fun getResults(portBlocked: Boolean, isConfirmation: Boolean): Boolean {
-        var currentPortBlocked = portBlocked
         var response = JSONObject()
 
         try {
             // Check for cancellation or network unavailability
-            if (!isActive) {
+            if (!coroutineContext.isActive) {
                 return false
             }
 
@@ -1032,19 +1015,19 @@ class ReplayViewModel @Inject constructor(application : Application, private val
             logWebSocketConnections()
 
             // Skip analysis request if port is blocked
-            if (!currentPortBlocked) {
+            if (!portBlocked) {
                 // Request analysis from servers
                 val analysisResult = randomID?.let { repository.requestAnalysis(it, app!!.historyCount) }
 
                 if (analysisResult?.isFailure == true) {
-                    val errorMsg = analysisResult.exceptionOrNull()?.message
-                        ?: applicationContext.getString(R.string.error_analysis_fail)
-                    errorMsg?.let { setInconclusive(it) }
+                    setInconclusive(
+                        analysisResult.exceptionOrNull()?.message
+                            ?: applicationContext.getString(R.string.error_analysis_fail)
+                    )
                     return false
                 }
 
-                applicationContext.getString(R.string.waiting)
-                    ?.let { updateAppStatus(app!!.name, it) }
+                updateAppStatus(app!!.name, applicationContext.getString(R.string.waiting))
 
                 // Sanity check
                 if (app!!.historyCount < 0) {
@@ -1053,7 +1036,7 @@ class ReplayViewModel @Inject constructor(application : Application, private val
                 }
 
                 // Check for cancellation or network unavailability again
-                if (isCancelled) {
+                if (!coroutineContext.isActive) {
                     return false
                 }
 
@@ -1068,9 +1051,10 @@ class ReplayViewModel @Inject constructor(application : Application, private val
 
                 if (resultsRetrieved != null) {
                     if (resultsRetrieved.isFailure) {
-                        val errorMsg = resultsRetrieved.exceptionOrNull()?.message
-                            ?: applicationContext.getString(R.string.error_analysis_fail)
-                        errorMsg?.let { setInconclusive(it) }
+                        setInconclusive(
+                            resultsRetrieved.exceptionOrNull()?.message
+                                ?: applicationContext.getString(R.string.error_analysis_fail)
+                        )
                         return false
                     }
                 }
@@ -1079,7 +1063,8 @@ class ReplayViewModel @Inject constructor(application : Application, private val
 
                 // Check if we couldn't retrieve results and it's a port test (port blocked)
                 if (retrievedResults.isEmpty() && runPortTests) {
-                    currentPortBlocked = true
+                    // Nothing came back for a port test, so the tested port is blocked. The
+                    // analysis below still runs and reports on what was measured.
                     Log.i("Result Channel", "Can't retrieve result, port blocked")
                 } else if (retrievedResults.isEmpty()) {
                     setInconclusive(applicationContext.getString(R.string.not_all_tcp_sent_text))
@@ -1106,9 +1091,10 @@ class ReplayViewModel @Inject constructor(application : Application, private val
             }
 
             if (analysisResult?.isFailure == true) {
-                val errorMsg = analysisResult.exceptionOrNull()?.message
-                    ?: applicationContext.getString(R.string.error_result)
-                errorMsg?.let { setInconclusive(it) }
+                setInconclusive(
+                    analysisResult.exceptionOrNull()?.message
+                        ?: applicationContext.getString(R.string.error_result)
+                )
                 return false
             }
 

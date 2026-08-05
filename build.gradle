@@ -21,7 +21,9 @@ plugins {
 
 allprojects {
     repositories {
-        jcenter()
+        // jcenter() was sunset by JFrog and is deprecated by Gradle; mavenCentral() serves the
+        // same non-Google dependencies.
+        mavenCentral()
         maven {
             url "https://maven.google.com"
         }
