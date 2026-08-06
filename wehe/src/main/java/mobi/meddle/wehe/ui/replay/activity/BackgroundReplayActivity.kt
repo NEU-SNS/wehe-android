@@ -1,10 +1,12 @@
 package mobi.meddle.wehe.ui.replay.activity
 
+import android.Manifest
 import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -21,10 +23,12 @@ import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -59,6 +63,23 @@ class BackgroundReplayActivity : AppCompatActivity() {
     private lateinit var headerImage: ImageView
     private lateinit var headerText: TextView
     private val doNothing = DialogInterface.OnClickListener { _, _ -> }
+
+    /**
+     * POST_NOTIFICATIONS became a runtime permission in API 33. The foreground service still runs
+     * without it, but its notification - the only thing telling the user tests are still going
+     * once they leave the app - is silently dropped. Tests start either way; a denial only costs
+     * the progress notification.
+     */
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted) {
+            Toast.makeText(
+                this, getString(R.string.notification_permission_denied), Toast.LENGTH_LONG
+            ).show()
+        }
+        startBackgroundTest()
+    }
 
     // Service connection object
     private val serviceConnection = object : ServiceConnection {
@@ -134,7 +155,7 @@ class BackgroundReplayActivity : AppCompatActivity() {
                 if (viewModel.isNetworkUnavailable(this)) {
                     viewModel.showNoNetworkDialog()
                 } else {
-                    startBackgroundTest()
+                    requestNotificationPermissionThenStart()
                 }
             }
         }
@@ -396,6 +417,24 @@ class BackgroundReplayActivity : AppCompatActivity() {
             replayStop()
         }
         return true
+    }
+
+    /**
+     * Asks for the notification permission before kicking off the run, so the foreground service's
+     * progress notification is actually visible once the user leaves the app. Below API 33 the
+     * permission is granted at install time and the tests start straight away.
+     */
+    private fun requestNotificationPermissionThenStart() {
+        val needsPermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+
+        if (needsPermission) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            startBackgroundTest()
+        }
     }
 
     private fun startBackgroundTest() {
