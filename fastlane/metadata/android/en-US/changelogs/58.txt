@@ -1,0 +1,8 @@
+Bug fixes and stability improvements:
+
+- Stopping a test now interrupts it right away instead of letting it run to completion.
+- Fixed wrong button labels on the "interrupt replay" dialog.
+- Fixed the replay size shown on the test details screen.
+- More reliable Wi-Fi and carrier detection.
+- Fixed crashes from invalid threshold settings and server names that could not be resolved.
+- Updated for recent Android releases.

@@ -1,0 +1,8 @@
+Résolutions de bugs et améliorations de la stabilité :
+
+- L'arrêt d'un test l'interrompt désormais immédiatement au lieu d'attendre la fin.
+- Correction des libellés des boutons du dialogue « interrompre le replay ».
+- Correction de la taille du replay affichée dans les détails du test.
+- Détection du Wi-Fi et de l'opérateur plus fiable.
+- Correction de plantages liés à des seuils invalides ou à des noms de serveur non résolus.
+- Mise à jour pour les versions récentes d'Android.
