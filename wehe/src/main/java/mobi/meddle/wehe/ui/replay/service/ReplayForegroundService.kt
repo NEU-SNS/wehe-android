@@ -172,6 +172,19 @@ class ReplayForegroundService : LifecycleService() {
         Log.d(TAG, "Service onDestroy")
         releaseWakeLock()
         cancelTestsInternal()
+
+        // cancelTestsInternal() posts a "Tests cancelled" update, and every notification this
+        // service builds is setOngoing(true). Destruction is often the *normal* end of a run - the
+        // activity unbinds after stopSelf() has already been called - so leaving that behind put a
+        // bogus, undismissable notification in the shade after a successful test. Nothing this
+        // service posted should outlive it.
+        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+        (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+            .cancel(NOTIFICATION_ID)
+
+        // Stop any coroutine still queued on this scope (handleError schedules a delayed teardown)
+        // from touching a service that no longer exists. cancelTestsInternal only cancels serviceJob.
+        serviceScope.cancel()
         super.onDestroy()
     }
 
