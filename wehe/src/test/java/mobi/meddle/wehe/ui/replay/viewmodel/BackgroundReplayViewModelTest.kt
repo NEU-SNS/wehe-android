@@ -206,6 +206,46 @@ class BackgroundReplayViewModelTest {
     }
 
     // ------------------------------------------------------------------
+    // restoreFromService - relaunch from the notification with no intent extras
+    // ------------------------------------------------------------------
+
+    @Test
+    fun `restoreFromService adopts the running test without resetting progress`() {
+        // The activity was destroyed and relaunched from the notification, so it has no extras and
+        // a brand new ViewModel. It adopts the in-flight run from the bound service instead.
+        val midRun = testApp("MidRun").apply { status = "Running open test" }
+        val finished = testApp("Finished").apply { status = application.getString(R.string.no_diff) }
+
+        viewModel.restoreFromService(
+            runPortTests = true,
+            carrier = "Orange",
+            apps = arrayListOf(midRun, finished),
+        )
+
+        assertThat(viewModel.runPortTests).isTrue()
+        assertThat(viewModel.carrier).isEqualTo("Orange")
+        assertThat(viewModel.selectedApps).containsExactly(midRun, finished).inOrder()
+        assertThat(viewModel.allApps).containsExactly(midRun, finished).inOrder()
+        assertThat(viewModel.appsList.value).containsExactly(midRun, finished).inOrder()
+
+        // The distinguishing behaviour vs initializeData: statuses are left exactly as they were,
+        // so a test already in flight does not appear to jump back to the start.
+        assertThat(midRun.status).isEqualTo("Running open test")
+        assertThat(finished.status).isEqualTo(application.getString(R.string.no_diff))
+    }
+
+    @Test
+    fun `initializeData by contrast does reset statuses to pending`() {
+        // Guards the pair: a fresh run should reset, a restore should not. If these ever converge
+        // the relaunch path silently wipes the progress shown to the user.
+        val app = testApp("App").apply { status = application.getString(R.string.no_diff) }
+
+        viewModel.initializeData(false, "Verizon", arrayListOf(app), application)
+
+        assertThat(app.status).isEqualTo(application.getString(R.string.pending))
+    }
+
+    // ------------------------------------------------------------------
     // cancel()
     // ------------------------------------------------------------------
 

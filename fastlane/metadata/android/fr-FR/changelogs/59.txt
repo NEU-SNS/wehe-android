@@ -1,0 +1,8 @@
+Les tests s'exécutent désormais en arrière-plan :
+
+- Les tests continuent lorsque vous quittez l'application, avec une notification indiquant leur progression.
+- Annulez un test en cours directement depuis la notification.
+- Appuyez sur la notification pour revenir à l'écran de test.
+- Correction des résultats de différenciation signalés comme une erreur au lieu d'afficher le résultat.
+- Correction d'un plantage à la réouverture de l'application depuis la notification.
+- Davantage de textes sont désormais traduits.

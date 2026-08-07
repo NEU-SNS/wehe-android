@@ -324,6 +324,113 @@ class BackgroundTestRunnerTest {
     }
 
     // ------------------------------------------------------------------
+    // Status reporting - the classifier matches app.status against string resources
+    // ------------------------------------------------------------------
+
+    @Test
+    fun `REGRESSION differentiated app reports the has_diff resource, not a hardcoded literal`() {
+        // processResults() used to set the literal "Has Differentiation". runTestForApp()
+        // classifies the outcome with app.status.contains(getString(R.string.has_diff)) - i.e.
+        // "Differentiation detected" - so the literal never matched, the result fell through to
+        // TestResult.ERROR, and the user saw "Some error occurred" for every throttled app. The
+        // row adapter keys off the same resource, so the red row and FCC/ARCEP button were lost
+        // too. Assert against the resource, which is what both consumers compare with.
+        makeNetworkAvailable(application)
+        stubSuccessfulSetup()
+        stubSingleAppReplay(differentiationAnalysis())
+        val app = testApp("ThrottledApp")
+
+        runBlocking { newRunner().runTests(false, "Verizon", arrayListOf(app)) }
+
+        assertThat(app.status).isEqualTo(application.getString(R.string.has_diff))
+        assertThat(app.status).isNotEqualTo(application.getString(R.string.error))
+        assertThat(completion!!.second).containsExactly(app)
+    }
+
+    @Test
+    fun `REGRESSION inconclusive app is reported once, not duplicated in the list`() {
+        // setInconclusive() used to add to inconclusiveApps itself while runTests() also files the
+        // app by its status, so a single inconclusive app appeared twice - inflating the rerun
+        // dialog's count and rerunning it twice.
+        makeNetworkAvailable(application)
+        stubSuccessfulSetup()
+        stubSingleAppReplay(noDifferentiationAnalysis())
+        runBlocking {
+            `when`(repository.retrieveResults(anyString(), anyInt(), anyBoolean()))
+                .thenReturn(Result.success(emptyList()))
+        }
+        val app = testApp("InconclusiveApp")
+
+        runBlocking { newRunner().runTests(false, "Verizon", arrayListOf(app)) }
+
+        assertThat(completion!!.third).containsExactly(app)
+        assertThat(completion!!.third).hasSize(1)
+    }
+
+    @Test
+    fun `REGRESSION no differentiation reports the no_diff resource`() {
+        makeNetworkAvailable(application)
+        stubSuccessfulSetup()
+        stubSingleAppReplay(noDifferentiationAnalysis())
+        val app = testApp("CleanApp")
+
+        runBlocking { newRunner().runTests(false, "Verizon", arrayListOf(app)) }
+
+        assertThat(app.status).isEqualTo(application.getString(R.string.no_diff))
+        assertThat(completion!!.second).isEmpty()
+        assertThat(completion!!.third).isEmpty()
+    }
+
+    // ------------------------------------------------------------------
+    // Localization - these strings are shown mid-test and the app ships an fr-FR locale
+    // ------------------------------------------------------------------
+
+    @Test
+    fun `errors surface localized resource strings rather than hardcoded English`() {
+        // The rewrite into BackgroundTestRunner hardcoded several user-visible strings to English.
+        // Assert they come from resources by comparing against the resolved resource value.
+        makeNetworkAvailable(application)
+        `when`(repository.servers).thenReturn(arrayListOf("1.2.3.4"))
+        `when`(repository.isMlabServerUsed()).thenReturn(false)
+        runBlocking {
+            `when`(
+                repository.setupServersAndCertificates(
+                    anyString(), Mockito.nullable(String::class.java), anyInt(), anyBoolean()
+                )
+            ).thenReturn(Result.success(true))
+            `when`(serverRepository.getPublicIP(anyString())).thenReturn("-1")
+        }
+
+        runBlocking { newRunner().runTests(false, "Verizon", arrayListOf(testApp())) }
+
+        val localized = application.getString(R.string.error_no_connection)
+        assertThat(errors).contains(localized)
+        // "No connection to server" was the hardcoded literal that used to be emitted here.
+        assertThat(errors).doesNotContain("No connection to server")
+    }
+
+    @Test
+    fun `a non-numeric threshold preference falls back instead of crashing`() {
+        // The thresholds are read with toIntOrNull(); toInt() threw NumberFormatException and
+        // aborted the whole run when the stored preference was not a number.
+        androidx.preference.PreferenceManager.getDefaultSharedPreferences(application)
+            .edit()
+            .putString("pref_threshold_area", "not-a-number")
+            .putString("pref_threshold_ks2p", "")
+            .apply()
+        makeNetworkAvailable(application)
+        stubSuccessfulSetup()
+        stubSingleAppReplay(noDifferentiationAnalysis())
+        val app = testApp("ThresholdApp")
+
+        runBlocking { newRunner().runTests(false, "Verizon", arrayListOf(app)) }
+
+        // The run completed on the default thresholds rather than blowing up during setup.
+        assertThat(completion).isNotNull()
+        assertThat(app.status).isEqualTo(application.getString(R.string.no_diff))
+    }
+
+    // ------------------------------------------------------------------
     // Regressions carried over from the old ReplayViewModel suite
     // ------------------------------------------------------------------
 

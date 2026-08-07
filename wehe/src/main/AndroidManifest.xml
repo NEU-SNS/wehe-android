@@ -73,6 +73,11 @@
                 android:value="androidx.startup"
                 tools:node="remove"/>
         </provider>
-        <receiver android:name=".ui.replay.receiver.CancelReceiver" android:exported="true"/>
+        <!--
+            Not exported: the only sender is this app's own notification action PendingIntent,
+            which the system delivers without needing the receiver to be public. Exporting it let
+            any installed app cancel a running test and force MainActivity to the foreground.
+        -->
+        <receiver android:name=".ui.replay.receiver.CancelReceiver" android:exported="false"/>
     </application>
 </manifest>

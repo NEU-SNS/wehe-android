@@ -127,38 +127,40 @@ class BackgroundReplayActivity : AppCompatActivity() {
 
         // Get extras from intent
         val bundle = intent.extras
-        if (bundle != null) {
-            val runPortTests = bundle.getBoolean("runPortTests")
-            val carrier = bundle.getString("carrier")
-            val selectedApps = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                intent.getParcelableArrayListExtra("selectedApps", ApplicationBean::class.java)
+        val runPortTests = bundle?.getBoolean("runPortTests") ?: false
+        val carrier = bundle?.getString("carrier")
+        val selectedApps = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableArrayListExtra("selectedApps", ApplicationBean::class.java)
+        } else {
+            @Suppress("DEPRECATION") // typed overload only exists on API 33+
+            intent.getParcelableArrayListExtra<ApplicationBean>("selectedApps")
+        }
+
+        // These are set up unconditionally: the notification's content intent relaunches this
+        // activity with no extras at all, and the observers registered below dereference both on
+        // every update. Leaving them uninitialized on that path crashed with
+        // UninitializedPropertyAccessException as soon as the service reported progress.
+        progressBar = findViewById(R.id.prgBar)
+        adapter = ImageReplayRecyclerViewAdapter(
+            this, selectedApps ?: emptyList(), this, runPortTests
+        )
+        val appsRecyclerView = findViewById<RecyclerView>(R.id.appsRecyclerView)
+        appsRecyclerView.layoutManager = LinearLayoutManager(this)
+        appsRecyclerView.adapter = adapter
+
+        if (selectedApps != null) {
+            // Initialize the ViewModel with data
+            viewModel.initializeData(runPortTests, carrier, selectedApps, applicationContext)
+
+            // Check network before starting tests
+            if (viewModel.isNetworkUnavailable(this)) {
+                viewModel.showNoNetworkDialog()
             } else {
-                @Suppress("DEPRECATION") // typed overload only exists on API 33+
-                intent.getParcelableArrayListExtra<ApplicationBean>("selectedApps")
-            }
-
-            if (selectedApps != null) {
-                // Initialize the ViewModel with data
-                viewModel.initializeData(runPortTests, carrier, selectedApps, applicationContext)
-
-                // Setup RecyclerView
-                adapter = ImageReplayRecyclerViewAdapter(this, selectedApps, this, runPortTests)
-                val appsRecyclerView = findViewById<RecyclerView>(R.id.appsRecyclerView)
-                val layoutManager = LinearLayoutManager(this)
-                appsRecyclerView.layoutManager = layoutManager
-                appsRecyclerView.adapter = adapter
-
-                // Setup progress bar
-                progressBar = findViewById(R.id.prgBar)
-
-                // Check network before starting tests
-                if (viewModel.isNetworkUnavailable(this)) {
-                    viewModel.showNoNetworkDialog()
-                } else {
-                    requestNotificationPermissionThenStart()
-                }
+                requestNotificationPermissionThenStart()
             }
         }
+        // Otherwise this is a relaunch from the notification while a run is already going; the
+        // list is repopulated from the bound service in setupServiceObservers().
 
         headerLayout = findViewById(R.id.headerLayout)
         progressBarLayout = findViewById(R.id.prgBarLayout)
@@ -274,6 +276,16 @@ class BackgroundReplayActivity : AppCompatActivity() {
     private fun setupServiceObservers() {
         replayService?.let { service ->
             Log.d(TAG, "Setting up service observers")
+
+            // Relaunched from the notification with no extras: adopt the in-flight run's state so
+            // the list shows the real apps and their progress instead of staying empty.
+            if (viewModel.selectedApps == null) {
+                service.activeApps?.let { apps ->
+                    viewModel.restoreFromService(
+                        service.activeRunPortTests, service.activeCarrier, apps
+                    )
+                }
+            }
 
             // Sync ViewModel with service
             viewModel.syncWithService(service)

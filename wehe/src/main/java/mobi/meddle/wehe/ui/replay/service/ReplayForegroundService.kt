@@ -93,6 +93,14 @@ class ReplayForegroundService : LifecycleService() {
     private var selectedApps: ArrayList<ApplicationBean>? = null
     private var backgroundTestRunner: BackgroundTestRunner? = null
 
+    /**
+     * The run currently in progress, for a [BackgroundReplayActivity] that was relaunched from the
+     * notification after being destroyed and so has no intent extras to rebuild itself from.
+     */
+    val activeRunPortTests: Boolean get() = runPortTests
+    val activeCarrier: String? get() = carrier
+    val activeApps: ArrayList<ApplicationBean>? get() = selectedApps
+
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Service onCreate")

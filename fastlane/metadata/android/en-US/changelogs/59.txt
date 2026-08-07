@@ -1,0 +1,8 @@
+Tests now run in the background:
+
+- Tests keep running when you leave the app, with a notification showing their progress.
+- Cancel a running test straight from the notification.
+- Tap the notification to come back to the test screen.
+- Fixed differentiation results being reported as an error instead of showing the result.
+- Fixed a crash when reopening the app from the notification.
+- More text is now translated.

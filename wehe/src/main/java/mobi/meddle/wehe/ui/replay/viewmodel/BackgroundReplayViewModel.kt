@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -93,6 +94,32 @@ class BackgroundReplayViewModel @Inject constructor(
     private var job: Job? = null
     private val uiUpdateJobs = ArrayList<Job>()
 
+    // Service LiveData mirrors, kept so they can be unregistered again - see syncWithService().
+    private var syncedService: ReplayForegroundService? = null
+    private val serviceObserverRemovers = mutableListOf<() -> Unit>()
+
+    /** Mirrors a service LiveData and records how to unregister it later. */
+    private fun <T> LiveData<T>.observeAndTrack(onChanged: (T) -> Unit) {
+        val observer = Observer<T> { onChanged(it) }
+        observeForever(observer)
+        serviceObserverRemovers += { removeObserver(observer) }
+    }
+
+    private fun removeServiceObservers() {
+        serviceObserverRemovers.forEach { it() }
+        serviceObserverRemovers.clear()
+        syncedService = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        removeServiceObservers()
+        for (uiJob in uiUpdateJobs) {
+            uiJob.cancel()
+        }
+        uiUpdateJobs.clear()
+    }
+
     /**
      * Initialize data with parameters from activity
      */
@@ -114,6 +141,23 @@ class BackgroundReplayViewModel @Inject constructor(
             _appsList.value = it
             allApps = ArrayList(it)
         }
+    }
+
+    /**
+     * Adopts an already-running test's state, for an activity relaunched from the notification
+     * with no intent extras. Unlike [initializeData] this leaves each app's status alone, so the
+     * progress already made by the running test is not reset back to "pending".
+     */
+    fun restoreFromService(
+        runPortTests: Boolean,
+        carrier: String?,
+        apps: ArrayList<ApplicationBean>,
+    ) {
+        this.runPortTests = runPortTests
+        this.carrier = carrier
+        this.selectedApps = apps
+        allApps = ArrayList(apps)
+        _appsList.postValue(apps)
     }
 
     /**
@@ -273,11 +317,24 @@ class BackgroundReplayViewModel @Inject constructor(
     }
 
     /**
-     * Sync with service updates - call this when service is bound
+     * Sync with service updates - call this when service is bound.
+     *
+     * The activity rebinds on every restart, so this can be called repeatedly against the same
+     * service. The observers below are permanent ([observeForever] has no lifecycle to unregister
+     * it), so re-registering them would stack up duplicate mirrors of every update and keep this
+     * ViewModel reachable from the service after the activity is gone. Bind once per service, and
+     * hand the registrations back in [onCleared].
      */
     fun syncWithService(service: ReplayForegroundService) {
+        if (syncedService === service) {
+            Log.d(TAG, "Already synced with this service instance, skipping")
+            return
+        }
+        removeServiceObservers()
+        syncedService = service
+
         // Mirror service LiveData to ViewModel LiveData
-        service.currentTestingApp.observeForever { app ->
+        service.currentTestingApp.observeAndTrack { app ->
             _currentTestingApp.postValue(app)
 
             app?.let { updatedApp ->
@@ -301,12 +358,12 @@ class BackgroundReplayViewModel @Inject constructor(
             }
         }
 
-        service.progressUpdate.observeForever { progress ->
+        service.progressUpdate.observeAndTrack { progress ->
             _progress.postValue(progress)
             _progressUpdateEvent.postValue(progress)
         }
 
-        service.statusUpdate.observeForever { status ->
+        service.statusUpdate.observeAndTrack { status ->
             _status.postValue(status)
             // Update the specific app status in the list
             selectedApps?.find { it.name == status.first }?.let { app ->
@@ -314,16 +371,16 @@ class BackgroundReplayViewModel @Inject constructor(
             }
         }
 
-        service.iteration.observeForever { iter ->
+        service.iteration.observeAndTrack { iter ->
             _iteration.postValue(iter)
         }
 
-        service.testResults.observeForever { results ->
+        service.testResults.observeAndTrack { results ->
             _testResults.postValue(results)
             setTestResults(results)
         }
 
-        service.isReplayOngoing.observeForever { isOngoing ->
+        service.isReplayOngoing.observeAndTrack { isOngoing ->
             _isReplayOngoing.postValue(isOngoing)
         }
     }

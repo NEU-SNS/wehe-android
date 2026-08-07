@@ -78,6 +78,12 @@ android {
         unitTests {
             includeAndroidResources = true
             returnDefaultValues = true
+            // Gradle defaults a Test task to 512m. Robolectric loads a full instrumented Android
+            // runtime per SDK sandbox, which does not comfortably fit; CI runners hit this before
+            // developer machines do because they have less headroom to absorb it.
+            all {
+                maxHeapSize = "2048m"
+            }
         }
     }
 }
@@ -133,6 +139,10 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:5.8.0'
     testImplementation 'org.mockito:mockito-inline:5.1.1'
     testImplementation 'org.robolectric:robolectric:4.14.1'
+    // Lets ReplayWorkerTest stand up an in-memory WorkManager. The app removes WorkManager's
+    // default initializer from the manifest (it supplies its own Hilt worker factory), so
+    // WorkManager.getInstance() is not usable in tests without this.
+    testImplementation 'androidx.work:work-testing:2.10.1'
     debugImplementation 'androidx.compose.ui:ui-test-manifest:1.7.7'
 
     // Instrumentation tests

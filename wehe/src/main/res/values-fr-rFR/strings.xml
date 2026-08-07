@@ -311,4 +311,10 @@
     <string name="test_progress">Progression du test</string>
     <string name="background_tests">Background Tests</string>
 
+    <string name="port_test">Tests de ports</string>
+    <string name="diff_test">Tests de différenciation</string>
+    <string name="error">Une erreur s\'est produite</string>
+    <string name="processing_results">Traitement des résultats</string>
+    <string name="preferences_category_title">Réglages</string>
+    <string name="custom_server_hint">Saisissez l\'adresse du serveur personnalisé</string>
 </resources>
