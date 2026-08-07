@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
 import android.view.Gravity
-import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
@@ -23,6 +22,7 @@ import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -172,6 +172,13 @@ class BackgroundReplayActivity : AppCompatActivity() {
 
         // Setup WorkManager observer
         observeWorkStatus()
+
+        // Back handling goes through the dispatcher rather than an onKeyDown(KEYCODE_BACK) override.
+        // Predictive back is on by default for apps targeting SDK 36, and it stops dispatching
+        // KEYCODE_BACK entirely - so the override silently stopped running on Android 16 and back
+        // just finished the activity, skipping the "interrupt ongoing replay?" confirmation and
+        // killing the test. The dispatcher is honoured on every API level the app supports.
+        onBackPressedDispatcher.addCallback(this) { replayStop() }
     }
 
     private fun setupObservers() {
@@ -372,14 +379,28 @@ class BackgroundReplayActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
-        if (viewModel.isReplayOngoing.value == true) {
+        // Only abort when the user is genuinely leaving. The activity is also destroyed on any
+        // configuration change the system decides to hand us - dark-mode toggle, font size, locale -
+        // and cancelling there killed a running test for a reason the user never asked for, which
+        // defeats the point of running in the background.
+        val userIsLeaving = isFinishing && !isChangingConfigurations
+        if (userIsLeaving && viewModel.isReplayOngoing.value == true) {
             cancelBackgroundTest()
             Toast.makeText(
                 this, getText(R.string.replay_aborted),
                 Toast.LENGTH_LONG
             ).show()
         }
+        // Always release the binding. cancelBackgroundTest() was the only unbind path, and it only
+        // ran for an in-flight test, so finishing after a completed run leaked the ServiceConnection
+        // and - because a bound service survives stopSelf() - kept the service and its ongoing
+        // notification alive indefinitely.
+        if (serviceBound) {
+            unbindService(serviceConnection)
+            serviceBound = false
+            replayService = null
+        }
+        super.onDestroy()
     }
 
     override fun onResume() {
@@ -410,18 +431,6 @@ class BackgroundReplayActivity : AppCompatActivity() {
                 .setNegativeButton(getString(R.string.no), doNothing)
                 .show()
         }
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            replayStop()
-            return if (viewModel.isReplayOngoing.value != true) {
-                super.onKeyDown(keyCode, event)
-            } else {
-                true
-            }
-        }
-        return super.onKeyDown(keyCode, event)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

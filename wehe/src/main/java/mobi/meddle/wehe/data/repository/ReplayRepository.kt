@@ -27,6 +27,7 @@ import mobi.meddle.wehe.util.UtilsManager
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.IOException
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.security.KeyStore
@@ -407,13 +408,16 @@ class ReplayRepository @Inject constructor(private val context: Context) {
      * Sets up side channels for communication with server
      *
      * @param appData The app data for the test
-     * @return List of created side channels
+     * @return List of created side channels, one per entry in [servers]
+     * @throws IOException if any server could not be reached after all retries
      */
+    @Throws(IOException::class)
     fun setupSideChannels(appData: CombinedAppJSONInfoBean): Pair<ArrayList<CombinedSideChannel>, ArrayList<JitterBean>> {
         val sideChannelPort = Config.get("combined_sidechannel_port").toInt()
         val sideChannels = ArrayList<CombinedSideChannel>()
         val jitterBeans = ArrayList<JitterBean>()
         val maxRetries = 3
+        var lastFailure: Exception? = null
 
         for ((id, server) in servers.withIndex()) {
             var retryCount = 0
@@ -428,10 +432,25 @@ class ReplayRepository @Inject constructor(private val context: Context) {
                     jitterBeans.add(JitterBean())
                     connected = true
                 } catch (e: Exception) {
+                    lastFailure = e
                     retryCount++
                     Thread.sleep(2000 * retryCount.toLong()) // Exponential backoff
                 }
             }
+        }
+
+        // Fail loudly rather than handing back a short list. Everything downstream is indexed by
+        // server position - udpReplayInfoBeans[id], analyzerTasks[id], jitterBeans[id] - while
+        // udpPortMappings and servers keep their full size, so a missing side channel turned into
+        // an IndexOutOfBoundsException inside CombinedQueue's raw sender Thread, which catches only
+        // InterruptedException. That killed the whole process (taking the foreground service with
+        // it) rather than failing the test. IOException is what runSingleTest() already handles as
+        // "no connection to server".
+        if (sideChannels.size != servers.size) {
+            throw IOException(
+                "Only ${sideChannels.size} of ${servers.size} side channels connected",
+                lastFailure
+            )
         }
         return Pair(sideChannels, jitterBeans)
     }

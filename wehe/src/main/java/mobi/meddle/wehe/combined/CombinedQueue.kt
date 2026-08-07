@@ -162,6 +162,18 @@ class CombinedQueue(//packets to send to server
                     }
                 } catch (e: InterruptedException) {
                     Log.e("Replay", "Error sending packet", e)
+                } catch (t: Throwable) {
+                    // This body runs on a plain Thread, so anything that escapes here reaches the
+                    // default uncaught handler and kills the entire process - foreground service and
+                    // all - instead of failing one replay. Real sources: the per-channel lists
+                    // (udpReplayInfoBeans[id], analyzerTasks[id], CSPairMappings[id]) being shorter
+                    // than servers, and nextUDP()'s checkNotNull on a server-supplied port map that
+                    // doesn't list this replay's IP/port. Abort the replay instead; the loop's
+                    // ABORT check stops the other channels and abort_reason surfaces to the user.
+                    Log.e("Replay", "Channel $id: aborting replay on unexpected error", t)
+                    ABORT = true
+                    abort_reason = "Replay Aborted: " + t.message
+                    break
                 }
             }
         }

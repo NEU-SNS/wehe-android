@@ -9,6 +9,7 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -127,8 +128,21 @@ class ReplayForegroundService : LifecycleService() {
 
             Log.d(TAG, "Received parameters - runPortTests: $runPortTests, carrier: $carrier, apps: ${selectedApps?.size}")
 
-            // Start the service in foreground immediately to prevent ANR
-            startForeground(NOTIFICATION_ID, createNotification("Preparing tests..."))
+            // Start the service in foreground immediately to prevent ANR.
+            // This can be refused rather than succeed: the service is started from a WorkManager
+            // worker, so by the time this runs the app may already be in the background, and
+            // Android 12+ answers that with ForegroundServiceStartNotAllowedException. onStartCommand
+            // is a system callback, so letting that propagate crashes the process. Report it and
+            // shut down cleanly instead.
+            try {
+                startForeground(NOTIFICATION_ID, createNotification("Preparing tests..."))
+            } catch (e: Exception) {
+                Log.e(TAG, "Could not enter the foreground; aborting run", e)
+                _errorMessage.postValue(getString(R.string.error_unknown))
+                _isReplayOngoing.postValue(false)
+                stopSelf()
+                return@let
+            }
 
             // Acquire wake lock to prevent CPU from sleeping
             acquireWakeLock()
@@ -265,6 +279,19 @@ class ReplayForegroundService : LifecycleService() {
     }
 
     /**
+     * Leaves the foreground, removing the persistent notification, then stops the service.
+     *
+     * [stopSelf] alone is not enough on either count. A service with a bound client - which
+     * [BackgroundReplayActivity] is for the whole run - is not destroyed by stopSelf, so onDestroy
+     * never fires and the notification posted by [startForeground] stays in the shade. Because every
+     * notification this service builds is setOngoing(true), the user could not swipe it away either.
+     */
+    private fun stopForegroundAndSelf() {
+        ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
+        stopSelf()
+    }
+
+    /**
      * Update notification with current status
      */
     private fun updateNotification(contentText: String) {
@@ -347,13 +374,12 @@ class ReplayForegroundService : LifecycleService() {
 
 //                // Stop service after a delay to ensure results are delivered
 //                delay(10000)
-                stopSelf()
+                stopForegroundAndSelf()
 
             } catch (e: CancellationException) {
                 Log.d(TAG, "Tests cancelled")
                 _isReplayOngoing.postValue(false)
-                updateNotification("Tests cancelled")
-                stopSelf()
+                stopForegroundAndSelf()
             } catch (e: Exception) {
                 Log.e(TAG, "Error running tests", e)
                 handleError("Error: ${e.message}")
@@ -372,10 +398,10 @@ class ReplayForegroundService : LifecycleService() {
         _errorMessage.postValue(errorMessage)
         updateNotification("Test error: $errorMessage")
 
-        // Stop service after a delay
+        // Leave the error notification up briefly so it is readable, then tear down.
         serviceScope.launch {
             delay(5000)
-            stopSelf()
+            stopForegroundAndSelf()
         }
     }
 

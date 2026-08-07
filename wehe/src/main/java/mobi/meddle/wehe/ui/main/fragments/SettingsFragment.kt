@@ -34,8 +34,13 @@ import java.util.Locale
 @AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        // Set the preference file name
-        preferenceManager.sharedPreferencesName = getString(R.string.preference_file_key)
+        // Deliberately left on the default SharedPreferences file
+        // ("<package>_preferences"). Overriding sharedPreferencesName here pointed the settings
+        // UI at "mobi.meddle.wehe.preferences", which nothing reads: every consumer -
+        // BackgroundTestRunner, ResultsViewModel, MainActivity, and
+        // PreferenceManager.setDefaultValues() - goes through getDefaultSharedPreferences(). The
+        // keys matched, so server choice, both thresholds and the two switches were written to a
+        // file the test runner never opened and were silently ignored.
 
         // Load the preferences from XML
         setPreferencesFromResource(R.xml.preferences, rootKey)
