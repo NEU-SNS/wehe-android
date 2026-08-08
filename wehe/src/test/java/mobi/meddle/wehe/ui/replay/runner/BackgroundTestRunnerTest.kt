@@ -187,7 +187,37 @@ class BackgroundTestRunnerTest {
     }
 
     @Test
-    fun `runTests marks apps unavailable when server setup fails`() {
+    fun `runTests surfaces the repository's own reason when server setup fails`() {
+        // The runner used to collapse the repository's Result to a boolean and report every setup
+        // failure as R.string.server_unavailable ("our server is currently not running"). That hid
+        // the case the user can actually act on: M-Lab answers the locate service with HTTP 429 when
+        // too many tests have come from the network, and the repository turns that into
+        // R.string.error_rate_limited. Assert the repository's message reaches the callbacks
+        // untouched, whatever it says.
+        makeNetworkAvailable(application)
+        `when`(repository.servers).thenReturn(arrayListOf("1.2.3.4"))
+        `when`(repository.isMlabServerUsed()).thenReturn(false)
+        val rateLimited = application.getString(R.string.error_rate_limited)
+        runBlocking {
+            `when`(
+                repository.setupServersAndCertificates(
+                    anyString(), Mockito.nullable(String::class.java), anyInt(), anyBoolean()
+                )
+            ).thenReturn(Result.failure(Exception(rateLimited)))
+        }
+        val app = testApp("UnreachableApp")
+
+        runBlocking { newRunner().runTests(false, "Verizon", arrayListOf(app)) }
+
+        assertThat(errors).contains(rateLimited)
+        assertThat(statusUpdates).contains(Pair("UnreachableApp", rateLimited))
+        // The misleading generic message must not be substituted for it.
+        assertThat(errors).doesNotContain(application.getString(R.string.server_unavailable))
+        assertThat(completion).isNull()
+    }
+
+    @Test
+    fun `runTests falls back to the generic message when the failure carries no reason`() {
         makeNetworkAvailable(application)
         `when`(repository.servers).thenReturn(arrayListOf("1.2.3.4"))
         `when`(repository.isMlabServerUsed()).thenReturn(false)
@@ -196,7 +226,7 @@ class BackgroundTestRunnerTest {
                 repository.setupServersAndCertificates(
                     anyString(), Mockito.nullable(String::class.java), anyInt(), anyBoolean()
                 )
-            ).thenReturn(Result.failure(Exception("boom")))
+            ).thenReturn(Result.failure(Exception()))
         }
         val app = testApp("UnreachableApp")
 

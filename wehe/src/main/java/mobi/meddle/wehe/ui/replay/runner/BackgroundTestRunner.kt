@@ -80,12 +80,14 @@ class BackgroundTestRunner(
             Log.d(TAG, "Starting background tests for ${selectedApps.size} apps")
 
             // Initialize test configuration
-            if (!initializeTestConfiguration(runPortTests)) {
-                // Initialize apps status
+            val setupError = initializeTestConfiguration(runPortTests)
+            if (setupError != null) {
+                // Report the actual reason - e.g. M-Lab rate limiting - rather than flattening every
+                // failure to "our server is not running", which is misleading and not actionable.
                 selectedApps.forEach { app ->
-                    onStatusUpdate(Pair(app.name ?: "Unknown App", applicationContext.getString(R.string.server_unavailable)))
+                    onStatusUpdate(Pair(app.name ?: "Unknown App", setupError))
                 }
-                onError(applicationContext.getString(R.string.server_unavailable))
+                onError(setupError)
                 return
             }
 
@@ -176,9 +178,12 @@ class BackgroundTestRunner(
     }
 
     /**
-     * Initialize test configuration similar to ReplayViewModel
+     * Initialize test configuration similar to ReplayViewModel.
+     *
+     * Returns null on success, or the reason to show the user - see
+     * [setupServersAndCertificates] for why the reason is carried rather than a boolean.
      */
-    private suspend fun initializeTestConfiguration(runPortTests: Boolean): Boolean {
+    private suspend fun initializeTestConfiguration(runPortTests: Boolean): String? {
         return withContext(Dispatchers.IO) {
             try {
                 updateUIBean = UpdateUIBean()
@@ -201,9 +206,9 @@ class BackgroundTestRunner(
 
                 metadataServer = Consts.METADATA_SERVER
 
-                if (!setupServersAndCertificates(serverDisplay!!, metadataServer)) {
-                    onError(applicationContext.getString(R.string.server_unavailable))
-                    return@withContext false
+                // The caller reports this; emitting it here too produced two error toasts.
+                setupServersAndCertificates(serverDisplay!!, metadataServer)?.let {
+                    return@withContext it
                 }
 
                 // Generate or retrieve user ID
@@ -249,29 +254,38 @@ class BackgroundTestRunner(
                 Log.d(TAG, "public IP: $publicIP")
 
                 if (publicIP == "-1") {
-                    onError(applicationContext.getString(R.string.error_no_connection))
-                    return@withContext false
+                    return@withContext applicationContext.getString(R.string.error_no_connection)
                 }
 
-                true
+                null
             } catch (e: Exception) {
                 Log.e(TAG, "Error initializing test configuration", e)
-                false
+                applicationContext.getString(R.string.server_unavailable)
             }
         }
     }
 
     /**
-     * Setup servers and certificates
+     * Setup servers and certificates.
+     *
+     * Returns null on success, or the reason to show the user. This deliberately hands back the
+     * repository's own message instead of a boolean: the repository distinguishes cases the user can
+     * act on - most importantly M-Lab answering the locate service with HTTP 429, which means "too
+     * many tests from this network" and not "the server is down". Collapsing the Result to a boolean
+     * here threw that away, so every failure was reported as [R.string.server_unavailable].
      */
-    private suspend fun setupServersAndCertificates(server: String, metadataServer: String?): Boolean {
+    private suspend fun setupServersAndCertificates(server: String, metadataServer: String?): String? {
         return withContext(Dispatchers.IO) {
             if (isNetworkUnavailable()) {
-                onError(applicationContext.getString(R.string.text_network_error))
-                return@withContext false
+                return@withContext applicationContext.getString(R.string.text_network_error)
             }
             val result = replayRepository.setupServersAndCertificates(server, metadataServer, 1, false)
-            result.isSuccess
+            if (result.isSuccess) {
+                null
+            } else {
+                result.exceptionOrNull()?.message
+                    ?: applicationContext.getString(R.string.server_unavailable)
+            }
         }
     }
 
@@ -312,8 +326,9 @@ class BackgroundTestRunner(
                 }
 
                 // Setup servers if needed
-                if (!setupServersAndCertificates(serverDisplay!!, null)) {
-                    onError(applicationContext.getString(R.string.server_unavailable))
+                setupServersAndCertificates(serverDisplay!!, null)?.let { reason ->
+                    onError(reason)
+                    onStatusUpdate(Pair(app.name ?: "Unknown App", reason))
                     return@withContext TestResult.ERROR
                 }
 
