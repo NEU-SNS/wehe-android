@@ -154,8 +154,27 @@ class ReplayRepository @Inject constructor(private val context: Context) {
             var wsID: Int
             val mLabResp =
                 serverRepository.sendRequest(Consts.MLAB_SERVERS, "GET", false, null, null)
+            if (mLabResp == null) {
+                //sendRequest already logged the HTTP status and body that explain why
+                Log.e(
+                    "WebSocket",
+                    "No response from the M-Lab locate service at ${Consts.MLAB_SERVERS}" +
+                            " (HTTP ${serverRepository.lastResponseCode})"
+                )
+                //M-Lab turns us away with a 429 when too many tests have come from this network.
+                //Its own error text tells the reader to email M-Lab support, which is aimed at us
+                //as the operator rather than at the person holding the phone, so say it our way.
+                val message = if (
+                    serverRepository.lastResponseCode == ServerRepository.HTTP_TOO_MANY_REQUESTS
+                ) {
+                    context.getString(R.string.error_rate_limited)
+                } else {
+                    context.getString(R.string.server_unavailable)
+                }
+                return Result.failure(Exception(message))
+            }
 
-            val mLabServers = mLabResp!!["results"] as JSONArray
+            val mLabServers = mLabResp["results"] as JSONArray
             var i = 0
             while (wsConns.size < numTests && i < mLabServers.length()) {
                 try {

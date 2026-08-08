@@ -338,6 +338,137 @@ class ServerRepositoryTest {
     }
 
     // ---------------------------------------------------------------------
+    // HTTP error status handling (lastResponseCode + 4xx-vs-5xx retry policy)
+    //
+    // Android reports every response code >= 400 out of getInputStream() as a
+    // FileNotFoundException, so before sendRequest read the status explicitly a 429 was
+    // indistinguishable from a dead socket and got retried like a transient blip.
+    // ---------------------------------------------------------------------
+
+    @Test
+    fun `GET 429 is not retried and is reported via lastResponseCode`() {
+        val server = startHttpsServer()
+        repeat(3) { server.enqueue(MockResponse().setResponseCode(429)) }
+
+        val result = serverRepository.sendRequest(
+            server.url("/mlab").toString(), "GET", true, null, null
+        )
+
+        assertThat(result).isNull()
+        // Retrying a rate limit only spends more of the quota that is already exhausted.
+        assertThat(server.requestCount).isEqualTo(1)
+        assertThat(serverRepository.lastResponseCode)
+            .isEqualTo(ServerRepository.HTTP_TOO_MANY_REQUESTS)
+    }
+
+    @Test
+    fun `GET 404 is not retried`() {
+        val server = startHttpsServer()
+        repeat(3) { server.enqueue(MockResponse().setResponseCode(404)) }
+
+        val result = serverRepository.sendRequest(
+            server.url("/missing").toString(), "GET", true, null, null
+        )
+
+        assertThat(result).isNull()
+        assertThat(server.requestCount).isEqualTo(1)
+        assertThat(serverRepository.lastResponseCode).isEqualTo(404)
+    }
+
+    @Test
+    fun `GET 503 is still retried 3 times since a server error may be transient`() {
+        val server = startHttpsServer()
+        repeat(3) { server.enqueue(MockResponse().setResponseCode(503)) }
+
+        val result = serverRepository.sendRequest(
+            server.url("/down").toString(), "GET", true, null, null
+        )
+
+        assertThat(result).isNull()
+        assertThat(server.requestCount).isEqualTo(3)
+        assertThat(serverRepository.lastResponseCode).isEqualTo(503)
+    }
+
+    @Test
+    fun `GET recovers when a 5xx is followed by a success`() {
+        val server = startHttpsServer()
+        server.enqueue(MockResponse().setResponseCode(500))
+        server.enqueue(MockResponse().setBody("""{"ok":true}"""))
+
+        val result = serverRepository.sendRequest(
+            server.url("/flaky").toString(), "GET", true, null, null
+        )
+
+        assertThat(result).isNotNull()
+        assertThat(result!!.getBoolean("ok")).isTrue()
+        assertThat(server.requestCount).isEqualTo(2)
+        assertThat(serverRepository.lastResponseCode).isEqualTo(200)
+    }
+
+    @Test
+    fun `lastResponseCode stays NO_RESPONSE_CODE when no HTTP status ever arrives`() {
+        val serverSocket = ServerSocket(0)
+        val acceptor = Thread {
+            try {
+                while (true) {
+                    serverSocket.accept().close() // reset before the TLS handshake completes
+                }
+            } catch (e: Exception) {
+                // expected once serverSocket.close() runs below
+            }
+        }
+        acceptor.isDaemon = true
+        acceptor.start()
+
+        try {
+            val url = "https://localhost:${serverSocket.localPort}/test"
+            val result = serverRepository.sendRequest(url, "GET", false, null, null)
+
+            assertThat(result).isNull()
+            // A caller must be able to tell "the server turned us away" from "we never reached
+            // the server"; only the former should surface as a rate-limit message.
+            assertThat(serverRepository.lastResponseCode)
+                .isEqualTo(ServerRepository.NO_RESPONSE_CODE)
+        } finally {
+            serverSocket.close()
+        }
+    }
+
+    @Test
+    fun `POST 429 returns null and is reported via lastResponseCode`() {
+        val server = startHttpsServer()
+        server.enqueue(MockResponse().setResponseCode(429))
+
+        val result = serverRepository.sendRequest(
+            server.url("/mlab").toString(), "POST", true, null, hashMapOf("a" to "b")
+        )
+
+        assertThat(result).isNull()
+        assertThat(server.requestCount).isEqualTo(1)
+        assertThat(serverRepository.lastResponseCode)
+            .isEqualTo(ServerRepository.HTTP_TOO_MANY_REQUESTS)
+    }
+
+    @Test
+    fun `lastResponseCode is reset at the start of each request`() {
+        val server = startHttpsServer()
+        server.enqueue(MockResponse().setResponseCode(429))
+        serverRepository.sendRequest(server.url("/mlab").toString(), "GET", true, null, null)
+        assertThat(serverRepository.lastResponseCode)
+            .isEqualTo(ServerRepository.HTTP_TOO_MANY_REQUESTS)
+
+        // A later unreachable request must not still look like a 429 to the caller.
+        val serverSocket = ServerSocket(0)
+        serverSocket.close() // nothing is listening, so the connection is refused outright
+        serverRepository.sendRequest(
+            "https://localhost:${serverSocket.localPort}/test", "GET", false, null, null
+        )
+
+        assertThat(serverRepository.lastResponseCode)
+            .isEqualTo(ServerRepository.NO_RESPONSE_CODE)
+    }
+
+    // ---------------------------------------------------------------------
     // MLab URL rewriting (client_name=wehe-android query param injection)
     // ---------------------------------------------------------------------
 

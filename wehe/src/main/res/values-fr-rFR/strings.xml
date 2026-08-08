@@ -240,6 +240,7 @@
     <string name="info_dpi_rules">Cliquez ici pour analyser quelles règles déclenchent la différenciation</string>
     <string name="start_test">Lancer le test</string>
     <string name="server_unavailable">Désolé, notre serveur n\'est pas en cours d\'exécution. S\'il vous plaît essayez une autre fois.</string>
+    <string name="error_rate_limited">Trop de tests ont été effectués depuis votre réseau récemment. Veuillez patienter avant de réessayer.</string>
     <string name="notification_permission_denied">Sans l\'autorisation de notification, les tests continueront de s\'exécuter, mais vous ne verrez pas leur progression lorsque vous quitterez l\'application.</string>
     <string name="dpi_page_title">Analyse DPI</string>
     <string name="dpi_analysis_finished_title">DPI Analysis Terminé !</string>

@@ -38,6 +38,18 @@ class ServerRepository
     var isIPv6 = false
 
     /**
+     * HTTP status of the most recent request, or [NO_RESPONSE_CODE] when the request never got a
+     * response at all (DNS failure, timeout, refused connection). [sendRequest] collapses every
+     * kind of failure into a null return, so this is what lets a caller tell "the server turned us
+     * away" apart from "we could not reach the server" -- notably a 429 from the M-Lab locate
+     * service. It holds whichever request finished last, so read it immediately after the
+     * [sendRequest] call whose outcome you care about.
+     */
+    @Volatile
+    var lastResponseCode = NO_RESPONSE_CODE
+        private set
+
+    /**
      * Send a GET or POST request to the server.
      *
      * @param url    URL to the server
@@ -55,6 +67,7 @@ class ServerRepository
         val json = arrayOf<JSONObject?>(null)
         val conn = arrayOfNulls<HttpsURLConnection>(1)
         val readyToReturn = booleanArrayOf(false)
+        lastResponseCode = NO_RESPONSE_CODE
         val serverComm = Thread {
             var urlString = url
 
@@ -83,6 +96,41 @@ class ServerRepository
                         }
                         conn[0]!!.connectTimeout = 8000
                         conn[0]!!.readTimeout = 8000
+
+                        //check the status before touching inputStream: Android throws a
+                        //misleading FileNotFoundException from getInputStream() for every code
+                        //>= 400, so read the error stream instead to find out what actually
+                        //went wrong (429 rate limited, 503 down, ...)
+                        val responseCode = conn[0]!!.responseCode
+                        lastResponseCode = responseCode
+                        if (responseCode >= HttpURLConnection.HTTP_BAD_REQUEST) {
+                            val errorBody = try {
+                                conn[0]!!.errorStream?.use { errStream ->
+                                    BufferedReader(InputStreamReader(errStream)).readText()
+                                }.orEmpty()
+                            } catch (e: IOException) {
+                                Log.w("Send Request", "Could not read error stream", e)
+                                ""
+                            }
+                            //Retry-After is set when we are being rate limited; it tells us how
+                            //many seconds to wait, which is far longer than this request's own
+                            //8 second budget, so there is nothing useful to do but report it
+                            val retryAfter = conn[0]!!.getHeaderField("Retry-After")
+                            Log.e(
+                                "Send Request",
+                                "sendRequest GET failed: HTTP $responseCode for $urlString" +
+                                        (if (retryAfter != null) " (Retry-After: $retryAfter)" else "") +
+                                        " body: $errorBody"
+                            )
+                            conn[0]!!.disconnect()
+                            //a 4xx is our mistake, not a blip: the next two attempts would get
+                            //the same answer and, if this is a 429, burn more of our quota
+                            if (responseCode < HttpURLConnection.HTTP_INTERNAL_ERROR) {
+                                break
+                            }
+                            continue
+                        }
+
                         val `in` = BufferedReader(
                             InputStreamReader(
                                 conn[0]!!.inputStream
@@ -133,6 +181,30 @@ class ServerRepository
                     writer.flush()
                     writer.close()
                     os.close()
+
+                    //same trap as the GET path: getInputStream() reports every code >= 400 as a
+                    //FileNotFoundException, so read the status and error stream first
+                    val responseCode = conn[0]!!.responseCode
+                    lastResponseCode = responseCode
+                    if (responseCode >= HttpURLConnection.HTTP_BAD_REQUEST) {
+                        val errorBody = try {
+                            conn[0]!!.errorStream?.use { errStream ->
+                                BufferedReader(InputStreamReader(errStream)).readText()
+                            }.orEmpty()
+                        } catch (e: IOException) {
+                            Log.w("Send Request", "Could not read error stream", e)
+                            ""
+                        }
+                        Log.e(
+                            "Send Request",
+                            "sendRequest POST failed: HTTP $responseCode for $urlString" +
+                                    " body: $errorBody"
+                        )
+                        conn[0]!!.disconnect()
+                        json[0] = null
+                        readyToReturn[0] = true
+                        return@Thread
+                    }
 
                     val `in` = BufferedReader(
                         InputStreamReader(
@@ -353,6 +425,14 @@ class ServerRepository
             timer.cancel()
         }
         timers.clear()
+    }
+
+    companion object {
+        /** [lastResponseCode] when the request failed before any HTTP status came back. */
+        const val NO_RESPONSE_CODE = -1
+
+        /** HTTP 429; [HttpURLConnection] has no constant for it. */
+        const val HTTP_TOO_MANY_REQUESTS = 429
     }
 }
 //
